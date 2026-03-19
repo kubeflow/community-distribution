@@ -48,14 +48,14 @@ patches:
 # IPC_LOCK, SYS_RAWIO, NET_RAW capabilities, runAsNonRoot: false
 # Ref: https://github.com/kubeflow/manifests/issues/3290
 - patch: |
-    apiVersion: serving.kserve.io/v1alpha1
+    apiVersion: serving.kserve.io/v1alpha2
     kind: LLMInferenceServiceConfig
     metadata:
       name: placeholder
     $patch: delete
   target:
     group: serving.kserve.io
-    version: v1alpha1
+    version: v1alpha2
     kind: LLMInferenceServiceConfig
 
 # Delete the ValidatingWebhookConfiguration for LLM resources
