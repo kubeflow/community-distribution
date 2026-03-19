@@ -6,6 +6,41 @@ resources:
 - kserve-cluster-resources.yaml
 
 patches:
+# Fix Certificate SANs: kserve_kubeflow.yaml contains a second set of Certificate resources
+# (added in v0.17.0) that still reference the upstream kserve namespace instead of kubeflow.
+# These duplicates override the correct kubeflow-scoped ones, causing TLS SAN mismatches
+# on the webhook server. Patch all three to use the correct kubeflow.svc SAN.
+- patch: |
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: serving-cert
+      namespace: kubeflow
+    spec:
+      commonName: kserve-webhook-server-service.kubeflow.svc
+      dnsNames:
+        - kserve-webhook-server-service.kubeflow.svc
+- patch: |
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: llmisvc-serving-cert
+      namespace: kubeflow
+    spec:
+      commonName: llmisvc-webhook-server-service.kubeflow.svc
+      dnsNames:
+        - llmisvc-webhook-server-service.kubeflow.svc
+- patch: |
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: localmodel-serving-cert
+      namespace: kubeflow
+    spec:
+      commonName: localmodel-webhook-server-service.kubeflow.svc
+      dnsNames:
+        - localmodel-webhook-server-service.kubeflow.svc
+
 # Delete the kserve-localmodelnode-agent DaemonSet
 # Runs as privileged: true with hostPID: true and hostNetwork: true
 - patch: |
