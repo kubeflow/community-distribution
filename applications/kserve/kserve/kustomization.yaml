@@ -6,6 +6,96 @@ resources:
 - kserve-cluster-resources.yaml
 
 patches:
+# Fix cert-manager inject-ca-from annotations: kserve_kubeflow.yaml v0.17.0 hardcodes
+# "kserve/<cert-name>" in the inject-ca-from annotation on all webhook configs and CRDs,
+# but the Certificate resources live in the "kubeflow" namespace. cert-manager's ca-injector
+# uses this annotation to populate the webhook caBundle, so without this fix TLS verification
+# fails with "certificate signed by unknown authority".
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: MutatingWebhookConfiguration
+    metadata:
+      name: inferenceservice.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/serving-cert
+- patch: |
+    apiVersion: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    metadata:
+      name: inferenceservices.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/serving-cert
+- patch: |
+    apiVersion: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    metadata:
+      name: llminferenceservices.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/llmisvc-serving-cert
+- patch: |
+    apiVersion: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    metadata:
+      name: llminferenceserviceconfigs.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/llmisvc-serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: clusterservingruntime.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: inferencegraph.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: inferenceservice.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: servingruntime.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: trainedmodel.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: llminferenceservice.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/llmisvc-serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: llminferenceserviceconfig.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/llmisvc-serving-cert
+- patch: |
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: ValidatingWebhookConfiguration
+    metadata:
+      name: localmodelcache.serving.kserve.io
+      annotations:
+        cert-manager.io/inject-ca-from: kubeflow/localmodel-serving-cert
+
 # Fix Certificate SANs: kserve_kubeflow.yaml contains a second set of Certificate resources
 # (added in v0.17.0) that still reference the upstream kserve namespace instead of kubeflow.
 # These duplicates override the correct kubeflow-scoped ones, causing TLS SAN mismatches
