@@ -12,9 +12,9 @@ commonLabels:
   app: tensorboards-web-app
   kustomize.component: tensorboards-web-app
 images:
-- name: ghcr.io/kubeflow/kubeflow/tensorboards-web-app
-  newName: ghcr.io/kubeflow/kubeflow/tensorboards-web-app
-  newTag: v1.10.0
+- name: ghcr.io/kubeflow/notebooks/tensorboards-web-app
+  newName: ghcr.io/kubeflow/notebooks/tensorboards-web-app
+  newTag: v1.11.0-rc.1
 # We need the name to be unique without the suffix because the original name is what
 # gets used with patches
 configMapGenerator:

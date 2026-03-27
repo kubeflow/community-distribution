@@ -11,7 +11,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: tensorboards-web-app
-        image: ghcr.io/kubeflow/kubeflow/tensorboards-web-app
+        image: ghcr.io/kubeflow/notebooks/tensorboards-web-app
         ports:
         - containerPort: 5000
         env:

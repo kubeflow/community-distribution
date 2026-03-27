@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: manager
-        image: ghcr.io/kubeflow/kubeflow/notebook-controller
+        image: ghcr.io/kubeflow/notebooks/notebook-controller
         command:
           - /manager
         env:

@@ -31,7 +31,7 @@ spec:
       containers:
         - command:
             - /manager
-          image: ghcr.io/kubeflow/kubeflow/tensorboard-controller
+          image: ghcr.io/kubeflow/notebooks/tensorboard-controller
           name: manager
           securityContext:
             allowPrivilegeEscalation: false
