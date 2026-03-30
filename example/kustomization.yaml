@@ -96,3 +96,6 @@ resources:
 #
 # See this for the current status: https://www.kubeflow.org/docs/components/notebooks/notebooks-v2-pre-ga-banner
 # - ../applications/workspaces/overlays/istio
+# Patches the centraldashboard configmap to add the Workspaces menu entry for Workspaces
+# components:
+# - ../applications/workspaces/components/centraldashboard
