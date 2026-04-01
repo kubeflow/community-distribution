@@ -1,0 +1,79 @@
+name: Check Upstream Changes
+
+on:
+  pull_request_target:
+    paths:
+    - '**/upstream/**'
+
+permissions:
+  # These permissions are required to post PR reviews and to add labels.
+  pull-requests: write
+
+jobs:
+  check-upstream-changes:
+    runs-on: ubuntu-latest
+    env:
+      GH_REPO: ${{ github.repository }}
+    steps:
+    - name: Check if PR author is a kubeflow organization member
+      id: org_check
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+      run: |
+        org_members="$(
+          gh api \
+            "repos/kubeflow/internal-acls/contents/github-orgs/kubeflow/org.yaml" \
+            --jq '.content' | base64 --decode | \
+            yq -o=json | \
+            jq -r '.orgs.kubeflow | (.admins // []) + (.members // []) | .[]'
+        )"
+        if echo "$org_members" | grep -qx "$PR_AUTHOR"; then
+          echo "PR author $PR_AUTHOR is a kubeflow organization member."
+          echo "is_org_member=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "PR author $PR_AUTHOR is not a kubeflow organization member."
+          echo "is_org_member=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Apply labels
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        IS_ORG_MEMBER: ${{ steps.org_check.outputs.is_org_member }}
+      run: |
+        labels="upstream-changed"
+
+        # Automatically put PRs from external contributors that touch upstream
+        # folders on hold since i.e. a 100k loc kserve update could easily
+        # hide a malicious change
+        if [[ "$IS_ORG_MEMBER" = "false" ]]; then
+          labels="$labels,do-not-merge/hold"
+        fi
+        gh pr edit "${{ github.event.pull_request.number }}" --add-label "$labels"
+
+    - name: Post PR review
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        IS_ORG_MEMBER: ${{ steps.org_check.outputs.is_org_member }}
+      run: |
+        review_body_file="$(mktemp)"
+        trap 'rm -f "$review_body_file"' EXIT
+
+        {
+          [[ "$IS_ORG_MEMBER" = "false" ]] && printf '> [!CAUTION]\n'
+          [[ "$IS_ORG_MEMBER" = "true" ]] && printf '> [!WARNING]\n'
+          printf '> **Reviewer notice:**\n'
+          printf '> This PR modifies files inside one or more `upstream` folders. Changes to upstream manifests outside of sync PRs are usually unintended and should be reviewed carefully.\n'
+          printf '\n'
+          printf '> All changes will be lost with the next sync from the upstream, so only ever accept changes which have a pending PR which is sure to be included in the next release.\n'
+        } > "$review_body_file"
+
+        if [[ "$IS_ORG_MEMBER" = "false" ]]; then
+          gh pr review "${{ github.event.pull_request.number }}" \
+            --request-changes \
+            --body-file "$review_body_file"
+        else
+          gh pr review "${{ github.event.pull_request.number }}" \
+            --comment \
+            --body-file "$review_body_file"
+        fi
