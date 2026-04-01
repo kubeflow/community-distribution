@@ -4,7 +4,7 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/tensorboard_controller_test.yaml
-    - applications/tensorboard/tensorboard-controller/upstream/**
+    - applications/notebooks-v1/upstream/tensorboard-controller/**
     - tests/istio*
     - common/istio*/**
 
@@ -31,6 +31,6 @@ jobs:
 
     - name: Build & Apply manifests
       run: |
-        cd applications/tensorboard/tensorboard-controller/upstream
+        cd applications/notebooks-v1/upstream/tensorboard-controller
         kustomize build overlays/kubeflow | kubectl apply -f -
         kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 180s

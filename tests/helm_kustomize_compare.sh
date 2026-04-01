@@ -134,7 +134,7 @@ case "$COMPONENT" in
         
     "notebook-controller")
         CHART_DIR="$ROOT_DIR/experimental/helm/charts/notebook-controller"
-        MANIFESTS_DIR="$ROOT_DIR/applications/jupyter/notebook-controller/upstream"
+        MANIFESTS_DIR="$ROOT_DIR/applications/notebooks-v1/upstream/notebook-controller"
         
         declare -A KUSTOMIZE_PATHS=(
             ["base"]="$MANIFESTS_DIR/base"

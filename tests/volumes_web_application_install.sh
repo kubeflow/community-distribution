@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-cd applications/volumes-web-app/upstream
+cd applications/notebooks-v1/upstream/volumes-web-app
 kustomize build overlays/istio | kubectl apply -f -
-cd ../../../
+cd ../../../../
 
-kubectl wait --for=condition=Available deployment/volumes-web-app-deployment -n kubeflow --timeout=180s 
+kubectl wait --for=condition=Available deployment/volumes-web-app-deployment -n kubeflow --timeout=180s

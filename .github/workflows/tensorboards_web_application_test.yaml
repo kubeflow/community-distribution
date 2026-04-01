@@ -4,7 +4,7 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/tensorboards_web_application_test.yaml
-    - applications/tensorboard/tensorboards-web-app/upstream/**
+    - applications/notebooks-v1/upstream/tensorboards-web-app/**
     - tests/istio*
     - common/istio*/**
 
@@ -31,6 +31,6 @@ jobs:
 
     - name: Build & Apply manifests
       run: |
-        cd applications/tensorboard/tensorboards-web-app/upstream
+        cd applications/notebooks-v1/upstream/tensorboards-web-app
         kustomize build overlays/istio | kubectl apply -f -
         kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 180s

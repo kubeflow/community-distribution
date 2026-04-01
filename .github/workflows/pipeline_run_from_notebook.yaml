@@ -4,14 +4,13 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/pipeline_run_from_notebook.yaml
-    - applications/jupyter/notebook-controller/upstream/**
+    - applications/notebooks-v1/**
     - applications/pipeline/upstream/**
     - tests/istio*
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**
     - common/kubeflow-namespace/**
-    - applications/jupyter/**
 
 permissions:
   contents: read
@@ -49,8 +48,8 @@ jobs:
 
     - name: Build & Apply manifests
       run: |
-        kustomize build applications/jupyter/jupyter-web-app/upstream/overlays/istio/ | kubectl apply -f -
-        kustomize build applications/jupyter/notebook-controller/upstream/overlays/kubeflow/ | kubectl apply -f -
+        kustomize build applications/notebooks-v1/upstream/jupyter-web-app/overlays/istio/ | kubectl apply -f -
+        kustomize build applications/notebooks-v1/upstream/notebook-controller/overlays/kubeflow/ | kubectl apply -f -
         kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
         kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 300s \
           --field-selector=status.phase!=Succeeded

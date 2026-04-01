@@ -27,25 +27,26 @@ copy_component_manifests() {
     local destination_text="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/tree/${COMMIT}/components/${readme_path_pattern_for_replacement})"
     update_readme "$MANIFESTS_DIRECTORY" "$source_text" "$destination_text"
 }
+TARGET_DIR="applications/notebooks-v1/upstream/"
 copy_component_manifests "components/crud-web-apps/jupyter/manifests" \
-    "applications/jupyter/jupyter-web-app/upstream" \
+    "${TARGET_DIR}/jupyter-web-app/" \
     "crud-web-apps/jupyter/manifests"
 copy_component_manifests "components/crud-web-apps/volumes/manifests" \
-    "applications/volumes-web-app/upstream" \
+    "${TARGET_DIR}/volumes-web-app/" \
     "crud-web-apps/volumes/manifests"
 copy_component_manifests "components/crud-web-apps/tensorboards/manifests" \
-    "applications/tensorboard/tensorboards-web-app/upstream" \
+    "${TARGET_DIR}/tensorboards-web-app/" \
     "crud-web-apps/tensorboards/manifests"
 copy_component_manifests "components/notebook-controller/config" \
-    "applications/jupyter/notebook-controller/upstream" \
+    "${TARGET_DIR}/notebook-controller/" \
     "notebook-controller/config"
 copy_component_manifests "components/tensorboard-controller/config" \
-    "applications/tensorboard/tensorboard-controller/upstream" \
+    "${TARGET_DIR}/tensorboard-controller" \
     "tensorboard-controller/config"
 copy_component_manifests "components/pvcviewer-controller/config" \
-    "applications/pvcviewer-controller/upstream" \
+    "${TARGET_DIR}/pvcviewer-controller/" \
     "pvcviewer-controller/config"
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" \
-  "applications" \
+  "${TARGET_DIR}" \
   "README.md"
 echo "Synchronization completed successfully."

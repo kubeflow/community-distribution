@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+# Jupyter Web App
+- ../../upstream/jupyter-web-app/overlays/istio
+# Notebook Controller
+- ../../upstream/notebook-controller/overlays/kubeflow
+# PVC Viewer
+- ../../upstream/pvcviewer-controller/base
+# Volumes Web App
+- ../../upstream/volumes-web-app/overlays/istio
+# Tensorboards Controller
+- ../../upstream/tensorboard-controller/overlays/kubeflow
+# Tensorboard Web App
+- ../../upstream/tensorboards-web-app/overlays/istio

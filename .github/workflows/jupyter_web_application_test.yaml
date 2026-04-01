@@ -4,7 +4,7 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/jupyter_web_application_test.yaml
-    - applications/jupyter/jupyter-web-app/upstream/**
+    - applications/notebooks-v1/upstream/jupyter-web-app/**
     - tests/istio*
     - common/istio*/**
 
@@ -30,6 +30,6 @@ jobs:
 
     - name: Build & Apply manifests
       run: |
-        cd applications/jupyter/jupyter-web-app/upstream
+        cd applications/notebooks-v1/upstream/jupyter-web-app
         kustomize build overlays/istio | kubectl apply -f -
         kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 180s

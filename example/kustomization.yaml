@@ -71,18 +71,8 @@ resources:
 - ../applications/katib/upstream/installs/katib-with-kubeflow
 # Central Dashboard
 - ../applications/dashboard/overlays/istio
-# Jupyter Web App
-- ../applications/jupyter/jupyter-web-app/upstream/overlays/istio
-# Notebook Controller
-- ../applications/jupyter/notebook-controller/upstream/overlays/kubeflow
-# PVC Viewer
-- ../applications/pvcviewer-controller/upstream/base
-# Volumes Web App
-- ../applications/volumes-web-app/upstream/overlays/istio
-# Tensorboards Controller
-- ../applications/tensorboard/tensorboard-controller/upstream/overlays/kubeflow
-# Tensorboard Web App
-- ../applications/tensorboard/tensorboards-web-app/upstream/overlays/istio
+# Notebooks v1
+- ../applications/notebooks-v1/overlays/istio
 # Training Operator (v1)
 # - ../applications/training-operator/upstream/overlays/kubeflow
 # Trainer (Training Operator v2)

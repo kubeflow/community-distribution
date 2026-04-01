@@ -52,18 +52,13 @@ wg_dirs = {
         "../common/oauth2-proxy/overlays/m2m-dex-and-kind",
         "../common/oauth2-proxy/overlays/m2m-dex-only",
     ],
-    "workbenches": [
+    "workspaces": [
         # kubeflow/dashboard
         "../applications/dashboard/upstream/centraldashboard/overlays",
         "../applications/dashboard/upstream/poddefaults-webhooks/overlays",
         "../applications/dashboard/upstream/profile-controller/overlays",
         # kubeflow/notebooks
-        "../applications/jupyter/jupyter-web-app/upstream/overlays",
-        "../applications/jupyter/notebook-controller/upstream/overlays",
-        "../applications/pvcviewer-controller/upstream/base",
-        "../applications/tensorboard/tensorboard-controller/upstream/overlays",
-        "../applications/tensorboard/tensorboards-web-app/upstream/overlays",
-        "../applications/volumes-web-app/upstream/overlays",
+        "../applications/notebooks-v1/upstream",
     ],
     "kserve": [
         "../applications/kserve",
@@ -401,7 +396,7 @@ with open(summary_file, "r") as file:
 working_group_name_mapping = {
     "Katib": "Katib",
     "Pipelines": "Pipelines",
-    "Workbenches": "Workbenches(Notebooks)",
+    "Workspaces": "Workspaces(Notebooks)",
     "Kserve": "Kserve",
     "Manifests": "Manifests",
     "Trainer": "Trainer",

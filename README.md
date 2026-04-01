@@ -64,15 +64,15 @@ This repository periodically synchronizes all official Kubeflow components from 
 | - | - | - | - | - | - |
 | Training Operator | applications/training-operator/upstream | [v1.9.2](https://github.com/kubeflow/training-operator/tree/v1.9.2/manifests) | 3m | 25Mi | 0GB |
 | Trainer | applications/trainer/upstream | [v2.2.0](https://github.com/kubeflow/trainer/tree/v2.2.0/manifests) | 8m | 143Mi | 0GB |
-| Notebook Controller | applications/jupyter/notebook-controller/upstream | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/notebook-controller/config) | 5m | 93Mi | 0GB |
-| PVC Viewer Controller | applications/pvcviewer-controller/upstream | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/pvcviewer-controller/config) | 15m | 128Mi | 0GB |
-| Tensorboard Controller | applications/tensorboard/tensorboard-controller/upstream | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/tensorboard-controller/config) | 15m | 128Mi | 0GB |
+| Notebook Controller | applications/notebooks-v1/upstream/notebook-controller | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/notebook-controller/config) | 5m | 93Mi | 0GB |
+| PVC Viewer Controller | applications/notebooks-v1/upstream/pvcviewer-controller | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/pvcviewer-controller/config) | 15m | 128Mi | 0GB |
+| Tensorboard Controller | applications/notebooks-v1/upstream/tensorboard-controller | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/tensorboard-controller/config) | 15m | 128Mi | 0GB |
 | Central Dashboard | applications/dashboard/upstream/centraldashboard | [v2.0.0-rc.1](https://github.com/kubeflow/dashboard/tree/v2.0.0-rc.1/components/centraldashboard/manifests/kustomize) | 2m | 159Mi | 0GB |
 | Profiles + KFAM | applications/dashboard/upstream/profile-controller | [v2.0.0-rc.1](https://github.com/kubeflow/dashboard/tree/v2.0.0-rc.1/components/profile-controller/manifests/kustomize) | 7m | 129Mi | 0GB |
 | PodDefaults Webhook | applications/dashboard/upstream/poddefaults-webhooks | [v2.0.0-rc.1](https://github.com/kubeflow/dashboard/tree/v2.0.0-rc.1/components/poddefaults-webhooks/manifests/kustomize) | 1m | 14Mi | 0GB |
-| Jupyter Web Application | applications/jupyter/jupyter-web-app/upstream | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/jupyter/manifests) | 4m | 231Mi | 0GB |
-| Tensorboards Web Application | applications/tensorboard/tensorboards-web-app/upstream | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/tensorboards/manifests) |  |  |  |
-| Volumes Web Application | applications/volumes-web-app/upstream | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/volumes/manifests) | 4m | 226Mi | 0GB |
+| Jupyter Web Application | applications/notebooks-v1/upstream/jupyter-web-app | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/jupyter/manifests) | 4m | 231Mi | 0GB |
+| Tensorboards Web Application | applications/notebooks-v1/upstream/tensorboards-web-app | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/tensorboards/manifests) |  |  |  |
+| Volumes Web Application | applications/notebooks-v1/upstream/volumes-web-app | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/volumes/manifests) | 4m | 226Mi | 0GB |
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
 | KServe | applications/kserve/kserve | [v0.16.0](https://github.com/kserve/kserve/releases/tag/v0.16.0/install/v0.16.0) | 600m | 1200Mi | 0GB |
 | KServe Models Web Application | applications/kserve/models-web-app | [c71ee4309f0335159d9fdfd4559a538b5c782c92](https://github.com/kserve/models-web-app/tree/c71ee4309f0335159d9fdfd4559a538b5c782c92/manifests/kustomize) | 6m | 259Mi  | 0GB |
@@ -411,8 +411,8 @@ For detailed pipeline compilation instructions, please refer to the [Kubeflow Pi
 #### Notebooks 1.0
 
 ```sh
-kustomize build applications/jupyter/notebook-controller/upstream/overlays/kubeflow | kubectl apply -f -
-kustomize build applications/jupyter/jupyter-web-app/upstream/overlays/istio | kubectl apply -f -
+kustomize build applications/notebooks-v1/upstream/notebook-controller/overlays/kubeflow | kubectl apply -f -
+kustomize build applications/notebooks-v1/upstream/jupyter-web-app/overlays/istio | kubectl apply -f -
 ```
 
 #### Workspaces (Notebooks 2.0)
@@ -422,7 +422,7 @@ This feature is still in development.
 #### PVC Viewer Controller
 
 ```sh
-kustomize build applications/pvcviewer-controller/upstream/base | kubectl apply -f -
+kustomize build applications/notebooks-v1/upstream/pvcviewer-controller/base | kubectl apply -f -
 ```
 
 #### Volumes Web Application
@@ -434,8 +434,8 @@ kustomize build applications/pvcviewer-controller/upstream/base | kubectl apply 
 #### Tensorboard web application and controller
 
 ```sh
-kustomize build applications/tensorboard/tensorboards-web-app/upstream/overlays/istio | kubectl apply -f -
-kustomize build applications/tensorboard/tensorboard-controller/upstream/overlays/kubeflow | kubectl apply -f -
+kustomize build applications/notebooks-v1/upstream/tensorboards-web-app/overlays/istio | kubectl apply -f -
+kustomize build applications/notebooks-v1/upstream/tensorboard-controller/overlays/kubeflow | kubectl apply -f -
 ```
 
 #### Trainer (training operator v2)
