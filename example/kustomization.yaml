@@ -89,3 +89,10 @@ resources:
 # Here is the documentation for Ray: https://docs.ray.io/en/latest/
 # Here is the internal documentation for Ray: - ../experimental/ray/README.md
 # - ../experimental/ray/kuberay-operator/overlays/kubeflow
+
+# --> DANGER: Workspaces (Notebooks v2) is still pre-GA <--
+#
+# !!! DO NOT DEPLOY THIS TO A PRODUCTION CLUSTER !!!
+#
+# See this for the current status: https://www.kubeflow.org/docs/components/notebooks/notebooks-v2-pre-ga-banner
+# - ../applications/workspaces/overlays/istio

@@ -1,0 +1,78 @@
+apiVersion: kubeflow.org/v1beta1
+kind: Workspace
+metadata:
+  name: jupyterlab-workspace
+spec:
+  ## if the workspace is paused (no pods running)
+  paused: false
+
+  ## the WorkspaceKind to use
+  kind: "jupyterlab"
+
+  ## options for "podTemplate"-type WorkspaceKinds
+  ##
+  podTemplate:
+
+    ## metadata to be applied to the Pod resource
+    ##
+    podMetadata:
+
+      ## labels to be applied to the Pod resource
+      ##  - labels are required to support integration with the PodDefault resource:
+      ##    https://github.com/kubeflow/kubeflow/blob/master/components/admission-webhook/pkg/apis/settings/v1alpha1/poddefault_types.go
+      ##
+      labels: {}
+
+      ## annotations to be applied to the Pod resource
+      ##
+      annotations: {}
+
+    ## volume configs
+    ##
+    volumes:
+
+      ## the name of the PVC to mount as the home volume
+      ##  - this PVC must already exist in the Namespace
+      ##  - this PVC must be RWX (ReadWriteMany, ReadWriteOnce)
+      ##  - the mount path is defined in the WorkspaceKind under
+      ##    `spec.podTemplate.volumeMounts.home`
+      ##
+      home: "workspace-home-pvc"
+
+      ## additional PVCs to mount
+      ##  - these PVC must already exist in the Namespace
+      ##  - the same PVC can be mounted multiple times with different `mountPaths`
+      ##  - if `readOnly` is false, the PVC must be RWX (ReadWriteMany, ReadWriteOnce)
+      ##  - if `readOnly` is true, the PVC must be ReadOnlyMany
+      ##
+      data:
+        - pvcName: "workspace-data-pvc"
+          mountPath: "/data/my-data"
+          readOnly: false
+
+      ## secrets to mount
+      ##  - the secret must already exist in the Namespace
+      ##  - secrets are mounted as folders with the secret keys as files
+      ##
+      secrets:
+        - secretName: "workspace-secret"
+          mountPath: "/secrets/my-secret"
+          defaultMode: 420 # same as 0644 in octal
+
+    ## the selected podTemplate options
+    ##  - these are the user-selected options from the Workspace Spawner UI
+    ##    which determine the PodSpec of the Workspace Pod
+    ##
+    options:
+
+      ## the id of an imageConfig option
+      ##  - options are defined in WorkspaceKind under
+      ##    `spec.podTemplate.options.imageConfig.values[]`
+      ##
+      imageConfig: "jupyter-scipy:v1.10.0"
+
+      ## the id of a podConfig option
+      ##  - options are defined in WorkspaceKind under
+      ##    `spec.podTemplate.options.podConfig.values[]`
+      ##
+      podConfig: "tiny_cpu"

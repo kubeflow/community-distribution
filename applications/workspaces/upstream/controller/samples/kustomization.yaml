@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+sortOptions:
+  order: fifo
+
+resources:
+- ./common
+# example workspaceKinds
+- codeserver_v1beta1_workspacekind.yaml
+- jupyterlab_v1beta1_workspacekind.yaml
+- rstudio_v1beta1_workspacekind.yaml
+# example workspaces
+- jupyterlab_v1beta1_workspace.yaml

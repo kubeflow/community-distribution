@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: workspaces-frontend
+spec:
+  gateways:
+  - kubeflow/kubeflow-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /workspaces/
+    - uri:
+        exact: /workspaces
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: workspaces-frontend.kubeflow-workspaces.svc.cluster.local
+        port:
+          number: 8080

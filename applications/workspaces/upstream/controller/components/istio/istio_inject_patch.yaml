@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workspaces-controller
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow-workspaces
+  labels:
+    istio-injection: enabled

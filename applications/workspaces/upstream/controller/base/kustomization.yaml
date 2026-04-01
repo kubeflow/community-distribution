@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Adds namespace to all resources.
+namespace: kubeflow-workspaces
+
+resources:
+- crd
+- manager
+# [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
+# crd/kustomization.yaml
+- webhook
+
+
+# [WEBHOOK] Replacements to keep webhook-service name in sync for CRD conversion webhooks
+# Uncomment when CRD conversion webhook patches are enabled in crd/kustomization.yaml
+#replacements:
+#  - source:
+#      kind: Service
+#      version: v1
+#      name: webhook-service
+#      fieldPath: .metadata.name
+#    targets:
+#    - select:
+#        kind: CustomResourceDefinition
+#      fieldPaths:
+#      - .spec.conversion.webhook.clientConfig.service.name
+#      options:
+#        create: false

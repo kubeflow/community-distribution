@@ -1,0 +1,99 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeflow-workspaces
+
+resources:
+- ../../base
+
+components:
+- ../../components/istio
+- ../../components/common
+
+patches:
+- patch: |-
+    - op: remove
+      path: /metadata/labels/app.kubernetes.io~1component
+    - op: remove
+      path: /metadata/labels/app.kubernetes.io~1name
+    - op: add
+      path: /metadata/labels/istio-injection
+      value: enabled
+  target:
+    kind: Namespace
+    name: kubeflow-workspaces
+
+replacements:
+- source:
+    fieldPath: metadata.namespace
+    kind: Deployment
+    name: workspaces-frontend
+  targets:
+  - fieldPaths:
+    - metadata.name
+    select:
+      kind: Namespace
+      name: kubeflow-workspaces
+- source:
+    fieldPath: metadata.name
+    kind: Service
+    name: workspaces-frontend
+    version: v1
+  targets:
+  - fieldPaths:
+    - spec.http.0.route.0.destination.host
+    options:
+      delimiter: .
+    select:
+      group: networking.istio.io
+      kind: VirtualService
+      name: workspaces-frontend
+      version: v1beta1
+  - fieldPaths:
+    - spec.host
+    options:
+      delimiter: .
+    select:
+      group: networking.istio.io
+      kind: DestinationRule
+      name: workspaces-frontend
+      version: v1beta1
+- source:
+    fieldPath: metadata.namespace
+    kind: Service
+    name: workspaces-frontend
+    version: v1
+  targets:
+  - fieldPaths:
+    - spec.http.0.route.0.destination.host
+    options:
+      delimiter: .
+      index: 1
+    select:
+      group: networking.istio.io
+      kind: VirtualService
+      name: workspaces-frontend
+      version: v1beta1
+  - fieldPaths:
+    - spec.host
+    options:
+      delimiter: .
+      index: 1
+    select:
+      group: networking.istio.io
+      kind: DestinationRule
+      name: workspaces-frontend
+      version: v1beta1
+- source:
+    fieldPath: spec.ports.[name=http-ui].port
+    kind: Service
+    name: workspaces-frontend
+    version: v1
+  targets:
+  - fieldPaths:
+    - spec.http.0.route.0.destination.port.number
+    select:
+      group: networking.istio.io
+      kind: VirtualService
+      name: workspaces-frontend
+      version: v1beta1

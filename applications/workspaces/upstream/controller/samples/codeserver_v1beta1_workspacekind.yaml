@@ -1,0 +1,115 @@
+apiVersion: kubeflow.org/v1beta1
+kind: WorkspaceKind
+metadata:
+  name: codeserver
+spec:
+  spawner:
+    displayName: "VS Code (code-server)"
+    description: "A Workspace which runs VS Code (code-server) in a Pod"
+    icon:
+      url: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg"
+    logo:
+      url: "https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg"
+  podTemplate:
+    podMetadata:
+      labels: {}
+      annotations: {}
+    serviceAccount:
+      name: "default-editor"
+    volumeMounts:
+      home: "/home/jovyan"
+    ports:
+      - id: "codeserver"
+        defaultDisplayName: "VS Code (code-server)"
+        protocol: "HTTP"
+        httpProxy:
+          removePathPrefix: true
+          requestHeaders: {}
+    extraEnv: []
+    extraVolumeMounts:
+      - name: "dshm"
+        mountPath: "/dev/shm"
+    extraVolumes:
+      - name: "dshm"
+        emptyDir:
+          medium: "Memory"
+    securityContext:
+      fsGroup: 100
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      runAsNonRoot: true
+    options:
+      imageConfig:
+        spawner:
+          default: "codeserver-python:v1.10.0"
+        values:
+          - id: "codeserver-python:v1.10.0"
+            spawner:
+              displayName: "codeserver-python:v1.10.0"
+              description: "code-server, with Conda Python"
+              labels:
+                - key: "python_version"
+                  value: "3.11.11"
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.10.0"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "codeserver"
+                  port: 8888
+      podConfig:
+        spawner:
+          default: "small_cpu"
+        values:
+          - id: "tiny_cpu"
+            spawner:
+              displayName: "Tiny CPU"
+              description: "Pod with 0.1 CPU, 128 Mb RAM"
+              labels:
+                - key: "cpu"
+                  value: "100m"
+                - key: "memory"
+                  value: "128Mi"
+            spec:
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+          - id: "small_cpu"
+            spawner:
+              displayName: "Small CPU"
+              description: "Pod with 1 CPU, 2 GB RAM"
+              labels:
+                - key: "cpu"
+                  value: "1000m"
+                - key: "memory"
+                  value: "2Gi"
+            spec:
+              resources:
+                requests:
+                  cpu: 1000m
+                  memory: 2Gi
+          - id: "big_gpu"
+            spawner:
+              displayName: "Big GPU"
+              description: "Pod with 4 CPU, 16 GB RAM, and 1 GPU"
+              labels:
+                - key: "cpu"
+                  value: "4000m"
+                - key: "memory"
+                  value: "16Gi"
+                - key: "gpu"
+                  value: "1"
+            spec:
+              resources:
+                requests:
+                  cpu: 4000m
+                  memory: 16Gi
+                limits:
+                  nvidia.com/gpu: 1
+              tolerations:
+                - key: "nvidia.com/gpu"
+                  operator: "Exists"
+                  effect: "NoSchedule"

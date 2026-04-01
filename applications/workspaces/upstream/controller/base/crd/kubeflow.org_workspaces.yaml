@@ -1,0 +1,381 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.4
+  name: workspaces.kubeflow.org
+spec:
+  group: kubeflow.org
+  names:
+    kind: Workspace
+    listKind: WorkspaceList
+    plural: workspaces
+    shortNames:
+    - ws
+    singular: workspace
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: The current state of the Workspace
+      jsonPath: .status.state
+      name: State
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: Workspace is the Schema for the Workspaces API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: WorkspaceSpec defines the desired state of Workspace
+            properties:
+              kind:
+                description: the WorkspaceKind to use
+                example: jupyterlab
+                maxLength: 253
+                minLength: 1
+                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                type: string
+                x-kubernetes-validations:
+                - message: Workspace 'kind' is immutable
+                  rule: self == oldSelf
+              paused:
+                default: false
+                description: if the workspace is paused (no pods running)
+                type: boolean
+              podTemplate:
+                description: options for "podTemplate"-type WorkspaceKinds
+                properties:
+                  options:
+                    description: the selected podTemplate options
+                    properties:
+                      imageConfig:
+                        description: |-
+                          the id of an imageConfig option
+                           - options are defined in WorkspaceKind under
+                             `spec.podTemplate.options.imageConfig.values[]`
+                        example: jupyterlab_scipy_190
+                        maxLength: 256
+                        minLength: 1
+                        type: string
+                      podConfig:
+                        description: |-
+                          the id of a podConfig option
+                           - options are defined in WorkspaceKind under
+                             `spec.podTemplate.options.podConfig.values[]`
+                        example: big_gpu
+                        maxLength: 256
+                        minLength: 1
+                        type: string
+                    required:
+                    - imageConfig
+                    - podConfig
+                    type: object
+                  podMetadata:
+                    description: metadata to be applied to the Pod resource
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: annotations to be applied to the Pod resource
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: labels to be applied to the Pod resource
+                        type: object
+                    type: object
+                  volumes:
+                    description: volume configs
+                    properties:
+                      data:
+                        description: |-
+                          additional PVCs to mount
+                           - these PVC must already exist in the Namespace
+                           - the same PVC can be mounted multiple times with different `mountPaths`
+                           - if `readOnly` is false, the PVC must be RWX (ReadWriteMany, ReadWriteOnce)
+                           - if `readOnly` is true, the PVC must be ReadOnlyMany
+                        items:
+                          properties:
+                            mountPath:
+                              description: the mount path for the PVC
+                              example: /data/my-data
+                              maxLength: 4096
+                              minLength: 2
+                              pattern: ^/[^/].*$
+                              type: string
+                            pvcName:
+                              description: the name of the PVC to mount
+                              example: my-data-pvc
+                              maxLength: 253
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            readOnly:
+                              default: false
+                              description: if the PVC should be mounted as ReadOnly
+                              type: boolean
+                          required:
+                          - mountPath
+                          - pvcName
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - mountPath
+                        x-kubernetes-list-type: map
+                      home:
+                        description: |-
+                          the name of the PVC to mount as the home volume
+                           - this PVC must already exist in the Namespace
+                           - this PVC must be RWX (ReadWriteMany, ReadWriteOnce)
+                           - the mount path is defined in the WorkspaceKind under
+                             `spec.podTemplate.volumeMounts.home`
+                        example: my-home-pvc
+                        maxLength: 253
+                        minLength: 1
+                        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                        type: string
+                      secrets:
+                        description: |-
+                          secrets to mount
+                           - these secrets must already exist in the Namespace
+                           - secrets are mounted as folders with the secret keys as files
+                        items:
+                          properties:
+                            defaultMode:
+                              default: 420
+                              description: |-
+                                default mode bits used to set permissions on files in the Secret
+                                 - must be a decimal value between 0 and 511, or an octal value between 0000 and 0777
+                                 - for example, 420 is equivalent to 0644, and 511 is equivalent to 0777
+                                 - YAML accepts both octal and decimal values, JSON requires decimal
+                                 - Defaults to 420 (octal: 0644) if not specified.
+                              format: int32
+                              maximum: 511
+                              minimum: 0
+                              type: integer
+                            mountPath:
+                              description: the mount path for the Secret
+                              example: /secrets/my-secret
+                              maxLength: 4096
+                              minLength: 2
+                              pattern: ^/[^/].*$
+                              type: string
+                            secretName:
+                              description: the name of the Secret to mount
+                              example: my-secret
+                              maxLength: 253
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                          required:
+                          - mountPath
+                          - secretName
+                          type: object
+                        type: array
+                        x-kubernetes-list-map-keys:
+                        - mountPath
+                        x-kubernetes-list-type: map
+                    type: object
+                required:
+                - options
+                - volumes
+                type: object
+            required:
+            - kind
+            - podTemplate
+            type: object
+          status:
+            description: WorkspaceStatus defines the observed state of Workspace
+            properties:
+              activity:
+                description: activity information for the Workspace, used to determine
+                  when to cull
+                properties:
+                  lastActivity:
+                    default: 0
+                    description: the last time activity was observed on the Workspace
+                      (UNIX epoch)
+                    example: 1704067200
+                    format: int64
+                    type: integer
+                  lastUpdate:
+                    default: 0
+                    description: the last time we checked for activity on the Workspace
+                      (UNIX epoch)
+                    example: 1704067200
+                    format: int64
+                    type: integer
+                required:
+                - lastActivity
+                - lastUpdate
+                type: object
+              pauseTime:
+                default: 0
+                description: |-
+                  the time when the Workspace was paused (UNIX epoch)
+                   - set to 0 when the Workspace is NOT paused
+                example: 1704067200
+                format: int64
+                type: integer
+              pendingRestart:
+                default: false
+                description: |-
+                  if the current Pod does not reflect the current "desired" state
+                   - true if any `spec.podTemplate.options` have a redirect
+                     and so will be patched on the next restart
+                   - true if the WorkspaceKind has changed one of its common `podTemplate` fields
+                     like `podMetadata`, `probes`, `extraEnv`, or `containerSecurityContext`
+                type: boolean
+              podTemplateOptions:
+                description: information about the current podTemplate options (only
+                  set for WorkspaceKind of podTemplate kind)
+                properties:
+                  imageConfig:
+                    description: info about the current imageConfig option
+                    properties:
+                      desired:
+                        description: the option id which will take effect after the
+                          next restart
+                        maxLength: 256
+                        minLength: 1
+                        type: string
+                      redirectChain:
+                        description: the chain from the current option to the desired
+                          option
+                        items:
+                          properties:
+                            source:
+                              description: the source option id
+                              maxLength: 256
+                              minLength: 1
+                              type: string
+                            target:
+                              description: the target option id
+                              maxLength: 256
+                              minLength: 1
+                              type: string
+                          required:
+                          - source
+                          - target
+                          type: object
+                        type: array
+                    type: object
+                  podConfig:
+                    description: info about the current podConfig option
+                    properties:
+                      desired:
+                        description: the option id which will take effect after the
+                          next restart
+                        maxLength: 256
+                        minLength: 1
+                        type: string
+                      redirectChain:
+                        description: the chain from the current option to the desired
+                          option
+                        items:
+                          properties:
+                            source:
+                              description: the source option id
+                              maxLength: 256
+                              minLength: 1
+                              type: string
+                            target:
+                              description: the target option id
+                              maxLength: 256
+                              minLength: 1
+                              type: string
+                          required:
+                          - source
+                          - target
+                          type: object
+                        type: array
+                    type: object
+                required:
+                - imageConfig
+                - podConfig
+                type: object
+              podTemplatePod:
+                description: information about the Pod managed by this Workspace (only
+                  set for WorkspaceKind of podTemplate kind)
+                properties:
+                  containers:
+                    description: information about the Pod's containers
+                    items:
+                      properties:
+                        name:
+                          description: the name of the container
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  initContainers:
+                    description: information about the Pod's initContainers
+                    items:
+                      properties:
+                        name:
+                          description: the name of the container
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  name:
+                    description: the name of the Pod resource
+                    type: string
+                  nodeName:
+                    description: the name of the node on which the Pod is scheduled
+                    type: string
+                required:
+                - name
+                - nodeName
+                type: object
+              state:
+                default: Unknown
+                description: the current state of the Workspace
+                enum:
+                - Running
+                - Terminating
+                - Paused
+                - Pending
+                - Error
+                - Unknown
+                type: string
+              stateMessage:
+                default: ""
+                description: |-
+                  a human-readable message about the state of the Workspace
+                   - WARNING: this field is NOT FOR MACHINE USE, subject to change without notice
+                type: string
+            required:
+            - activity
+            - pauseTime
+            - pendingRestart
+            - podTemplateOptions
+            - podTemplatePod
+            - state
+            - stateMessage
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

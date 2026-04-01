@@ -1,0 +1,496 @@
+apiVersion: kubeflow.org/v1beta1
+kind: WorkspaceKind
+metadata:
+  name: jupyterlab
+spec:
+  ## ================================================================
+  ## SPAWNER CONFIGS
+  ##  - how the WorkspaceKind is displayed in the Workspace Spawner UI
+  ## ================================================================
+  spawner:
+
+    ## the display name of the WorkspaceKind
+    displayName: "JupyterLab Notebook"
+
+    ## the description of the WorkspaceKind
+    description: "A Workspace which runs JupyterLab in a Pod"
+
+    ## if this WorkspaceKind should be hidden from the Workspace Spawner UI
+    hidden: false
+
+    ## if this WorkspaceKind is deprecated
+    deprecated: false
+
+    ## a message to show in Workspace Spawner UI when the WorkspaceKind is deprecated
+    #deprecationMessage: "This WorkspaceKind will be removed on 20XX-XX-XX, please use another WorkspaceKind."
+
+    ## the icon of the WorkspaceKind
+    ##  - a small (favicon-sized) icon used in the Workspace Spawner UI
+    ##
+    icon:
+      url: "https://jupyter.org/assets/favicons/apple-touch-icon-152x152.png"
+      #configMap:
+      #   name: "my-logos"
+      #   key: "apple-touch-icon-152x152.png"
+
+    ## the logo of the WorkspaceKind
+    ##  - a 1:1 (card size) logo used in the Workspace Spawner UI
+    ##
+    logo:
+      url: "https://upload.wikimedia.org/wikipedia/commons/3/38/Jupyter_logo.svg"
+      #configMap:
+      #   name: "my-logos"
+      #   key: "Jupyter_logo.svg"
+
+  ## ================================================================
+  ## DEFINITION CONFIGS
+  ##  - currently the only supported type is `podTemplate`
+  ##  - in the future, there will be MORE types like `virtualMachine`
+  ##    to run the Workspace on systems like KubeVirt/EC2 rather than in a Pod
+  ## ================================================================
+  podTemplate:
+
+    ## metadata for Workspace Pods (MUTABLE)
+    ##
+    podMetadata:
+      labels:
+        my-workspace-kind-label: "my-value"
+      annotations:
+        my-workspace-kind-annotation: "my-value"
+
+    ## service account configs for Workspace Pods
+    ##
+    serviceAccount:
+
+      ## the name of the ServiceAccount (NOT MUTABLE)
+      ##  - this Service Account MUST already exist in the Namespace
+      ##    of the Workspace, the controller will NOT create it
+      ##  - we will not show this WorkspaceKind in the Spawner UI
+      ##    if the SA does not exist in the Namespace
+      ##
+      name: "default-editor"
+
+    ## activity culling configs (MUTABLE)
+    ##  - for pausing inactive Workspaces
+    ##
+    culling:
+
+      ## if the culling feature is enabled
+      ##
+      enabled: true
+
+      ## the maximum number of seconds a Workspace can be inactive
+      ##
+      maxInactiveSeconds: 86400
+
+      ## the probe used to determine if the Workspace is active
+      ##
+      activityProbe:
+
+        ## OPTION 1: a shell command probe
+        ##  - if the Workspace had activity in the last 60 seconds this command
+        ##    should return status 0, otherwise it should return status 1
+        ##
+        #exec:
+        #  command:
+        #    - "bash"
+        #    - "-c"
+        #    - "exit 0"
+
+        ## OPTION 2: a Jupyter-specific probe
+        ##  - will poll the `/api/status` endpoint of the Jupyter API, and use the `last_activity` field
+        ##    https://github.com/jupyter-server/jupyter_server/blob/v2.13.0/jupyter_server/services/api/handlers.py#L62-L67
+        ##  - note, users need to be careful that their other probes don't trigger a "last_activity" update
+        ##    e.g. they should only check the health of Jupyter using the `/api/status` endpoint
+        ##
+        jupyter:
+          lastActivity: true
+
+    ## standard probes to determine Container health (MUTABLE)
+    ##  - spec for Probe:
+    ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#probe-v1-core
+    ##
+    probes:
+
+      ## startup probe for the "main" container
+      ##
+      #startupProbe:
+      #  ...
+
+      ## liveness probe for the "main" container
+      ##
+      #livenessProbe:
+      #  ...
+
+      ## readiness probe for the "main" container
+      ##
+      #readinessProbe:
+      #  ...
+
+    ## volume mount paths
+    ##
+    volumeMounts:
+
+      ## the path to mount the home PVC (NOT MUTABLE)
+      ##
+      home: "/home/jovyan"
+
+    ## port definitions which can be referenced in image config values (MUTABLE)
+    ##  - think of port definitions as the "types" of services which could be provided by a specific image
+    ##  - a port definition has a common id (URL path) for consistency if the listening TCP port changes
+    ##  - ports are referenced in image config values by their `id` and their definition here establishes
+    ##    their protocol type, and default display name in the UI
+    ##
+    ports:
+
+      - id: "jupyterlab"
+        defaultDisplayName: "JupyterLab"
+        protocol: "HTTP"
+
+        ## http proxy configs (MUTABLE)
+        ## only "HTTP" protocol ports are supported
+        ##
+        httpProxy:
+
+          ## if the path prefix is stripped from incoming HTTP requests
+          ##  - if true, the '/workspace/connect/{profile_name}/{workspace_name}/' path prefix
+          ##    is stripped from incoming requests, the application sees the request
+          ##    as if it was made to '/...'
+          ##  - this only works if the application serves RELATIVE URLs for its assets
+          ##
+          removePathPrefix: false
+
+          ## header manipulation rules for incoming HTTP requests
+          ##  - sets the `spec.http[].headers.request` of the Istio VirtualService
+          ##    https://istio.io/latest/docs/reference/config/networking/virtual-service/#Headers-HeaderOperations
+          ##  - the following string templates are available:
+          ##      - `.PathPrefix`: the path prefix of the Workspace (e.g. '/workspace/connect/{profile_name}/{workspace_name}/')
+          ##
+          requestHeaders: {}
+
+    ## environment variables for Workspace Pods (MUTABLE)
+    ##  - spec for EnvVar:
+    ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#envvar-v1-core
+    ##  - the following go template functions are available:
+    ##      - `httpPathPrefix(portId string)`: returns the HTTP path prefix of the specified port
+    ##
+    extraEnv:
+
+      ## to enable backwards compatibility with old Jupyter images from Kubeflow Notebooks V1
+      ## https://github.com/kubeflow/kubeflow/blob/v1.8.0/components/example-notebook-servers/jupyter/s6/services.d/jupyterlab/run#L12
+      - name: "NB_PREFIX"
+        value: |-
+          {{ httpPathPrefix "jupyterlab" }}
+
+    ## extra volume mounts for Workspace Pods (MUTABLE)
+    ##  - spec for VolumeMount:
+    ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#volumemount-v1-core
+    ##
+    extraVolumeMounts:
+
+      ## frameworks like PyTorch use shared memory for inter-process communication and expect a tmpfs at /dev/shm
+      ## https://en.wikipedia.org/wiki/Shared_memory
+      - name: "dshm"
+        mountPath: "/dev/shm"
+
+    ## extra volumes for Workspace Pods (MUTABLE)
+    ##  - spec for Volume:
+    ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#volume-v1-core
+    ##
+    extraVolumes:
+      - name: "dshm"
+        emptyDir:
+          medium: "Memory"
+
+    ## security context for Workspace Pods (MUTABLE)
+    ##  - spec for PodSecurityContext:
+    ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#podsecuritycontext-v1-core
+    ##
+    securityContext:
+      fsGroup: 100
+
+    ## container SecurityContext for Workspace Pods (MUTABLE)
+    ##  - spec for SecurityContext:
+    ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#securitycontext-v1-core
+    ##
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      runAsNonRoot: true
+
+    ## ==============================================================
+    ## WORKSPACE OPTIONS
+    ##  - options are the user-selectable fields,
+    ##    they determine the PodSpec of the Workspace
+    ## ==============================================================
+    options:
+
+      ##
+      ## About the `values` fields:
+      ##  - the `values` field is a list of options that the user can select
+      ##  - elements of `values` can NOT be removed, only HIDDEN or REDIRECTED
+      ##     - this prevents options being removed that are still in use by existing Workspaces
+      ##     - this limitation may be removed in the future
+      ##  - options may be "hidden" by setting `spawner.hidden` to `true`
+      ##     - hidden options are NOT visible by default in the Spawner UI
+      ##     - hidden options are still available to the controller and manually created Workspace resources
+      ##  - options may be "redirected" by setting `redirect.to` to another option:
+      ##     - redirected options are NOT shown in the Spawner UI
+      ##     - redirected options are computed by the controller and shown in status fields
+      ##     - users must explicitly update their Workspace via the API to apply redirects
+      ##     - the Spawner UI will warn users about Workspaces with pending restarts
+      ##
+
+      ## ============================================================
+      ## IMAGE CONFIG OPTIONS
+      ##  - SETS: image, imagePullPolicy, ports
+      ## ============================================================
+      imageConfig:
+
+        ## spawner ui configs
+        ##
+        spawner:
+
+          ## the id of the default option
+          ##  - this will be selected by default in the spawner ui
+          ##
+          default: "jupyter-scipy:v1.10.0"
+
+        ## the list of image configs that are available
+        ##
+        values:
+
+          ## ================================================================
+          ## jupyter-scipy:v1.8.0
+          ## ================================================================
+          - id: "jupyter-scipy:v1.8.0"
+            spawner:
+              displayName: "jupyter-scipy:v1.8.0"
+              description: "JupyterLab, with SciPy Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.11.6"
+              ## NOTE: this option is hidden
+              hidden: true
+            redirect:
+              to: "jupyter-scipy:v1.9.2"
+              message:
+                level: "Info"
+                text: >
+                  This update does not introduce any breaking changes in Python packages from SciPy.
+                  However, the version of JupyterLab has been updated from 3.6.6 to 4.2.5.
+            spec:
+              ## the container image to use
+              ##
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.8.0"
+
+              ## the pull policy for the container image
+              ##  - default: "IfNotPresent"
+              ##
+              imagePullPolicy: "IfNotPresent"
+
+              ## ports that the container listens on
+              ##  - currently, only HTTP is supported for `protocol`
+              ##  - currently, all ports use the same `httpProxy` settings
+              ##  - if multiple ports are defined, the user will see multiple "Connect" buttons
+              ##    in a dropdown menu on the Workspace overview page
+              ##
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+
+          ## ================================================================
+          ## jupyter-scipy:v1.9.2
+          ## ================================================================
+          - id: "jupyter-scipy:v1.9.2"
+            spawner:
+              displayName: "jupyter-scipy:v1.9.2"
+              description: "JupyterLab, with SciPy Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.11.10"
+            redirect:
+              to: "jupyter-scipy:v1.10.0"
+              message:
+                level: "Info"
+                text: >
+                  This update does not introduce any breaking changes in Python packages from SciPy.
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.9.2"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+
+          ## ================================================================
+          ## jupyter-scipy:v1.10.0
+          ## ================================================================
+          - id: "jupyter-scipy:v1.10.0"
+            spawner:
+              displayName: "jupyter-scipy:v1.10.0"
+              description: "JupyterLab, with SciPy Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.11.11"
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.10.0"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+
+          ## ================================================================
+          ## jupyter-pytorch-cuda-full:v1.9.2
+          ## ================================================================
+          - id: "jupyter-pytorch-cuda-full:v1.9.2"
+            spawner:
+              displayName: "jupyter-pytorch-cuda-full:v1.9.2"
+              description: "JupyterLab, with PyTorch (CUDA), and Common Python Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.11.10"
+                - key: "pytorch_version"
+                  value: "2.3.1"
+                - key: "cuda_version"
+                  value: "12.1"
+                - key: "nccl_version"
+                  value: "2.20.5"
+            redirect:
+              to: "jupyter-pytorch-cuda-full:v1.10.0"
+              message:
+                level: "Warning"
+                text: >
+                  This update changes the version of PyTorch from 2.3.1 to 2.5.1.
+                  This only breaking change in a common python package is xgboost, which updated from 1.7.6 to 2.1.4.
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.9.2"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+
+          ## ================================================================
+          ## jupyter-pytorch-cuda-full:v1.10.0
+          ## ================================================================
+          - id: "jupyter-pytorch-cuda-full:v1.10.0"
+            spawner:
+              displayName: "jupyter-pytorch-cuda-full:v1.10.0"
+              description: "JupyterLab, with PyTorch (CUDA), and Common Python Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.11.11"
+                - key: "pytorch_version"
+                  value: "2.5.1"
+                - key: "cuda_version"
+                  value: "12.4"
+                - key: "nccl_version"
+                  value: "2.21.5"
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.10.0"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+
+      ## ============================================================
+      ## POD CONFIG OPTIONS
+      ##  - SETS: affinity, nodeSelector, tolerations, resources
+      ## ============================================================
+      podConfig:
+
+        ## spawner ui configs
+        ##
+        spawner:
+
+          ## the id of the default option
+          ##  - this will be selected by default in the spawner ui
+          ##
+          default: "tiny_cpu"
+
+        ## the list of pod configs that are available
+        ##
+        values:
+
+          ## ================================================================
+          ## EXAMPLE 1: a tiny CPU pod
+          ## ================================================================
+          - id: "tiny_cpu"
+            spawner:
+              displayName: "Tiny CPU"
+              description: "Pod with 0.1 CPU, 128 Mb RAM"
+              labels:
+                - key: "cpu"
+                  value: "100m"
+                - key: "memory"
+                  value: "128Mi"
+            spec:
+              ## affinity configs for the pod
+              ##  - https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core
+              ##
+              affinity: {}
+
+              ## node selector configs for the pod
+              ##  - https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+              ##
+              nodeSelector: {}
+
+              ## toleration configs for the pod
+              ##  - https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core
+              ##
+              tolerations: []
+
+              ## resource configs for the "main" container in the pod
+              ##  - https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#resourcerequirements-v1-core
+              ##
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+
+          ## ================================================================
+          ## EXAMPLE 2: a small CPU pod
+          ## ================================================================
+          - id: "small_cpu"
+            spawner:
+              displayName: "Small CPU"
+              description: "Pod with 1 CPU, 2 GB RAM"
+              labels:
+                - key: "cpu"
+                  value: "1000m"
+                - key: "memory"
+                  value: "2Gi"
+            spec:
+              resources:
+                requests:
+                  cpu: 1000m
+                  memory: 2Gi
+
+          ## ================================================================
+          ## EXAMPLE 3: a big GPU pod
+          ## ================================================================
+          - id: "big_gpu"
+            spawner:
+              displayName: "Big GPU"
+              description: "Pod with 4 CPU, 16 GB RAM, and 1 GPU"
+              labels:
+                - key: "cpu"
+                  value: "4000m"
+                - key: "memory"
+                  value: "16Gi"
+                - key: "gpu"
+                  value: "1"
+            spec:
+              affinity: {}
+              nodeSelector: {}
+              resources:
+                requests:
+                  cpu: 4000m
+                  memory: 16Gi
+                limits:
+                  nvidia.com/gpu: 1
+              tolerations:
+                - key: "nvidia.com/gpu"
+                  operator: "Exists"
+                  effect: "NoSchedule"

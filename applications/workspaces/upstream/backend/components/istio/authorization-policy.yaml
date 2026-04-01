@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: workspaces-backend
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: api
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: workspaces-backend
+      app.kubernetes.io/part-of: kubeflow-workspaces
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
