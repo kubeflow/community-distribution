@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeflow
+
+resources:
+- clusterrole-binding.yaml
+- clusterrole.yaml
+- deployment.yaml
+- role-binding.yaml
+- role.yaml
+- service-account.yaml
+- service.yaml
+- configmap.yaml
+
+images:
+- name: dashboard
+  newName: ghcr.io/kubeflow/dashboard/dashboard
+  newTag: v2.0.0-rc.0
+
+configMapGenerator:
+- envs:
+  - params.env
+  name: dashboard-parameters
+
+labels:
+- includeSelectors: true
+  pairs:
+    app: kubeflow-dashboard
+    app.kubernetes.io/component: dashboard

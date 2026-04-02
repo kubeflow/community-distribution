@@ -73,7 +73,7 @@ jobs:
       run: kustomize build applications/jupyter/notebook-controller/upstream/overlays/kubeflow/ | kubectl apply -f -
 
     - name: Install Admission Webhook
-      run: kustomize build applications/admission-webhook/upstream/overlays/cert-manager | kubectl apply -f -
+      run: kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
 
     - name: Install Volumes Web Application
       run: ./tests/volumes_web_application_install.sh

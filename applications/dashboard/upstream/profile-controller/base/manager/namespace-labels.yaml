@@ -1,0 +1,15 @@
+# Below is a list of labels to set on Profile Namespaces
+#
+# FORMAT:
+# - ADD a Namespace label:    `key: "value"`
+# - REMOVE a Namespace label: `key: ""`
+#
+# WARNING:
+# - The controller will NOT overwrite a label if one with same key already exists.
+# - To override the value of a previously applied label:
+#    1. REMOVE the label: `key: ""`
+#    2. Apply new ConfigMap
+#    3. RE-ADD the label: `key: "value"`
+#    4. Apply new ConfigMap
+#
+app.kubernetes.io/part-of: "kubeflow-profile"

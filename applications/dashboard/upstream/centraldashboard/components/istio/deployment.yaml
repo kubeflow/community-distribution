@@ -1,0 +1,9 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+spec:
+  template:
+    metadata:
+      labels:
+        sidecar.istio.io/inject: "true"

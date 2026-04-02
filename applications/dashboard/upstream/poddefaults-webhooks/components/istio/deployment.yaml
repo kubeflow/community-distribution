@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poddefaults-webhook-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        ## don't inject a sidecar because this is a webhook that needs to be accessible by the kubernetes api server
+        sidecar.istio.io/inject: "false"

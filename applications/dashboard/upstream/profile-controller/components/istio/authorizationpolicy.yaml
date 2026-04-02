@@ -1,0 +1,18 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: profiles-kfam
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app: profile-controller
+      app.kubernetes.io/component: controller-manager
+      app.kubernetes.io/name: profile-controller
+      app.kubernetes.io/part-of: kubeflow-dashboard
+      app.kubernetes.io/managed-by: kustomize
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/kubeflow/sa/dashboard

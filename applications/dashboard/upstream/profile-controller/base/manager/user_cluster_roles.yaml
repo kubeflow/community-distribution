@@ -1,0 +1,45 @@
+# permissions for end users to edit profiles.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: profiles-profile-editor-role
+rules:
+  - apiGroups:
+      - kubeflow.org
+    resources:
+      - profiles
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - kubeflow.org
+    resources:
+      - profiles/status
+    verbs:
+      - get
+---
+# permissions for end users to view profiles.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: profiles-profile-viewer-role
+rules:
+  - apiGroups:
+      - kubeflow.org
+    resources:
+      - profiles
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - kubeflow.org
+    resources:
+      - profiles/status
+    verbs:
+      - get

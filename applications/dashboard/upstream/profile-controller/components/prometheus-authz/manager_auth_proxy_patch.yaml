@@ -1,0 +1,35 @@
+# This patch injects a sidecar container which is a HTTP proxy for the
+# controller manager, it performs RBAC authorization against the Kubernetes API using SubjectAccessReviews.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiles-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: kube-rbac-proxy
+          image: quay.io/brancz/kube-rbac-proxy:v0.20.2
+          args:
+            - "--secure-listen-address=0.0.0.0:8443"
+            - "--upstream=http://127.0.0.1:8080/"
+            - "--logtostderr=true"
+            - "--v=0"
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+              name: https
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 5m
+              memory: 64Mi
+        - name: manager
+          args:
+            - "--leader-elect"
+            ## NOTE: we use 9876 for the health probe because 8081 is used by KFAM which is part of the same deployment.
+            - "--health-probe-bind-address=:9876"
+            ## NOTE: this only listens on link-local so it won't be exposed outside the pod, as the kube-rbac-proxy will be used.
+            - "--metrics-bind-address=127.0.0.1:8080"

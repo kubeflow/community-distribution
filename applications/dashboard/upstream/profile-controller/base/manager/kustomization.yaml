@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- leader_election_role.yaml
+- leader_election_role_binding.yaml
+- manager.yaml
+- namespace.yaml
+- role_binding.yaml
+- service_account.yaml
+- user_cluster_roles.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    app: profile-controller
+    app.kubernetes.io/component: controller-manager
+
+configMapGenerator:
+- name: profiles-config
+  envs:
+  - params.env
+
+- name: profiles-namespace-labels-data
+  files:
+  - namespace-labels.yaml
+
+images:
+- name: profile-controller
+  newName: ghcr.io/kubeflow/dashboard/profile-controller
+  newTag: v2.0.0-rc.0

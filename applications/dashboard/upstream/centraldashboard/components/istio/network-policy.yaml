@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app: kubeflow-dashboard
+      app.kubernetes.io/component: dashboard
+  ingress:
+    - from:
+        ## allow traffic from istio namespace, which is where the istio ingress gateway pods typically run
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - istio-system
+        ## allow traffic from pods in the same namespace
+        - podSelector: {}
+  policyTypes:
+    - Ingress

@@ -1,0 +1,96 @@
+# This overlay uses CertManager to provision a certificate for the
+# PodDefaults admission controller.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeflow
+
+resources:
+  - ../../base
+
+components:
+  - ../../components/cert-manager
+  - ../../components/istio
+  - ../../components/common
+
+replacements:
+  - source:
+      fieldPath: metadata.name
+      kind: Service
+      name: poddefaults-webhook-service
+      version: v1
+    targets:
+      - fieldPaths:
+          - spec.commonName
+          - spec.dnsNames.0
+          - spec.dnsNames.1
+        options:
+          delimiter: .
+          index: 0
+        select:
+          group: cert-manager.io
+          kind: Certificate
+          version: v1
+  - source:
+      fieldPath: metadata.namespace
+      kind: Service
+      name: poddefaults-webhook-service
+      version: v1
+    targets:
+      - fieldPaths:
+          - spec.commonName
+          - spec.dnsNames.0
+          - spec.dnsNames.1
+        options:
+          delimiter: .
+          index: 1
+        select:
+          group: cert-manager.io
+          kind: Certificate
+          version: v1
+  - source:
+      fieldPath: metadata.namespace
+      group: cert-manager.io
+      kind: Certificate
+      version: v1
+    targets:
+      - fieldPaths:
+          - metadata.annotations.[cert-manager.io/inject-ca-from]
+        options:
+          create: true
+          delimiter: /
+          index: 0
+        select:
+          group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          version: v1
+  - source:
+      fieldPath: metadata.name
+      group: cert-manager.io
+      kind: Certificate
+      version: v1
+    targets:
+      - fieldPaths:
+          - metadata.annotations.[cert-manager.io/inject-ca-from]
+        options:
+          create: true
+          delimiter: /
+          index: 1
+        select:
+          group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          version: v1
+  - source:
+      fieldPath: spec.secretName
+      group: cert-manager.io
+      kind: Certificate
+      name: poddefaults-webhook-cert
+      version: v1
+    targets:
+      - fieldPaths:
+          - spec.template.spec.volumes.[name=webhook-cert].secret.secretName
+        select:
+          group: apps
+          kind: Deployment
+          name: poddefaults-webhook-deployment
+          version: v1

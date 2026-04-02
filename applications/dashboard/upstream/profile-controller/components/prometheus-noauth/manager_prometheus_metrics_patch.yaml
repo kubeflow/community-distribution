@@ -1,0 +1,24 @@
+# This patch enables Prometheus scraping for the manager pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiles-deployment
+spec:
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+        # Expose the prometheus metrics on default port
+        - name: manager
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+          args:
+            - "--leader-elect"
+            ## NOTE: we use 9876 for the health probe because 8081 is used by KFAM which is part of the same deployment.
+            - "--health-probe-bind-address=:9876"
+            - "--metrics-bind-address=:8080"

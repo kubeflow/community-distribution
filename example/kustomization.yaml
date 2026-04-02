@@ -70,15 +70,11 @@ resources:
 # Katib
 - ../applications/katib/upstream/installs/katib-with-kubeflow
 # Central Dashboard
-- ../applications/centraldashboard/overlays/oauth2-proxy
-# Admission Webhook
-- ../applications/admission-webhook/upstream/overlays/cert-manager
+- ../applications/dashboard/overlays/oauth2-proxy
 # Jupyter Web App
 - ../applications/jupyter/jupyter-web-app/upstream/overlays/istio
 # Notebook Controller
 - ../applications/jupyter/notebook-controller/upstream/overlays/kubeflow
-# Profiles + KFAM with PSS (Pod Security Standards)
-- ../applications/profiles/pss  # TODO MUST BE UPSTREAMED
 # PVC Viewer
 - ../applications/pvcviewer-controller/upstream/base
 # Volumes Web App

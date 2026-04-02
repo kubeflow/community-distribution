@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiles-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - command:
+            - /access-management
+            - "-cluster-admin"
+            - $(ADMIN)
+            - "-userid-header"
+            - $(USERID_HEADER)
+            - "-userid-prefix"
+            - $(USERID_PREFIX)
+          envFrom:
+            - configMapRef:
+                name: profiles-config
+          image: access-management
+          imagePullPolicy: IfNotPresent
+          name: access-management
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          ports:
+            - name: http-kfam
+              containerPort: 8081
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL

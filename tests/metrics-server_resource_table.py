@@ -34,13 +34,13 @@ COMPONENT_RULES = {
         'keywords': ['tensorboard']
     },
     'Central Dashboard': {
-        'keywords': ['centraldashboard']
+        'keywords': ['kubeflow-dashboard']
     },
     'Profiles + KFAM': {
         'keywords': ['profiles', 'profile-controller']
     },
     'PodDefaults Webhook': {
-        'keywords': ['admission-webhook', 'poddefaults']
+        'keywords': ['poddefaults-webhook', 'poddefaults']
     },
     'Jupyter Web Application': {
         'keywords': ['jupyter-web-app', 'jupyter']

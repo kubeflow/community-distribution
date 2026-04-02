@@ -67,9 +67,9 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Notebook Controller | applications/jupyter/notebook-controller/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/notebook-controller/config) | 5m | 93Mi | 0GB |
 | PVC Viewer Controller | applications/pvcviewer-controller/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/pvcviewer-controller/config) | 15m | 128Mi | 0GB |
 | Tensorboard Controller | applications/tensorboard/tensorboard-controller/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/tensorboard-controller/config) | 15m | 128Mi | 0GB |
-| Central Dashboard | applications/centraldashboard/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/centraldashboard/manifests) | 2m | 159Mi | 0GB |
-| Profiles + KFAM | applications/profiles/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/profile-controller/config) | 7m | 129Mi | 0GB |
-| PodDefaults Webhook | applications/admission-webhook/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/admission-webhook/manifests) | 1m | 14Mi | 0GB |
+| Central Dashboard | applications/dashboard/upstream/centraldashboard | [v2.0.0-rc.0](https://github.com/kubeflow/dashboard/tree/v2.0.0-rc.0/components/centraldashboard/manifests/kustomize) | 2m | 159Mi | 0GB |
+| Profiles + KFAM | applications/dashboard/upstream/profile-controller/ | [v2.0.0-rc.0](https://github.com/kubeflow/dashboard/tree/v2.0.0-rc.0/components/profile-controller/manifests/kustomize) | 7m | 129Mi | 0GB |
+| PodDefaults Webhook | applications/dashboard/upstream/poddefaults-webhooks | [v2.0.0-rc.0](https://github.com/kubeflow/dashboard/tree/v2.0.0-rc.0/components/poddefaults-webhooks/manifests/kustomize) | 1m | 14Mi | 0GB |
 | Jupyter Web Application | applications/jupyter/jupyter-web-app/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/crud-web-apps/jupyter/manifests) | 4m | 231Mi | 0GB |
 | Tensorboards Web Application | applications/tensorboard/tensorboards-web-app/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/crud-web-apps/tensorboards/manifests) |  |  |  |
 | Volumes Web Application | applications/volumes-web-app/upstream | [v1.10.0](https://github.com/kubeflow/kubeflow/tree/v1.10.0/components/crud-web-apps/volumes/manifests) | 4m | 226Mi | 0GB |
@@ -345,7 +345,7 @@ For Keycloak, we have rough guidelines in <https://github.com/kubeflow/manifests
 Install the Admission Webhook for PodDefaults:
 
 ```sh
-kustomize build applications/admission-webhook/upstream/overlays/cert-manager | kubectl apply -f -
+kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
 ```
 
 #### Knative (used by KServe)

@@ -1,0 +1,89 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeflow
+
+resources:
+  - ../../base
+
+components:
+  - ../../components/istio
+  - ../../components/kfam
+#  - ../../components/prometheus-noauth
+#  - ../../components/prometheus-authz
+  # NOTE: the common component should always be last, to ensure it labels all resources.
+  - ../../components/common
+
+patches:
+  - path: patches/remove-namespace.yaml
+
+configMapGenerator:
+  - name: profiles-config
+    behavior: replace
+    envs:
+      - params.env
+
+  - name: profiles-namespace-labels-data
+    behavior: replace
+    files:
+      - namespace-labels.yaml=namespace-labels-kubeflow.yaml
+
+replacements:
+  - source:
+      fieldPath: metadata.name
+      kind: Service
+      name: profiles-kfam
+      version: v1
+    targets:
+      - fieldPaths:
+          - spec.http.0.route.0.destination.host
+        options:
+          delimiter: .
+        select:
+          group: networking.istio.io
+          kind: VirtualService
+          name: profiles-kfam
+          version: v1alpha3
+  - source:
+      fieldPath: spec.ports.0.port
+      kind: Service
+      name: profiles-kfam
+      version: v1
+    targets:
+      - fieldPaths:
+          - spec.http.0.route.0.destination.port.number
+        select:
+          group: networking.istio.io
+          kind: VirtualService
+          name: profiles-kfam
+  - source:
+      fieldPath: metadata.namespace
+      kind: Service
+      name: profiles-kfam
+      version: v1
+    targets:
+      - fieldPaths:
+          - spec.http.0.route.0.destination.host
+        options:
+          delimiter: .
+          index: 1
+        select:
+          group: networking.istio.io
+          kind: VirtualService
+          name: profiles-kfam
+          version: v1alpha3
+  - source:
+      fieldPath: metadata.namespace
+      kind: ServiceAccount
+      name: profiles-controller-service-account
+    targets:
+      - fieldPaths:
+          - subjects.[kind=ServiceAccount].namespace
+        select:
+          kind: ClusterRoleBinding
+          name: profiles-cluster-rolebinding
+      - fieldPaths:
+          - subjects.[kind=ServiceAccount].namespace
+        select:
+          kind: RoleBinding
+          name: profiles-leader-election-rolebinding

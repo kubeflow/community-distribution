@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: poddefaults
+spec:
+  podSelector:
+    matchLabels:
+      app: poddefaults
+      app.kubernetes.io/component: poddefaults
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: https-webhook
+      ## allow traffic from anywhere, as the kubernetes api server must reach the webhook
+      from: []
+
+  policyTypes:
+    - Ingress

@@ -1,0 +1,18 @@
+# Prometheus Monitor Service (Metrics)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: metrics
+  name: profiles-controller-manager-metrics-monitor
+spec:
+  endpoints:
+    - path: /metrics
+      port: metrics # Ensure this is the name of the SERVICE port that exposes HTTP metrics
+      scheme: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: metrics
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: profile-controller
+      app.kubernetes.io/part-of: kubeflow-dashboard

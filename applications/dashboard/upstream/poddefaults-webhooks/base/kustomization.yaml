@@ -1,0 +1,72 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeflow
+
+resources:
+- crd.yaml
+- deployment.yaml
+- mutating-webhook-configuration.yaml
+- role.yaml
+- role_binding.yaml
+- service-account.yaml
+- service.yaml
+- user_cluster_roles.yaml
+
+images:
+- name: poddefaults-webhook
+  newName: ghcr.io/kubeflow/dashboard/poddefaults-webhook
+  newTag: v2.0.0-rc.0
+
+configurations:
+- params.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    app: poddefaults
+    app.kubernetes.io/component: poddefaults
+
+replacements:
+- source:
+    fieldPath: metadata.namespace
+    kind: Service
+    name: poddefaults-webhook-service
+    version: v1
+  targets:
+  - fieldPaths:
+    - webhooks.0.clientConfig.service.namespace
+    select:
+      group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: poddefaults-webhook-mutating-webhook-configuration
+      version: v1
+- source:
+    fieldPath: metadata.name
+    kind: Service
+    name: poddefaults-webhook-service
+    version: v1
+  targets:
+  - fieldPaths:
+    - webhooks.0.clientConfig.service.name
+    select:
+      group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: poddefaults-webhook-mutating-webhook-configuration
+      version: v1
+- source:
+    fieldPath: metadata.name
+    group: apps
+    kind: Deployment
+    name: poddefaults-webhook-deployment
+    version: v1
+  targets:
+  - fieldPaths:
+    - webhooks.0.name
+    options:
+      delimiter: .
+    select:
+      group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: poddefaults-webhook-mutating-webhook-configuration
+      version: v1

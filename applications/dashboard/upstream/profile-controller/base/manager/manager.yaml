@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiles-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels: {}
+    spec:
+      volumes:
+        - name: namespace-labels
+          configMap:
+            name: profiles-namespace-labels-data
+      containers:
+        - command:
+            - /manager
+            - "-userid-header"
+            - $(USERID_HEADER)
+            - "-userid-prefix"
+            - $(USERID_PREFIX)
+            - "-workload-identity"
+            - $(WORKLOAD_IDENTITY)
+          args:
+            - --leader-elect
+            ## NOTE: we use 9876 for the health probe because 8081 is used by KFAM which is part of the same deployment.
+            - --health-probe-bind-address=:9876
+            - --metrics-bind-address=0
+          envFrom:
+            - configMapRef:
+                name: profiles-config
+          image: profile-controller
+          imagePullPolicy: IfNotPresent
+          name: manager
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9876
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 9876
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          ports:
+            - name: http
+              containerPort: 9876
+              protocol: TCP
+          volumeMounts:
+            - name: namespace-labels
+              mountPath: /etc/profile-controller
+              readOnly: true
+      serviceAccountName: profiles-controller-service-account

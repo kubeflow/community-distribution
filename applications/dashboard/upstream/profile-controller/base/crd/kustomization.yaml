@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# This kustomization.yaml is not intended to be run by itself,
+# since it depends on service name and namespace that are out of this kustomize package.
+# It should be run by manifests/kustomize/base
+resources:
+- kubeflow.org_profiles.yaml
+#+kubebuilder:scaffold:crdkustomizeresource
+
+patches:
+# We currently use a trivial conversion webhook (strategy: None) for Profiles.
+# This is because no fields were removed from v1beta to v1.
+# If we need a non-trivial conversion in the future, we will need to implement a webhook service and change the strategy to Webhook.
+- path: profiles_trivial_conversion_patch.yaml
+
+# [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
+# patches here are for enabling the conversion webhook for each CRD
+#- path: profiles_webhook_patch.yaml
+#+kubebuilder:scaffold:crdkustomizewebhookpatch
+
+# [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
+# patches here are for enabling the CA injection for each CRD
+#- path: profiles_cainjection_patch.yaml
+#+kubebuilder:scaffold:crdkustomizecainjectionpatch
+
+# the following config is for teaching kustomize how to do kustomization for CRDs.
+configurations:
+- kustomizeconfig.yaml

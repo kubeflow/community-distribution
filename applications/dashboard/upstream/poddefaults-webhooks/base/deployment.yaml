@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poddefaults-webhook-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: poddefaults-webhook
+      labels: {}
+    spec:
+      containers:
+      - image: poddefaults-webhook
+        name: poddefaults-webhook
+        ports:
+        - name: https-webhook
+          containerPort: 4443
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          runAsUser: 65532
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+            - ALL
+      serviceAccountName: poddefaults-webhook-service-account

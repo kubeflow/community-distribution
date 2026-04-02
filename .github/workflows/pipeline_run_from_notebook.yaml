@@ -51,7 +51,7 @@ jobs:
       run: |
         kustomize build applications/jupyter/jupyter-web-app/upstream/overlays/istio/ | kubectl apply -f -
         kustomize build applications/jupyter/notebook-controller/upstream/overlays/kubeflow/ | kubectl apply -f -
-        kustomize build applications/admission-webhook/upstream/overlays/cert-manager | kubectl apply -f -
+        kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
         kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 300s \
           --field-selector=status.phase!=Succeeded
 

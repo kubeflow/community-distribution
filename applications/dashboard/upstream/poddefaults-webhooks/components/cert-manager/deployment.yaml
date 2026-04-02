@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poddefaults-webhook-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: poddefaults-webhook
+        args:
+        - --tlsCertFile=/etc/webhook/certs/tls.crt
+        - --tlsKeyFile=/etc/webhook/certs/tls.key
+        volumeMounts:
+        - mountPath: /etc/webhook/certs
+          name: webhook-cert
+          readOnly: true
+      volumes:
+      - name: webhook-cert
+        secret:
+          defaultMode: 420
+          secretName: poddefaults-webhook-certs

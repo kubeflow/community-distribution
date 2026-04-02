@@ -4,7 +4,7 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/admission_webhook_test.yaml
-    - applications/admission-webhook/upstream/**
+    - applications/dashboard/upstream/**
     - tests/istio*
     - common/cert-manager/**
     - common/istio*/**
@@ -34,6 +34,6 @@ jobs:
 
     - name: Build & Apply manifests
       run: |
-        cd applications/admission-webhook/upstream
+        cd applications/dashboard/upstream/poddefaults-webhooks
         kustomize build overlays/cert-manager | kubectl apply -f -
         kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 180s

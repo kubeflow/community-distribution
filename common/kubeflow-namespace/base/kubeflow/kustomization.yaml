@@ -5,7 +5,6 @@ namespace: kubeflow
 resources:
 - namespace.yaml
 - cache-server.yaml
-- centraldashboard.yaml
 - default-allow-same-namespace.yaml
 - jupyter-web-app.yaml
 - katib-controller.yaml
@@ -20,7 +19,6 @@ resources:
 - model-catalog.yaml
 - model-registry.yaml
 - model-registry-ui.yaml
-- poddefaults.yaml
 - pvcviewer-webhook.yaml
 - spark-operator-webhook.yaml
 - tensorboards-web-app.yaml
