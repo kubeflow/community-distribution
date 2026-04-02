@@ -27,14 +27,56 @@ def get_trivy_binary():
 
 # Dictionary mapping Kubeflow workgroups to directories containing kustomization files
 wg_dirs = {
-    "katib": "../applications/katib/upstream/installs",
-    "pipelines": "../applications/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user",
-    "trainer": "../applications/training-operator/upstream/overlays ../applications/trainer/overlays",
-    "manifests": "../common/cert-manager/overlays/kubeflow ../common/istio/istio-crds/base ../common/istio/istio-namespace/base ../common/istio/istio-install/overlays/oauth2-proxy ../common/oauth2-proxy/overlays/m2m-dex-only  ../common/oauth2-proxy/overlays/m2m-dex-and-kind ../common/dex/overlays/oauth2-proxy ../common/knative/knative-serving/overlays/gateways ../common/knative/knative-eventing/base ../common/istio/cluster-local-gateway/base ../common/kubeflow-namespace/base ../common/kubeflow-roles/base ../common/istio/kubeflow-istio-resources/base",
-    "workbenches": "../applications/pvcviewer-controller/upstream/base ../applications/admission-webhook/upstream/overlays ../applications/centraldashboard/overlays ../applications/jupyter/jupyter-web-app/upstream/overlays ../applications/volumes-web-app/upstream/overlays ../applications/tensorboard/tensorboards-web-app/upstream/overlays ../applications/profiles/upstream/overlays ../applications/jupyter/notebook-controller/upstream/overlays ../applications/tensorboard/tensorboard-controller/upstream/overlays",
-    "kserve": "../applications/kserve - ../applications/kserve/models-web-app/overlays/kubeflow",
-    "model-registry": "../applications/model-registry/upstream/overlays/db ../applications/model-registry/upstream/options/istio ../applications/model-registry/upstream/options/ui/overlays/istio",
-    "spark": "../applications/spark/spark-operator/overlays/kubeflow",
+    "katib": [
+        "../applications/katib/upstream/installs",
+    ],
+    "pipelines": [
+        "../applications/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user",
+    ],
+    "trainer": [
+        "../applications/trainer/overlays",
+        "../applications/training-operator/upstream/overlays",
+    ],
+    "manifests": [
+        "../common/cert-manager/overlays/kubeflow",
+        "../common/dex/overlays/oauth2-proxy",
+        "../common/istio/cluster-local-gateway/base",
+        "../common/istio/istio-crds/base",
+        "../common/istio/istio-install/overlays/oauth2-proxy",
+        "../common/istio/istio-namespace/base",
+        "../common/istio/kubeflow-istio-resources/base",
+        "../common/knative/knative-eventing/base",
+        "../common/knative/knative-serving/overlays/gateways",
+        "../common/kubeflow-namespace/base",
+        "../common/kubeflow-roles/base",
+        "../common/oauth2-proxy/overlays/m2m-dex-and-kind",
+        "../common/oauth2-proxy/overlays/m2m-dex-only",
+    ],
+    "workbenches": [
+        # kubeflow/dashboard
+        "../applications/dashboard/upstream/centraldashboard/overlays",
+        "../applications/dashboard/upstream/poddefaults-webhooks/overlays",
+        "../applications/dashboard/upstream/profile-controller/overlays",
+        # kubeflow/notebooks
+        "../applications/jupyter/jupyter-web-app/upstream/overlays",
+        "../applications/jupyter/notebook-controller/upstream/overlays",
+        "../applications/pvcviewer-controller/upstream/base",
+        "../applications/tensorboard/tensorboard-controller/upstream/overlays",
+        "../applications/tensorboard/tensorboards-web-app/upstream/overlays",
+        "../applications/volumes-web-app/upstream/overlays",
+    ],
+    "kserve": [
+        "../applications/kserve",
+        "../applications/kserve/models-web-app/overlays/kubeflow",
+    ],
+    "model-registry": [
+        "../applications/model-registry/upstream/options/istio",
+        "../applications/model-registry/upstream/options/ui/overlays/istio",
+        "../applications/model-registry/upstream/overlays/db",
+    ],
+    "spark": [
+        "../applications/spark/spark-operator/overlays/kubeflow",
+    ],
 }
 
 DIRECTORY = "../image_lists"
@@ -81,7 +123,7 @@ def extract_images(version):
 
     for wg, dirs in wg_dirs.items():
         wg_images = set()  # Collect unique images for this workgroup
-        for dir_path in dirs.split():
+        for dir_path in dirs:
             for root, _, files in os.walk(dir_path):
                 for file in files:
                     if file in [
