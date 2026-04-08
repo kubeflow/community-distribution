@@ -16,7 +16,7 @@ resources:
 images:
 - name: poddefaults-webhook
   newName: ghcr.io/kubeflow/dashboard/poddefaults-webhook
-  newTag: v2.0.0-rc.0
+  newTag: v2.0.0-rc.1
 
 configurations:
 - params.yaml

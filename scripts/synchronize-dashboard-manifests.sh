@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="kubeflow-dashboard"
 REPOSITORY_NAME="kubeflow/dashboard"
 REPOSITORY_URL="https://github.com/kubeflow/dashboard.git"
-COMMIT="v2.0.0-rc.0"
+COMMIT="v2.0.0-rc.1"
 REPOSITORY_DIRECTORY="$COMPONENT_NAME"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/${COMPONENT_NAME}-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-${COMPONENT_NAME}-manifests-${COMMIT?}}
@@ -39,5 +39,6 @@ copy_component_manifests "components/profile-controller/manifests/kustomize" \
     "profile-controller/manifests/kustomize"
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" \
   "applications/dashboard/upstream" \
+  "${SCRIPT_DIRECTORY}/synchronize-dashboard-manifests.sh" \
   "README.md"
 echo "Synchronization completed successfully."

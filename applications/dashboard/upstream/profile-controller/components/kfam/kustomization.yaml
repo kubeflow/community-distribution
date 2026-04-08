@@ -10,4 +10,4 @@ patches:
 images:
 - name: access-management
   newName: ghcr.io/kubeflow/dashboard/access-management
-  newTag: v2.0.0-rc.0
+  newTag: v2.0.0-rc.1

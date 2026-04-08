@@ -28,4 +28,4 @@ configMapGenerator:
 images:
 - name: profile-controller
   newName: ghcr.io/kubeflow/dashboard/profile-controller
-  newTag: v2.0.0-rc.0
+  newTag: v2.0.0-rc.1

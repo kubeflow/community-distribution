@@ -16,7 +16,7 @@ resources:
 images:
 - name: dashboard
   newName: ghcr.io/kubeflow/dashboard/dashboard
-  newTag: v2.0.0-rc.0
+  newTag: v2.0.0-rc.1
 
 configMapGenerator:
 - envs:
