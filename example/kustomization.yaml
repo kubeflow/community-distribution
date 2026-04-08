@@ -70,7 +70,7 @@ resources:
 # Katib
 - ../applications/katib/upstream/installs/katib-with-kubeflow
 # Central Dashboard
-- ../applications/dashboard/overlays/oauth2-proxy
+- ../applications/dashboard/overlays/istio
 # Jupyter Web App
 - ../applications/jupyter/jupyter-web-app/upstream/overlays/istio
 # Notebook Controller
