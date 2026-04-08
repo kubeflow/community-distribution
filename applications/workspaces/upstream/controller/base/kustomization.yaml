@@ -5,11 +5,11 @@ kind: Kustomization
 namespace: kubeflow-workspaces
 
 resources:
+- namespace.yaml
 - crd
 - manager
-# [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
-# crd/kustomization.yaml
 - webhook
+# [WEBHOOK] To enable conversion webhook, uncomment all the sections with [WEBHOOK] prefix including the one in crd/kustomization.yaml
 
 
 # [WEBHOOK] Replacements to keep webhook-service name in sync for CRD conversion webhooks
@@ -18,7 +18,7 @@ resources:
 #  - source:
 #      kind: Service
 #      version: v1
-#      name: webhook-service
+#      name: workspaces-webhook-service
 #      fieldPath: .metadata.name
 #    targets:
 #    - select:

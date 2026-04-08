@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: workspaces-controller
+spec:
+  podSelector:
+    matchLabels:
+      app: workspaces-controller
+      app.kubernetes.io/component: controller-manager
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: https-webhook
+    # allow traffic from anywhere, as the kubernetes api server must reach the webhook
+    from: []
+  policyTypes:
+  - Ingress

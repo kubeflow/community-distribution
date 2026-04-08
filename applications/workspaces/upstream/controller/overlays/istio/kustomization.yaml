@@ -9,28 +9,44 @@ resources:
 components:
 - ../../components/certmanager
 - ../../components/istio
-- ../../components/common
+##
+## TODO: rename this to `prometheus-noauth` and also offer a component that enforces kubernetes RBAC for the ServiceMonitor:
+##       historically this was done with `kube-rbac-proxy`, like in dashboard: https://github.com/kubeflow/dashboard/tree/v2.0.0-rc.0/components/profile-controller/manifests/kustomize/components/prometheus-authz
+##       but there is now a way to do this in native controller-runtime with WithAuthenticationAndAuthorization: https://book.kubebuilder.io/reference/metrics.html
+##       but either way, we will need to have the correct RBAC and ServiceMonitor changes in this new component.
 #- ../../components/prometheus
+# NOTE: the common component should always be last, to ensure it labels all resources.
+- ../../components/common
 
 patches:
 - patch: |-
-    - op: remove
-      path: /metadata/labels/app.kubernetes.io~1component
     - op: remove
       path: /metadata/labels/app.kubernetes.io~1name
   target:
     kind: Namespace
     name: kubeflow-workspaces
 
-# [CERTMANAGER] Cert-manager replacements for CA injection annotations
-# These replacements need to be in the overlay because they reference resources
-# that have namespaces applied by the parent kustomization
 replacements:
+- source:
+    fieldPath: metadata.namespace
+    kind: ServiceAccount
+    name: workspaces-controller
+  targets:
+    - fieldPaths:
+        - subjects.[kind=ServiceAccount].namespace
+      select:
+        kind: ClusterRoleBinding
+        name: workspaces-manager-rolebinding
+    - fieldPaths:
+        - subjects.[kind=ServiceAccount].namespace
+      select:
+        kind: RoleBinding
+        name: workspaces-leader-election-rolebinding
 - source:
     fieldPath: .metadata.namespace
     group: cert-manager.io
     kind: Certificate
-    name: serving-cert
+    name: workspaces-serving-cert
     version: v1
   targets:
   - fieldPaths:
@@ -51,7 +67,7 @@ replacements:
     fieldPath: .metadata.name
     group: cert-manager.io
     kind: Certificate
-    name: serving-cert
+    name: workspaces-serving-cert
     version: v1
   targets:
   - fieldPaths:
@@ -73,7 +89,7 @@ replacements:
 - source:
     fieldPath: .metadata.name
     kind: Service
-    name: webhook-service
+    name: workspaces-webhook-service
     version: v1
   targets:
   - fieldPaths:
@@ -89,7 +105,7 @@ replacements:
 - source:
     fieldPath: .metadata.namespace
     kind: Service
-    name: webhook-service
+    name: workspaces-webhook-service
     version: v1
   targets:
   - fieldPaths:
@@ -107,23 +123,11 @@ replacements:
     fieldPath: .spec.secretName
     group: cert-manager.io
     kind: Certificate
-    name: serving-cert
+    name: workspaces-serving-cert
     version: v1
   targets:
   - fieldPaths:
     - .spec.template.spec.volumes.[name=cert].secret.secretName
-    options: {}
-    select:
-      kind: Deployment
-      name: workspaces-controller
-- source:
-    fieldPath: .spec.ports.[name=webhook].targetPort
-    kind: Service
-    name: webhook-service
-    version: v1
-  targets:
-  - fieldPaths:
-    - .spec.template.spec.containers.[name=manager].ports.[name=webhook-server].containerPort
     options: {}
     select:
       kind: Deployment

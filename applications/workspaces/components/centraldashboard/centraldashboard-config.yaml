@@ -11,19 +11,16 @@ data:
                 "icon": "book",
                 "items": [
                     {
-                        "icon": "book",
                         "link": "/jupyter/",
                         "text": "Notebooks",
                         "type": "item"
                     },
                     {
-                        "icon": "assessment",
                         "link": "/tensorboards/",
                         "text": "TensorBoards",
                         "type": "item"
                     },
                     {
-                        "icon": "device:storage",
                         "link": "/volumes/",
                         "text": "Volumes",
                         "type": "item"

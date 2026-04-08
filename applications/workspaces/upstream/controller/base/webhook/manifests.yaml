@@ -2,13 +2,13 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: validating-webhook-configuration
+  name: workspaces-validating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
   - v1
   clientConfig:
     service:
-      name: webhook-service
+      name: workspaces-webhook-service
       namespace: system
       path: /validate-kubeflow-org-v1beta1-workspace
   failurePolicy: Fail
@@ -28,7 +28,7 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: webhook-service
+      name: workspaces-webhook-service
       namespace: system
       path: /validate-kubeflow-org-v1beta1-workspacekind
   failurePolicy: Fail

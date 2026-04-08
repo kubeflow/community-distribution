@@ -7,9 +7,12 @@ metadata:
   name: workspaces-controller-metrics-monitor
 spec:
   endpoints:
-    - path: /metrics
-      port: http # Ensure this is the name of the port that exposes HTTP metrics
-      scheme: http
+  - path: /metrics
+    port: metrics # Ensure this is the name of the SERVICE port that exposes HTTP metrics
+    scheme: http
   selector:
     matchLabels:
-      app.kubernetes.io/component: controller-manager
+      app.kubernetes.io/component: metrics
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/name: workspaces-controller
+      app.kubernetes.io/part-of: kubeflow-workspaces

@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: kubeflow-workspaces
 
 resources:
-- namespace.yaml
 - deployment.yaml
 - service.yaml
 
@@ -16,4 +15,4 @@ labels:
 images:
 - name: workspaces-frontend
   newName: ghcr.io/kubeflow/notebooks/workspaces-frontend
-  newTag: v2.0.0-alpha.0
+  newTag: v2.0.0-alpha.1

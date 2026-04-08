@@ -5,7 +5,6 @@ resources:
 - leader_election_role.yaml
 - leader_election_role_binding.yaml
 - manager.yaml
-- namespace.yaml
 - role.yaml
 - role_binding.yaml
 - service_account.yaml
@@ -14,9 +13,10 @@ resources:
 labels:
 - includeSelectors: true
   pairs:
+    app: workspaces-controller
     app.kubernetes.io/component: controller-manager
 
 images:
 - name: workspaces-controller
   newName: ghcr.io/kubeflow/notebooks/workspaces-controller
-  newTag: v2.0.0-alpha.0
+  newTag: v2.0.0-alpha.1

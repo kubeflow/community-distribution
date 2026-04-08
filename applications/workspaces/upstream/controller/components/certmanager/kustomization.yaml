@@ -5,7 +5,7 @@ resources:
 - certificate.yaml
 
 patches:
-- path: manager_webhook_patch.yaml
+- path: deployment_patch.yaml
 
 configurations:
 - kustomizeconfig.yaml

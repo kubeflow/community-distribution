@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: kubeflow-workspaces
 
 resources:
-- namespace.yaml
 - service_account.yaml
 - rbac.yaml
 - service.yaml
@@ -18,4 +17,4 @@ labels:
 images:
 - name: workspaces-backend
   newName: ghcr.io/kubeflow/notebooks/workspaces-backend
-  newTag: v2.0.0-alpha.0
+  newTag: v2.0.0-alpha.1

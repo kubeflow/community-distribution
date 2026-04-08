@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow-workspaces
+  labels:
+    # enabling istio sidecar injection for the namespace
+    istio-injection: enabled

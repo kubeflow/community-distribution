@@ -1,11 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 
-configMapGenerator:
-- envs:
-  - params.env
-  name: kubeflow-workspaces-istio-config
+resources:
+- network-policy.yaml
 
 patches:
-- path: manager_istio_patch.yaml
-- path: istio_inject_patch.yaml
+- path: deployment_patch.yaml
+- path: namespace_patch.yaml
+
+configMapGenerator:
+##
+## TODO: users will likely need to configure things like ISTIO_HOST,
+##       we should show users these settings in the istio overlay by including a configmap generator there.
+##
+- name: kubeflow-workspaces-istio-config
+  envs:
+  - params.env

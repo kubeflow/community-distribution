@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="workspaces"
 REPOSITORY_NAME="kubeflow/notebooks"
 REPOSITORY_URL="https://github.com/kubeflow/notebooks.git"
-COMMIT="v2.0.0-alpha.0"
+COMMIT="v2.0.0-alpha.1"
 REPOSITORY_DIRECTORY="$COMPONENT_NAME"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
@@ -37,5 +37,6 @@ for component in {backend,frontend,controller}; do
 done
 
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" \
-  "applications/workpaces/upstream/"
+  "${SCRIPT_DIRECTORY}/synchronize-kubeflow-workspaces-manifests.sh" \
+  "applications/workspaces/upstream/"
 echo "Synchronization completed successfully."

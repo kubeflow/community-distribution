@@ -1,12 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: webhook-service
+  name: workspaces-webhook-service
 spec:
   ports:
-    - name: webhook
+    - name: https-webhook
       port: 443
-      protocol: TCP
-      targetPort: 9443
+      targetPort: https-webhook
   selector:
+    # NOTE: these are the labels from the `manager` base because we currently only have one deployment for both the webhook and controller
+    app: workspaces-controller
     app.kubernetes.io/component: controller-manager

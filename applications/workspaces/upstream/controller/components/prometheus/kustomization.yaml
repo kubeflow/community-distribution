@@ -2,10 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 
 resources:
-- metrics_service.yaml
 - monitor.yaml
+- service.yaml
 
 patches:
-# This patch enables the metrics endpoint on the controller manager
-# which is required for the ServiceMonitor to scrape metrics
-- path: manager_metrics_patch.yaml
+- path: deployment_patch.yaml

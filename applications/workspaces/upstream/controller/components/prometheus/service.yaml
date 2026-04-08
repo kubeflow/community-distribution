@@ -6,9 +6,9 @@ metadata:
   name: workspaces-controller-metrics-service
 spec:
   ports:
-  - name: http
+  - name: metrics
     port: 8080
     protocol: TCP
-    targetPort: 8080
+    targetPort: metrics
   selector:
     app.kubernetes.io/component: controller-manager

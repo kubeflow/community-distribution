@@ -4,6 +4,10 @@ metadata:
   name: workspaces-controller
 spec:
   template:
+    metadata:
+      annotations:
+        # don't inject a sidecar because this is a webhook that needs to be accessible by the kubernetes api server
+        sidecar.istio.io/inject: "false"
     spec:
       containers:
       - name: manager
