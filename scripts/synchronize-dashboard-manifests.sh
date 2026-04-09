@@ -27,15 +27,15 @@ copy_component_manifests() {
     local destination_text="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/tree/${COMMIT}/components/${readme_path_pattern_for_replacement})"
     update_readme "$MANIFESTS_DIRECTORY" "$source_text" "$destination_text"
 }
-TARGET_DIR="applications/dashboard/upstream"
+TARGET_DIRECTORY="applications/dashboard/upstream"
 copy_component_manifests "components/poddefaults-webhooks/manifests/kustomize" \
-    "${TARGET_DIR}/poddefaults-webhooks" \
+    "${TARGET_DIRECTORY}/poddefaults-webhooks" \
     "poddefaults-webhooks/manifests/kustomize"
 copy_component_manifests "components/centraldashboard/manifests/kustomize" \
-    "${TARGET_DIR}/centraldashboard" \
+    "${TARGET_DIRECTORY}/centraldashboard" \
     "centraldashboard/manifests/kustomize"
 copy_component_manifests "components/profile-controller/manifests/kustomize" \
-    "${TARGET_DIR}/profile-controller" \
+    "${TARGET_DIRECTORY}/profile-controller" \
     "profile-controller/manifests/kustomize"
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" \
   "applications/dashboard/upstream" \
