@@ -8,4 +8,20 @@ spec:
     matchLabels:
       component: model-registry-server
   rules:
-  - {}
+  # Allow all requests from the ingress gateway.
+  # External users are authenticated by oauth2-proxy/authservice at the gateway,
+  # which injects the kubeflow-userid header.
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
+  # Allow internal requests with a valid Kubernetes JWT (authorization header)
+  # but strictly block any request that also carries a kubeflow-userid header,
+  # preventing identity spoofing from within the cluster.
+  - when:
+    - key: request.headers[authorization]
+      values:
+      - "*"
+    - key: request.headers[kubeflow-userid]
+      notValues:
+      - "*"

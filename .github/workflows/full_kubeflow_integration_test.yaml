@@ -95,16 +95,7 @@ jobs:
 
 
     - name: Install Model Registry
-      run: |
-        kustomize build applications/model-registry/upstream/overlays/db | kubectl apply -n kubeflow -f -
-        kustomize build applications/model-registry/upstream/options/istio | kubectl apply -n kubeflow -f -
-
-    - name: Install Model Registry UI
-      run: |
-        kustomize build applications/model-registry/upstream/options/ui/overlays/istio | kubectl apply -n kubeflow -f -
-
-    - name: Install KF Model Catalog
-      run: ./tests/model_catalog_install.sh
+      run: ./tests/model_registry_install.sh
 
     - name: Install Spark
       run: chmod u+x tests/*.sh && ./tests/spark_install.sh
@@ -202,44 +193,11 @@ jobs:
         cd experimental/ray/
         ./test.sh ${KF_PROFILE}
 
-    - name: Test Model Registry Deployment
-      run: |
-        kubectl wait --for=condition=available -n kubeflow deployment/model-registry-db --timeout=60s
-        kubectl wait --for=condition=available -n kubeflow deployment/model-registry-deployment --timeout=60s
+    - name: Run Model Registry Tests
+      run: ./tests/model_registry_test.sh
 
-    - name: Test Model Registry UI Deployment
-      run: kubectl wait --for=condition=available -n kubeflow deployment/model-registry-ui --timeout=60s
-
-    - name: Test Model Registry API
-      run: |
-        export KF_TOKEN="$(kubectl -n $KF_PROFILE create token default-editor)"
-
-        nohup kubectl port-forward svc/model-registry-service -n kubeflow 8082:8080 &
-        sleep 5
-        curl -s -X 'GET' \
-          'http://localhost:8082/api/model_registry/v1alpha3/registered_models?pageSize=100&orderBy=ID&sortOrder=DESC' \
-          -H 'accept: application/json'
-
-        curl -s --fail \
-          "localhost:8080/model-registry/api/v1/model_registry?namespace=${KF_PROFILE}" \
-          -H "Authorization: Bearer ${KF_TOKEN}"
-
-    - name: Run Model Catalog API tests
+    - name: Run Model Catalog API Tests
       run: ./tests/model_catalog_test.sh
-
-    - name: Test Model Registry API with Unauthorized Token
-      run: |
-        UNAUTHORIZED_TOKEN=$(kubectl -n test-unauthorized create token test-unauthorized || kubectl -n test-unauthorized create token default)
-
-        STATUS_CODE=$(curl -s \
-          --output /dev/stderr --write-out "%{http_code}" \
-          "localhost:8080/model-registry/api/v1/model_registry?namespace=${KF_PROFILE}" \
-          -H "Authorization: Bearer ${UNAUTHORIZED_TOKEN}")
-
-        if test $STATUS_CODE -ne 403; then
-          echo "Error: Unauthorized access was not correctly rejected. Got status code: ${STATUS_CODE}"
-          exit 1
-        fi
 
     - name: Apply Pod Security Standards Restricted
       run: ./tests/PSS_enable.sh restricted

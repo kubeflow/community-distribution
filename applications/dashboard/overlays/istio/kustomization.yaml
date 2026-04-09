@@ -7,3 +7,8 @@ resources:
 - ../../upstream/poddefaults-webhooks/overlays/cert-manager
 - ../../upstream/profile-controller/overlays/kubeflow-pss
 
+patches:
+  - path: patches/configmap.yaml
+    target:
+      kind: ConfigMap
+      name: dashboard-config
