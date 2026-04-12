@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nvidia-dcgm-exporter
+  # ServiceMonitor is created in kubeflow-monitoring-system (overridden by the
+  # base kustomization namespace field). The spec.namespaceSelector below targets
+  # the gpu-operator namespace where the DCGM exporter runs.
+  labels:
+    app.kubernetes.io/name: nvidia-dcgm-exporter
+    app.kubernetes.io/part-of: kubeflow-observability
+spec:
+  endpoints:
+  - interval: 15s
+    port: gpu-metrics
+  namespaceSelector:
+    matchNames:
+    - gpu-operator
+  selector:
+    matchLabels:
+      app: nvidia-dcgm-exporter

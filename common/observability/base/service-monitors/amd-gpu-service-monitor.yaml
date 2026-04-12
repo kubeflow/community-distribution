@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: amd-gpu-metrics-exporter
+  # ServiceMonitor is created in kubeflow-monitoring-system (overridden by the
+  # base kustomization namespace field). The spec.namespaceSelector below targets
+  # the kube-amd-gpu namespace where the AMD device-metrics-exporter runs.
+  labels:
+    app.kubernetes.io/name: amd-gpu-metrics-exporter
+    app.kubernetes.io/part-of: kubeflow-observability
+spec:
+  endpoints:
+  - interval: 15s
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - kube-amd-gpu
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: device-metrics-exporter

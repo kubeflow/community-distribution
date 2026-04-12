@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kepler
+  namespace: kepler
+  labels:
+    app.kubernetes.io/name: kepler
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kepler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kepler
+    spec:
+      serviceAccountName: kepler-sa
+      # hostPID and hostNetwork are required by Kepler to access host-level
+      # energy and kernel metrics. The kepler namespace must have privileged
+      # Pod Security Standards to allow this access.
+      hostPID: true
+      hostNetwork: true
+      containers:
+      - name: kepler
+        image: quay.io/sustainable_computing_io/kepler:v0.7.11
+        ports:
+        - name: http
+          containerPort: 9102
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        securityContext:
+          # Kepler requires privileged mode to access host-level energy/kernel metrics
+          # via /proc, /sys, and the container runtime socket.
+          privileged: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: proc
+          mountPath: /proc
+          readOnly: true
+        - name: sys
+          mountPath: /sys
+          readOnly: true
+        - name: runtime-dir
+          mountPath: /var/run
+          readOnly: true
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: runtime-dir
+        hostPath:
+          path: /var/run

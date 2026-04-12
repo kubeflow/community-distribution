@@ -84,6 +84,7 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Cert Manager | common/cert-manager | [1.19.4](https://github.com/cert-manager/cert-manager/releases/tag/v1.19.4) | 3m | 128Mi | 0GB |
 | Dex | common/dex | [2.45.0](https://github.com/dexidp/dex/releases/tag/v2.45.0) | 3m | 27Mi | 0GB |
 | OAuth2-Proxy | common/oauth2-proxy | [7.14.3](https://github.com/oauth2-proxy/oauth2-proxy/releases/tag/v7.14.3) | 3m | 27Mi | 0GB |
+| Observability | common/observability | [3426](https://github.com/kubeflow/manifests/issues/3426) | - | - | 0GB |
 | **Total** | | | **4380m** | **12341Mi** | **65GB** |
 
 
@@ -111,7 +112,7 @@ The `example` directory contains an example kustomization for the single command
 ### ARM64 / aarch64 note
 
 Kubeflow on ARM64/aarch64 may not be fully supported yet because some OCI images might not be available for `linux/arm64`.
-If you hit image pull errors such as “no matching manifest for linux/arm64”, please track/report details in kubeflow/manifests#2745 and take a look at the [Google Summer of Code project for Kubeflow on ARM64](https://www.kubeflow.org/events/upcoming-events/gsoc-2026/#project--end-to-end-arm64-support--validation-on-kubeflow).
+If you hit image pull errors such as "no matching manifest for linux/arm64", please track/report details in kubeflow/manifests#2745 and take a look at the [Google Summer of Code project for Kubeflow on ARM64](https://www.kubeflow.org/events/upcoming-events/gsoc-2026/#project--end-to-end-arm64-support--validation-on-kubeflow).
 
 ---
 **NOTE**
@@ -180,6 +181,24 @@ Install the Kubeflow namespace:
 
 ```sh
 kustomize build common/kubeflow-namespace/base | kubectl apply -f -
+```
+
+#### Observability Stack (Optional)
+
+This component provides an optional monitoring stack for GPU metrics (NVIDIA/AMD) along with Grafana dashboards. It includes Prometheus and Grafana operators deployed in the `kubeflow-monitoring-system` namespace. Energy consumption metrics via Kepler are available as a separate opt-in component and are NOT installed by default — see the Kepler section below.
+
+Install the observability base component (GPU metrics, Prometheus, and Grafana, without Kepler):
+
+```sh
+./tests/observability_install.sh
+```
+
+To opt into Kepler for energy metrics:
+
+> **Note on Container Runtimes:** The Kepler component mounts the generic `/var/run` host path to automatically pick up the container runtime socket (which supports containerd, CRI-O, and other standard runtimes). 
+
+```sh
+kustomize build common/observability/components/kepler | kubectl apply --server-side -f -
 ```
 
 #### Cert-manager

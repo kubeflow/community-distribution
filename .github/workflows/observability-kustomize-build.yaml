@@ -1,0 +1,20 @@
+name: observability-kustomize-build
+
+on:
+  pull_request:
+    paths:
+      - 'common/observability/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install KinD, kustomize, and kubectl
+        run: ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+      - name: Build base
+        run: kustomize build common/observability/base
+      - name: Build overlay
+        run: kustomize build common/observability/overlays/kubeflow
+      - name: Build kepler component
+        run: kustomize build common/observability/components/kepler

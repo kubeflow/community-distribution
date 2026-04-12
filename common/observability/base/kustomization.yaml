@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kubeflow-monitoring-system
+resources:
+- namespace.yaml
+- operators/prometheus-operator
+- operators/grafana-operator
+- service-monitors
+- dashboards
