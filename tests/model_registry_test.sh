@@ -11,7 +11,7 @@ echo "=== Model Registry Integration Tests ==="
 # ---- Test 1: Direct API access via port-forward ----
 # Note: port-forward bypasses the Istio sidecar, so AuthorizationPolicy is not
 # enforced here. These tests validate the Model Registry REST API functionality.
-# AP enforcement is validated through the gateway tests (Test 6).
+# AuthorizationPolicy enforcement is validated through the gateway tests below.
 echo "Test 1: Direct Model Registry API access..."
 nohup kubectl port-forward svc/model-registry-service -n kubeflow 8081:8080 &
 timeout 30s bash -c 'until curl -s localhost:8081 > /dev/null 2>&1; do sleep 1; done'
@@ -105,21 +105,35 @@ else
 fi
 
 
-# ---- Test 6: API access through Istio gateway ----
-# These tests validate the AuthorizationPolicy enforcement through the Istio mesh.
-# The hardened model-registry-service AP uses the KFP dual-path pattern:
-#   Rule 1: Allow ingress-gateway (authservice authenticates external users)
-#   Rule 2: Allow internal K8s JWT, block kubeflow-userid header spoofing
+# ---- Gateway Security Tests ----
+# These tests validate AuthorizationPolicy enforcement through the Istio mesh.
+# The model-registry-service AP uses the KFP dual-path pattern:
+#   Rule 1: Allow traffic from istio-ingressgateway-service-account
+#           (external users authenticated by oauth2-proxy/authservice)
+#   Rule 2: Allow internal K8s JWT traffic only when kubeflow-userid
+#           header is absent (prevents identity spoofing from within the cluster)
+
+# Reuse the gateway port-forward started by port_forward_gateway.sh.
+# In the full CI workflow, port_forward_gateway.sh runs before this script
+# and binds localhost:8080 to the istio-ingressgateway. If running standalone,
+# start the port-forward manually first.
 echo ""
-echo "Test 6: Model Registry API via Istio gateway..."
-INGRESS_GATEWAY_SERVICE=$(kubectl get svc --namespace istio-system \
-  --selector="app=istio-ingressgateway" \
-  --output jsonpath='{.items[0].metadata.name}')
+echo "=== Gateway Security Tests ==="
 
-nohup kubectl port-forward --namespace istio-system "svc/${INGRESS_GATEWAY_SERVICE}" 8080:80 &
-timeout 30s bash -c 'until curl -s localhost:8080 > /dev/null 2>&1; do sleep 1; done'
+if ! curl -s -o /dev/null localhost:8080 2>/dev/null; then
+    echo "Gateway port-forward not detected on localhost:8080, starting one..."
+    INGRESS_GATEWAY_SERVICE=$(kubectl get svc --namespace istio-system \
+      --selector="app=istio-ingressgateway" \
+      --output jsonpath='{.items[0].metadata.name}')
+    nohup kubectl port-forward --namespace istio-system "svc/${INGRESS_GATEWAY_SERVICE}" 8080:80 &
+    timeout 30s bash -c 'until curl -s localhost:8080 > /dev/null 2>&1; do sleep 1; done'
+else
+    echo "Reusing existing gateway port-forward on localhost:8080"
+fi
 
-# Test authenticated access (authorized SA)
+# ---- Test 6: Authorized access via gateway ----
+echo ""
+echo "Test 6: Authorized access to Model Registry via gateway..."
 export KF_PROFILE=kubeflow-user-example-com
 export KF_TOKEN="$(kubectl -n "$KF_PROFILE" create token default-editor)"
 
@@ -134,17 +148,35 @@ else
     exit 1
 fi
 
-# Test unauthorized access (default SA - should be 403)
-export KF_TOKEN_UNAUTH="$(kubectl -n default create token default)"
+# ---- Test 7: Unauthorized access via gateway (wrong namespace SA) ----
+echo ""
+echo "Test 7: Unauthorized access denied via gateway..."
+export KF_TOKEN_UNAUTHORIZED="$(kubectl -n default create token default)"
 
 STATUS_CODE=$(curl -s -o /dev/stderr -w "%{http_code}" \
     "localhost:8080/model-registry/api/v1/model_registry?namespace=${KF_PROFILE}" \
-    -H "Authorization: Bearer ${KF_TOKEN_UNAUTH}" 2>/dev/null)
+    -H "Authorization: Bearer ${KF_TOKEN_UNAUTHORIZED}" 2>/dev/null)
 
 if [ "$STATUS_CODE" -eq 403 ]; then
     echo "PASS: Unauthorized access correctly denied (HTTP $STATUS_CODE)"
 else
     echo "FAIL: Expected HTTP 403 for unauthorized access, got: $STATUS_CODE"
+    exit 1
+fi
+
+# ---- Test 8: Unauthenticated access via gateway (no token) ----
+# Requests without any Authorization header should never reach the API.
+# oauth2-proxy/authservice at the gateway will either redirect (302) or
+# deny (403). Either way, the response must not be 200.
+echo ""
+echo "Test 8: Unauthenticated access denied via gateway..."
+STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+    "localhost:8080/api/model_registry/v1alpha3/registered_models" 2>/dev/null)
+
+if [ "$STATUS_CODE" -ne 200 ]; then
+    echo "PASS: Unauthenticated access correctly denied (HTTP $STATUS_CODE)"
+else
+    echo "FAIL: Unauthenticated request returned HTTP 200 — security gap"
     exit 1
 fi
 
