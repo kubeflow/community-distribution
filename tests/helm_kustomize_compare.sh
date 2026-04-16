@@ -11,7 +11,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, model-registry, kserve-models-web-app, notebook-controller"
+    echo "Components: katib, model-registry, kserve-models-web-app"
     exit 1
 fi
 
@@ -131,37 +131,10 @@ case "$COMPONENT" in
             ["kubeflow"]="kubeflow"
         )
         ;;
-        
-    "notebook-controller")
-        CHART_DIR="$ROOT_DIR/experimental/helm/charts/notebook-controller"
-        MANIFESTS_DIR="$ROOT_DIR/applications/notebooks-v1/upstream/notebook-controller"
-        
-        declare -A KUSTOMIZE_PATHS=(
-            ["base"]="$MANIFESTS_DIR/base"
-            ["kubeflow"]="$MANIFESTS_DIR/overlays/kubeflow"
-            ["standalone"]="$MANIFESTS_DIR/overlays/standalone"
-        )
-        
-        declare -A HELM_VALUES=(
-            ["base"]="$CHART_DIR/ci/base-values.yaml"
-            ["kubeflow"]="$CHART_DIR/ci/kubeflow-values.yaml"
-            ["standalone"]="$CHART_DIR/ci/standalone-values.yaml"
-            ["webhook"]="$CHART_DIR/ci/webhook-values.yaml"
-            ["production"]="$CHART_DIR/ci/production-values.yaml"
-        )
-        
-        declare -A NAMESPACES=(
-            ["base"]="notebook-controller-system"
-            ["kubeflow"]="kubeflow"
-            ["standalone"]="notebook-controller-system"
-            ["webhook"]="kubeflow"
-            ["production"]="kubeflow"
-        )
-        ;;
-        
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, model-registry, kserve-models-web-app, notebook-controller"
+        echo "Supported components: katib, model-registry, kserve-models-web-app"
         exit 1
         ;;
 esac
@@ -218,11 +191,6 @@ else
     cd "$CHART_DIR"
     if [[ "$COMPONENT" == "katib" ]]; then
         helm template katib . \
-            --namespace "$NAMESPACE" \
-            --include-crds \
-            --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
-    elif [[ "$COMPONENT" == "notebook-controller" ]]; then
-        helm template notebook-controller . \
             --namespace "$NAMESPACE" \
             --include-crds \
             --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"

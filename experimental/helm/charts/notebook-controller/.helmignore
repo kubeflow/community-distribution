@@ -1,6 +1,0 @@
-# Minimal .helmignore for debugging
-.DS_Store
-*.swp
-*.bak
-*.tmp
-.git/
