@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: workspace-home-pvc
+  namespace: kubeflow-user-example-com
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: kubeflow.org/v1beta1
+kind: Workspace
+metadata:
+  name: test
+  namespace: kubeflow-user-example-com
+spec:
+  paused: false
+  kind: "jupyterlab"
+  podTemplate:
+    volumes:
+      home: "workspace-home-pvc"
+    options:
+      imageConfig: "jupyter-scipy:v1.10.0"
+      podConfig: "tiny_cpu"
+    podMetadata:
+      labels:
+        # selects the PodDefault that injects the projected ML pipeline service account token
+        access-ml-pipeline: "true"

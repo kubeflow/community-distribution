@@ -1,9 +1,9 @@
-name: Test Workspaces Controller
+name: Test basic Kubeflow Workspaces deployment
 on:
   pull_request:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
-    - .github/workflows/workspaces_controller_test.yaml
+    - .github/workflows/workspaces_deployment_test.yaml
     - applications/workspaces/**
     - common/cert-manager/**
     - common/oauth2-proxy/**
@@ -12,6 +12,7 @@ on:
     - tests/cert_manager_install.sh
     - tests/oauth2-proxy_install.sh
     - tests/multi_tenancy_install.sh
+    - tests/workspaces_install.sh
 
 permissions:
   contents: read
@@ -45,17 +46,8 @@ jobs:
     - name: Install KF Multi Tenancy
       run: ./tests/multi_tenancy_install.sh
 
-    - name: Build and apply workspaces manifests
-      run: |
-        kustomize build applications/workspaces/overlays/istio | kubectl apply -f -
-        kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=300s \
-          --field-selector=status.phase!=Succeeded
-
-    - name: Check rollout status of workspaces deployments
-      run: |
-        kubectl rollout status deployment/workspaces-controller -n kubeflow-workspaces
-        kubectl rollout status deployment/workspaces-backend -n kubeflow-workspaces
-        kubectl rollout status deployment/workspaces-frontend -n kubeflow-workspaces
+    - name: Install Kubeflow Workspaces
+      run: ./tests/workspaces_install.sh
 
     - name: Create KF Profile
       run: kustomize build common/user-namespace/base | kubectl apply -f -
@@ -73,7 +65,7 @@ jobs:
 
         STATUS_CODE=$(curl -v \
           --silent --output /dev/stderr --write-out "%{http_code}" \
-          "localhost:8080/workspaces/api/v1/namespaces/${KF_PROFILE}/workspaces" \
+          "localhost:8080/workspaces/api/v1/workspaces/${KF_PROFILE}" \
           -H "Authorization: Bearer ${TOKEN}")
 
         if test "${STATUS_CODE}" -ne 200; then
@@ -88,7 +80,7 @@ jobs:
 
         STATUS_CODE=$(curl -v \
           --silent --output /dev/stderr --write-out "%{http_code}" \
-          "localhost:8080/workspaces/api/v1/namespaces/${KF_PROFILE}/workspaces" \
+          "localhost:8080/workspaces/api/v1/workspaces/${KF_PROFILE}" \
           -H "Authorization: Bearer ${TOKEN}")
 
         if test "${STATUS_CODE}" -ne 403; then

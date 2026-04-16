@@ -109,6 +109,9 @@ jobs:
     - name: Install Spark
       run: chmod u+x tests/*.sh && ./tests/spark_install.sh
 
+    - name: Install Kubeflow Workspaces
+      run: ./tests/workspaces_install.sh
+
     - name: Wait for All Pods to be Ready
       run: kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 90s --field-selector=status.phase!=Succeeded
 

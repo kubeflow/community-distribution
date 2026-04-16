@@ -1,0 +1,88 @@
+name: Test Pipeline run from Workspace
+on:
+  pull_request:
+    paths:
+    - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+    - .github/workflows/workspaces_pipeline_run_test.yaml
+    - applications/workspaces/**
+    - applications/pipeline/upstream/**
+    - tests/istio*
+    - common/cert-manager/**
+    - common/oauth2-proxy/**
+    - common/istio*/**
+    - common/kubeflow-namespace/**
+    - tests/cert_manager_install.sh
+    - tests/multi_tenancy_install.sh
+    - tests/pipelines_install.sh
+    - tests/workspaces_install.sh
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  workspaces_pipeline_run_test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+    - name: Install KinD, Create KinD cluster and Install kustomize
+      run: ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+
+    - name: Create kubeflow namespace
+      run: kustomize build common/kubeflow-namespace/base | kubectl apply -f -
+
+    - name: Install Istio
+      run: ./tests/istio-cni_install.sh
+
+    - name: Install oauth2-proxy
+      run: ./tests/oauth2-proxy_install.sh
+
+    - name: Install cert-manager
+      run: ./tests/cert_manager_install.sh
+
+    - name: Install Kubeflow Istio Resources
+      run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install KF Multi Tenancy
+      run: ./tests/multi_tenancy_install.sh
+
+    - name: Install KF Pipelines
+      run: ./tests/pipelines_install.sh
+
+    - name: Install PodDefaults Webhook
+      run: kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
+
+    - name: Install Kubeflow Workspaces
+      run: ./tests/workspaces_install.sh
+
+    - name: Create KF Profile
+      run: ./tests/kubeflow_profile_install.sh
+
+    - name: Apply PodDefaults to access ml-pipeline with projected token
+      run: kubectl apply -f tests/poddefaults.access-ml-pipeline.kubeflow-user-example-com.yaml
+
+    - name: Create WorkspaceKind and Workspace with PodDefaults
+      run: |
+        kubectl apply -f applications/workspaces/upstream/controller/samples/jupyterlab_v1beta1_workspacekind.yaml
+        kubectl apply -f tests/workspace.test.kubeflow-user-example-com.yaml
+        kubectl wait --for=jsonpath='{.status.state}'=Running \
+          workspace/test -n kubeflow-user-example-com \
+          --timeout=600s
+
+    - name: Copy and execute the pipeline run script in KF Workspace
+      run: |
+        WORKSPACE_POD="$(kubectl -n kubeflow-user-example-com get pods \
+          -l notebooks.kubeflow.org/workspace-name=test \
+          -o jsonpath='{.items[0].metadata.name}')"
+
+        kubectl -n kubeflow-user-example-com cp \
+          ./tests/pipeline_run_and_wait_kubeflow.py \
+          ${WORKSPACE_POD}:/home/jovyan/pipeline_run_and_wait_kubeflow.py
+
+        kubectl -n kubeflow-user-example-com exec -ti \
+          ${WORKSPACE_POD} -- python /home/jovyan/pipeline_run_and_wait_kubeflow.py
+
+    - name: Apply Pod Security Standards restricted levels
+      run: ./tests/PSS_enable.sh
