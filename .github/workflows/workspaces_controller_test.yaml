@@ -1,0 +1,97 @@
+name: Test Workspaces Controller
+on:
+  pull_request:
+    paths:
+    - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+    - .github/workflows/workspaces_controller_test.yaml
+    - applications/workspaces/**
+    - common/cert-manager/**
+    - common/oauth2-proxy/**
+    - common/istio*/**
+    - tests/istio*
+    - tests/cert_manager_install.sh
+    - tests/oauth2-proxy_install.sh
+    - tests/multi_tenancy_install.sh
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  workspaces_controller_test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+    - name: Install KinD, Create KinD cluster and Install kustomize
+      run: ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+
+    - name: Create kubeflow namespace
+      run: kustomize build common/kubeflow-namespace/base | kubectl apply -f -
+
+    - name: Install cert-manager
+      run: ./tests/cert_manager_install.sh
+
+    - name: Install Istio
+      run: ./tests/istio-cni_install.sh
+
+    - name: Install oauth2-proxy
+      run: ./tests/oauth2-proxy_install.sh
+
+    - name: Install kubeflow-istio-resources
+      run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install KF Multi Tenancy
+      run: ./tests/multi_tenancy_install.sh
+
+    - name: Build and apply workspaces manifests
+      run: |
+        kustomize build applications/workspaces/overlays/istio | kubectl apply -f -
+        kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=300s \
+          --field-selector=status.phase!=Succeeded
+
+    - name: Check rollout status of workspaces deployments
+      run: |
+        kubectl rollout status deployment/workspaces-controller -n kubeflow-workspaces
+        kubectl rollout status deployment/workspaces-backend -n kubeflow-workspaces
+        kubectl rollout status deployment/workspaces-frontend -n kubeflow-workspaces
+
+    - name: Create KF Profile
+      run: kustomize build common/user-namespace/base | kubectl apply -f -
+
+    - name: Port forward
+      run: |
+        INGRESS_GATEWAY_SERVICE=$(kubectl get svc --namespace istio-system --selector="app=istio-ingressgateway" --output jsonpath='{.items[0].metadata.name}')
+        nohup kubectl port-forward --namespace istio-system svc/${INGRESS_GATEWAY_SERVICE} 8080:80 &
+        while ! curl localhost:8080; do echo waiting for port-forwarding; sleep 1; done; echo port-forwarding ready
+
+    - name: List workspaces over API with authorized SA Token
+      run: |
+        KF_PROFILE=kubeflow-user-example-com
+        TOKEN="$(kubectl -n ${KF_PROFILE} create token default-editor)"
+
+        STATUS_CODE=$(curl -v \
+          --silent --output /dev/stderr --write-out "%{http_code}" \
+          "localhost:8080/workspaces/api/v1/namespaces/${KF_PROFILE}/workspaces" \
+          -H "Authorization: Bearer ${TOKEN}")
+
+        if test "${STATUS_CODE}" -ne 200; then
+          echo "Error, this call should be authorized to list workspaces in namespace ${KF_PROFILE}."
+          exit 1
+        fi
+
+    - name: List workspaces over API with unauthorized SA Token
+      run: |
+        KF_PROFILE=kubeflow-user-example-com
+        TOKEN="$(kubectl -n default create token default)"
+
+        STATUS_CODE=$(curl -v \
+          --silent --output /dev/stderr --write-out "%{http_code}" \
+          "localhost:8080/workspaces/api/v1/namespaces/${KF_PROFILE}/workspaces" \
+          -H "Authorization: Bearer ${TOKEN}")
+
+        if test "${STATUS_CODE}" -ne 403; then
+          echo "Error, this call should fail to list workspaces in namespace ${KF_PROFILE}."
+          exit 1
+        fi
