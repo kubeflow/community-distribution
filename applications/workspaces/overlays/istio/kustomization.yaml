@@ -10,6 +10,17 @@ resources:
 - ../../upstream/backend/overlays/istio
 - ../../upstream/controller/overlays/istio
 - ../../upstream/frontend/overlays/istio
+- workspaces-base-edit-clusterrole.yaml
+
+patches:
+- patch: |-
+    - op: replace
+      path: /rules
+      value: []
+  target:
+    group: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: kubeflow-workspaces-edit
 
 # Can be dropped with the next release:
 # https://github.com/kubeflow/notebooks/pull/1032
