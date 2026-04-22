@@ -3,7 +3,11 @@ set -euxo pipefail
 
 # Test Model Registry API and UI integration
 # This script can be used for local testing without GitHub Actions
-# Prerequisites: Model Registry must be installed (run model_registry_install.sh first)
+# Prerequisites:
+#   - Model Registry installed (run model_registry_install.sh first)
+#   - Istio ingressgateway and oauth2-proxy/authservice installed
+#   - Kubeflow profile namespace (kubeflow-user-example-com) with default-editor ServiceAccount
+#   - Gateway port-forward on localhost:8080 (run port_forward_gateway.sh or let this script start one)
 # Usage: ./tests/model_registry_test.sh
 
 echo "=== Model Registry Integration Tests ==="
@@ -173,10 +177,10 @@ echo "Test 8: Unauthenticated access denied via gateway..."
 STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
     "localhost:8080/api/model_registry/v1alpha3/registered_models" 2>/dev/null)
 
-if [ "$STATUS_CODE" -ne 200 ]; then
+if [ "$STATUS_CODE" -eq 302 ] || [ "$STATUS_CODE" -eq 401 ] || [ "$STATUS_CODE" -eq 403 ]; then
     echo "PASS: Unauthenticated access correctly denied (HTTP $STATUS_CODE)"
 else
-    echo "FAIL: Unauthenticated request returned HTTP 200 — security gap"
+    echo "FAIL: Expected HTTP 302, 401, or 403 for unauthenticated access, got: $STATUS_CODE"
     exit 1
 fi
 

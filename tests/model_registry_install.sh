@@ -3,6 +3,7 @@ set -euxo pipefail
 
 # Install Model Registry server, UI, database, and catalog components
 # This script can be used for local testing without GitHub Actions
+# Prerequisites: kubeflow namespace must exist, kustomize must be installed
 # Usage: ./tests/model_registry_install.sh
 
 echo "Installing Model Registry components..."
@@ -31,7 +32,7 @@ kustomize build applications/model-registry/upstream/options/catalog/overlays/de
 echo "Waiting for Model Registry database to become ready..."
 if ! kubectl wait --for=condition=available -n kubeflow deployment/model-registry-db --timeout=120s; then
     echo "ERROR: Model Registry database deployment failed"
-    kubectl get pods -n kubeflow -l app=model-registry-db
+    kubectl get pods -n kubeflow -l component=db
     kubectl describe deployment/model-registry-db -n kubeflow
     kubectl logs deployment/model-registry-db -n kubeflow
     exit 1
