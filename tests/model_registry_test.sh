@@ -111,7 +111,7 @@ fi
 
 # ---- Gateway Security Tests ----
 # These tests validate AuthorizationPolicy enforcement through the Istio mesh.
-# The model-registry-service AP uses the KFP dual-path pattern:
+# The model-registry-service AuthorizationPolicy uses the KFP dual-path pattern:
 #   Rule 1: Allow traffic from istio-ingressgateway-service-account
 #           (external users authenticated by oauth2-proxy/authservice)
 #   Rule 2: Allow internal K8s JWT traffic only when kubeflow-userid
