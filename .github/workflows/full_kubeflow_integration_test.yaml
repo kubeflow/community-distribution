@@ -70,7 +70,9 @@ jobs:
       run: kustomize build applications/notebooks-v1/upstream/jupyter-web-app/overlays/istio/ | kubectl apply -f -
 
     - name: Install Notebook Controller
-      run: kustomize build applications/notebooks-v1/upstream/notebook-controller/overlays/kubeflow/ | kubectl apply -f -
+      run: |
+        kustomize build applications/notebooks-v1/upstream/notebook-controller/overlays/kubeflow/ | kubectl apply -f -
+        kubectl wait --for=condition=Available deployment/notebook-controller-deployment -n kubeflow --timeout=180s
 
     - name: Install Admission Webhook
       run: kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
