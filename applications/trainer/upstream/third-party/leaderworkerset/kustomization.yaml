@@ -4,6 +4,11 @@ kind: Kustomization
 resources:
   - https://github.com/kubernetes-sigs/lws//config/default?ref=v0.8.0
 
+images:
+  - name: us-central1-docker.pkg.dev/k8s-staging-images/lws/lws
+    newName: registry.k8s.io/lws/lws
+    newTag: v0.8.0
+
 # Transform all namespace references from lws-system to be set by parent overlay
 namespace: kubeflow-system
 
