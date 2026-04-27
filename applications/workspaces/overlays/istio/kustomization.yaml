@@ -13,6 +13,9 @@ resources:
 - workspaces-base-edit-clusterrole.yaml
 
 patches:
+- path: patches/namespace-pss.yaml
+- path: patches/backend-pss.yaml
+- path: patches/frontend-pss.yaml
 - patch: |-
     - op: replace
       path: /rules
