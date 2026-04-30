@@ -15,6 +15,7 @@ on:
     - tests/multi_tenancy_install.sh
     - tests/pipelines_install.sh
     - tests/workspaces_install.sh
+    - tests/workspaces_pipeline_run_test.sh
 
 permissions:
   contents: read
@@ -63,26 +64,8 @@ jobs:
     - name: Apply PodDefaults to access ml-pipeline with projected token
       run: kubectl apply -f tests/poddefaults.access-ml-pipeline.kubeflow-user-example-com.yaml
 
-    - name: Create WorkspaceKind and Workspace with PodDefaults
-      run: |
-        kubectl apply -f applications/workspaces/upstream/controller/samples/jupyterlab_v1beta1_workspacekind.yaml
-        kubectl apply -f tests/workspace.test.kubeflow-user-example-com.yaml
-        kubectl wait --for=jsonpath='{.status.state}'=Running \
-          workspace/test -n kubeflow-user-example-com \
-          --timeout=600s
-
-    - name: Copy and execute the pipeline run script in KF Workspace
-      run: |
-        WORKSPACE_POD="$(kubectl -n kubeflow-user-example-com get pods \
-          -l notebooks.kubeflow.org/workspace-name=test \
-          -o jsonpath='{.items[0].metadata.name}')"
-
-        kubectl -n kubeflow-user-example-com cp \
-          ./tests/pipeline_run_and_wait_kubeflow.py \
-          ${WORKSPACE_POD}:/home/jovyan/pipeline_run_and_wait_kubeflow.py
-
-        kubectl -n kubeflow-user-example-com exec -ti \
-          ${WORKSPACE_POD} -- python /home/jovyan/pipeline_run_and_wait_kubeflow.py
+    - name: Run Kubeflow Workspaces Pipeline Test
+      run: ./tests/workspaces_pipeline_run_test.sh
 
     - name: Apply Pod Security Standards restricted levels
       run: ./tests/PSS_enable.sh
