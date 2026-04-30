@@ -13,6 +13,7 @@ on:
     - tests/oauth2-proxy_install.sh
     - tests/multi_tenancy_install.sh
     - tests/workspaces_install.sh
+    - tests/workspaces_test.sh
 
 permissions:
   contents: read
@@ -58,32 +59,5 @@ jobs:
         nohup kubectl port-forward --namespace istio-system svc/${INGRESS_GATEWAY_SERVICE} 8080:80 &
         while ! curl localhost:8080; do echo waiting for port-forwarding; sleep 1; done; echo port-forwarding ready
 
-    - name: List workspaces over API with authorized SA Token
-      run: |
-        KF_PROFILE=kubeflow-user-example-com
-        TOKEN="$(kubectl -n ${KF_PROFILE} create token default-editor)"
-
-        STATUS_CODE=$(curl -v \
-          --silent --output /dev/stderr --write-out "%{http_code}" \
-          "localhost:8080/workspaces/api/v1/workspaces/${KF_PROFILE}" \
-          -H "Authorization: Bearer ${TOKEN}")
-
-        if test "${STATUS_CODE}" -ne 200; then
-          echo "Error, this call should be authorized to list workspaces in namespace ${KF_PROFILE}."
-          exit 1
-        fi
-
-    - name: List workspaces over API with unauthorized SA Token
-      run: |
-        KF_PROFILE=kubeflow-user-example-com
-        TOKEN="$(kubectl -n default create token default)"
-
-        STATUS_CODE=$(curl -v \
-          --silent --output /dev/stderr --write-out "%{http_code}" \
-          "localhost:8080/workspaces/api/v1/workspaces/${KF_PROFILE}" \
-          -H "Authorization: Bearer ${TOKEN}")
-
-        if test "${STATUS_CODE}" -ne 403; then
-          echo "Error, this call should fail to list workspaces in namespace ${KF_PROFILE}."
-          exit 1
-        fi
+    - name: Test Kubeflow Workspaces API
+      run: ./tests/workspaces_test.sh
