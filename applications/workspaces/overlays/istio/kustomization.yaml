@@ -11,6 +11,9 @@ resources:
 - ../../upstream/controller/overlays/istio
 - ../../upstream/frontend/overlays/istio
 - workspaces-base-edit-clusterrole.yaml
+- network-policies/default-allow-same-namespace.yaml
+- network-policies/workspaces-backend.yaml
+- network-policies/workspaces-frontend.yaml
 
 patches:
 - path: patches/namespace-pss.yaml
