@@ -1,0 +1,18 @@
+apiVersion: v2
+
+name: hub
+
+description: A Helm chart for Kubeflow Hub - Model versioning and metadata management on Kubernetes
+
+version: 0.1.0
+
+appVersion: 0.1.0
+
+home: https://github.com/kubeflow/hub
+
+sources:
+- https://github.com/kubeflow/hub
+
+annotations:
+  category: Machine Learning
+  licenses: Apache-2.0

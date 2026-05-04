@@ -210,7 +210,7 @@ def get_expected_helm_extras(component: str, scenario: str) -> set:
         return {
             'Secret/kubeflow/katib-webhook-cert',  # Webhook certificates
         }
-    elif component == "model-registry":
+    elif component == "hub":
         return set()  # No extra resources in Helm for Model Registry
     elif component == "kserve-models-web-app":
         return set()
@@ -279,7 +279,7 @@ def compare_manifests(kustomize_file: str, helm_file: str, component: str, scena
 if __name__ == "__main__":
     if len(sys.argv) < 5:
         print("Usage: python compare.py <kustomize_file> <helm_file> <component> <scenario> [namespace] [--verbose]")
-        print("Components: katib, model-registry, kserve-models-web-app")
+        print("Components: katib, hub, kserve-models-web-app")
         sys.exit(1)
     
     kustomize_file = sys.argv[1]
@@ -288,9 +288,9 @@ if __name__ == "__main__":
     scenario = sys.argv[4]
     namespace = sys.argv[5] if len(sys.argv) > 5 and not sys.argv[5].startswith('--') else ""
 
-    if component not in ["katib", "model-registry", "kserve-models-web-app"]:
+    if component not in ["katib", "hub", "kserve-models-web-app"]:
         print(f"ERROR: Unknown component: {component}")
-        print("Supported components: katib, model-registry, kserve-models-web-app")
+        print("Supported components: katib, hub, kserve-models-web-app")
         sys.exit(1)
     
     success = compare_manifests(kustomize_file, helm_file, component, scenario, namespace)

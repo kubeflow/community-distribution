@@ -11,7 +11,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, model-registry, kserve-models-web-app"
+    echo "Components: katib, hub, kserve-models-web-app"
     exit 1
 fi
 
@@ -56,8 +56,8 @@ case "$COMPONENT" in
         )
         ;;
         
-    "model-registry")
-        CHART_DIR="$ROOT_DIR/experimental/helm/charts/model-registry"
+    "hub")
+        CHART_DIR="$ROOT_DIR/experimental/helm/charts/hub"
         MANIFESTS_DIR="$ROOT_DIR/applications/hub/upstream"
         
         declare -A KUSTOMIZE_PATHS=(
@@ -134,7 +134,7 @@ case "$COMPONENT" in
 
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, model-registry, kserve-models-web-app"
+        echo "Supported components: katib, hub, kserve-models-web-app"
         exit 1
         ;;
 esac
@@ -195,7 +195,7 @@ else
             --include-crds \
             --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
     else
-        helm template model-registry . \
+        helm template hub . \
             --namespace "$NAMESPACE" \
             --include-crds \
             --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"

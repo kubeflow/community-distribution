@@ -28,7 +28,7 @@ spec:
             name: model-registry-db-parameters
         - secretRef:
             name: model-registry-db-secrets
-        image: mysql:8.3
+        image: {{ .Values.database.mysql.image.repository }}:{{ .Values.database.mysql.image.tag }}
         name: db-container
         ports:
         - containerPort: 3306

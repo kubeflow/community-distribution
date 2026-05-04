@@ -1,14 +1,19 @@
-# CI values for testing basic UI functionality
+# CI values for testing UI in integrated mode (not standalone)
 ui:
   enabled: true
   replicas: 1
 
   image:
     repository: ui
-    tag: "v0.3.8"
+    tag: "v0.3.9"
     pullPolicy: Always
 
   containerPort: 8080
+
+
+  args:
+    - "--deployment-mode=kubeflow"
+    - "--port=8080"
 
   serviceAccount:
     create: true

@@ -10,22 +10,22 @@ echo "Installing Model Registry components..."
 
 # Build and apply Model Registry server with database
 echo "Deploying Model Registry server (with database)..."
-kustomize build applications/model-registry/upstream/overlays/postgres \
+kustomize build applications/hub/upstream/overlays/postgres \
   | kubectl apply -n kubeflow -f -
 
 # Build and apply Model Registry Istio networking
 echo "Deploying Model Registry Istio resources..."
-kustomize build applications/model-registry/upstream/options/istio \
+kustomize build applications/hub/upstream/options/istio \
   | kubectl apply -n kubeflow -f -
 
 # Build and apply Model Registry UI with Istio integration
 echo "Deploying Model Registry UI..."
-kustomize build applications/model-registry/upstream/options/ui/overlays/istio \
+kustomize build applications/hub/upstream/options/ui/overlays/istio \
   | kubectl apply -n kubeflow -f -
 
 # Build and apply Model Catalog (demo overlay)
 echo "Deploying Model Catalog..."
-kustomize build applications/model-registry/upstream/options/catalog/overlays/demo \
+kustomize build applications/hub/upstream/options/catalog/overlays/demo \
   | kubectl apply -n kubeflow -f -
 
 # Wait for Model Registry database deployment

@@ -4,7 +4,7 @@
 nameOverride: ""
 
 # -- String to fully override release name.
-fullnameOverride: ""
+fullnameOverride: "model-registry"
 
 # -- Common labels to add to the resources.
 commonLabels: {}
@@ -16,9 +16,9 @@ commonAnnotations: {}
 global:
   namespace: kubeflow
   # -- Image registry for Model Registry images
-  imageRegistry: ghcr.io/kubeflow/model-registry
+  imageRegistry: ghcr.io/kubeflow/hub
   # -- Global image tag for all Model Registry components
-  imageTag: v0.3.8
+  imageTag: v0.3.9
   # -- Global image pull policy
   imagePullPolicy: IfNotPresent
   # -- Global image pull secrets
@@ -596,7 +596,7 @@ storage:
 
     image:
       # -- CSI storage initializer image repository
-      repository: ghcr.io/kubeflow/model-registry/storage-initializer
+      repository: ghcr.io/kubeflow/hub/storage-initializer
       # -- CSI storage initializer image tag
       tag: ""
       # -- CSI storage initializer image pull policy

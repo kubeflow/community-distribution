@@ -1,5 +1,5 @@
-# CI values for model-registry with database overlay
-# This matches the db overlay configuration
+# CI values for model-registry with PostgreSQL database
+# This matches the postgres overlay configuration
 
 global:
   imageTag: latest
@@ -10,7 +10,7 @@ server:
   replicas: 1
   dataStoreType: embedmd
   image:
-    tag: "v0.3.8"
+    tag: "v0.3.9"
   resources:
     limits:
       cpu: 200m
@@ -18,22 +18,34 @@ server:
     requests:
       cpu: 100m
       memory: 128Mi
+  grpc:
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsUser: null
+      runAsGroup: null
   rest:
     readinessProbe:
       initialDelaySeconds: 10
       periodSeconds: 60
 
 database:
-  type: mysql
+  type: postgres
   mysql:
+    enabled: false
+  postgres:
     enabled: true
     image:
-      repository: mysql
-      tag: "8.3.0"
+      repository: postgres
+      tag: "16-alpine"
     auth:
       database: metadb
-      username: "root"
+      username: root
       password: "test"
+    service:
+      name: model-registry-db
     resources:
       limits:
         cpu: 200m
@@ -43,9 +55,7 @@ database:
         memory: 128Mi
     persistence:
       enabled: true
-      size: "10Gi"
-  postgres:
-    enabled: false
+      size: 10Gi
   external:
     enabled: false
 

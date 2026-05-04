@@ -10,7 +10,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 # Define all scenarios for each component
 declare -A COMPONENT_SCENARIOS=(
     ["katib"]="standalone cert-manager external-db leader-election openshift standalone-postgres with-kubeflow"
-    ["model-registry"]="base overlay-postgres overlay-db controller-manager controller-rbac controller-default controller-prometheus controller-network-policy ui-base ui-standalone ui-integrated ui-istio istio csi"
+    ["hub"]="base overlay-postgres overlay-db controller-manager controller-rbac controller-default controller-prometheus controller-network-policy ui-base ui-standalone ui-integrated ui-istio istio csi"
     ["kserve-models-web-app"]="base kubeflow"
 )
 
@@ -49,7 +49,7 @@ if [[ "$COMPONENT" == "all" ]]; then
     declare -a passed_components=()
     declare -a failed_components=()
     
-    for comp in katib model-registry kserve-models-web-app; do
+    for comp in katib hub kserve-models-web-app; do
         if test_component "$comp"; then
             passed_components+=("$comp")
         else
@@ -75,13 +75,13 @@ elif [[ "$COMPONENT" == "help" ]] || [[ "$COMPONENT" == "--help" ]] || [[ "$COMP
     echo "Components:"
     echo "  all                    Test all components"
     echo "  katib                  Test Katib scenarios"
-    echo "  model-registry         Test Model Registry scenarios"
+    echo "  hub                    Test Hub / Model Registry scenarios"
     echo "  kserve-models-web-app  Test KServe Models Web App scenarios"
     echo ""
     echo "Examples:"
     echo "  $0                     # Test all components"
     echo "  $0 katib               # Test only Katib"
-    echo "  $0 model-registry      # Test only Model Registry"
+    echo "  $0 hub                 # Test only Hub / Model Registry"
     exit 0
     
 elif [[ "${COMPONENT_SCENARIOS[$COMPONENT]:-}" ]]; then
@@ -96,7 +96,7 @@ elif [[ "${COMPONENT_SCENARIOS[$COMPONENT]:-}" ]]; then
     
 else
     echo "ERROR: Unknown component: $COMPONENT"
-    echo "Supported components: katib, model-registry, kserve-models-web-app, all"
+    echo "Supported components: katib, hub, kserve-models-web-app, all"
     echo "Use '$0 help' for more information."
     exit 1
 fi 

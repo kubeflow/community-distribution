@@ -4,7 +4,7 @@ storage:
     enabled: true
     
     image:
-      repository: ghcr.io/kubeflow/model-registry/storage-initializer
+      repository: ghcr.io/kubeflow/hub/storage-initializer
       tag: "latest"
       pullPolicy: IfNotPresent
       
