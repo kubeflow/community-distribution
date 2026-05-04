@@ -64,10 +64,10 @@ wg_dirs = {
         "../applications/kserve",
         "../applications/kserve/models-web-app/overlays/kubeflow",
     ],
-    "model-registry": [
-        "../applications/model-registry/upstream/options/istio",
-        "../applications/model-registry/upstream/options/ui/overlays/istio",
-        "../applications/model-registry/upstream/overlays/db",
+    "hub": [
+        "../applications/hub/upstream/options/istio",
+        "../applications/hub/upstream/options/ui/overlays/istio",
+        "../applications/hub/upstream/overlays/db",
     ],
     "spark": [
         "../applications/spark/spark-operator/overlays/kubeflow",

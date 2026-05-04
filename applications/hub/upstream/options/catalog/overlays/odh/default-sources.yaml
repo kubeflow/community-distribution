@@ -1,0 +1,38 @@
+catalogs:
+  - name: Red Hat AI
+    id: redhat_ai
+    enabled: true
+    type: yaml
+    properties:
+      yamlCatalogPath: /shared-data/catalog/models-catalog.yaml
+    labels:
+      - Red Hat AI
+  - name: Red Hat AI validated
+    id: redhat_ai_validated
+    enabled: true
+    type: yaml
+    properties:
+      yamlCatalogPath: /shared-data/catalog/validated-models-catalog.yaml
+    labels:
+      - Red Hat AI validated
+labels:
+  - name: Red Hat AI validated
+    description: Third-party models with performance and compatibility verified by Red Hat.
+  - name: Red Hat AI
+    description: Red Hat models with full support and legal indemnification.
+  - name: null
+    displayName: Community and custom
+    description: A broad collection of third-party, community, and admin-configured models.
+namedQueries:
+  default-performance-filters:
+    assetType: models
+    filters:
+      "artifacts.use_case.string_value":
+        operator: "="
+        value: chatbot
+      "artifacts.requests_per_second.double_value":
+        operator: "<="
+        value: 1
+      "artifacts.ttft_p90.double_value":
+        operator: "<="
+        value: max

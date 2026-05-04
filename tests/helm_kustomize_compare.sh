@@ -58,7 +58,7 @@ case "$COMPONENT" in
         
     "model-registry")
         CHART_DIR="$ROOT_DIR/experimental/helm/charts/model-registry"
-        MANIFESTS_DIR="$ROOT_DIR/applications/model-registry/upstream"
+        MANIFESTS_DIR="$ROOT_DIR/applications/hub/upstream"
         
         declare -A KUSTOMIZE_PATHS=(
             ["base"]="$MANIFESTS_DIR/base"

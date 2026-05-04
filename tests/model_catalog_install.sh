@@ -2,7 +2,7 @@
 set -euxo pipefail
 
 (
-    cd applications/model-registry/upstream/options/catalog/base
+    cd applications/hub/upstream/options/catalog/base
     kustomize build . | kubectl apply -n kubeflow -f -
 )
 

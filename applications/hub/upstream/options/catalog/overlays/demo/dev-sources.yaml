@@ -1,0 +1,78 @@
+model_catalogs:
+  - name: "Organization AI Models"
+    id: organization_ai_models
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: dev-organization-models.yaml
+    labels:
+      - Organization AI
+  - name: "Validated AI Models"
+    id: validated_ai_models
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: dev-validated-models.yaml
+    labels:
+      - Validated AI
+  - name: "Community and Custom Models"
+    id: community_custom_models
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: dev-community-models.yaml
+
+mcp_catalogs:
+  - name: "Organization MCP Servers"
+    id: organization_mcp_servers
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: dev-organization-mcp-servers.yaml
+    labels:
+      - Organization MCP
+  - name: "Community and Custom MCP Servers"
+    id: community_mcp_servers
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: dev-community-mcp-servers.yaml
+
+# namedQueries define reusable server-side filter presets that clients can
+# reference by name via the `namedQuery` API parameter. Multiple config files
+# can contribute queries; later files override individual fields within a query
+# of the same name.
+namedQueries:
+  # read_only_servers: servers whose tools only perform read operations.
+  # Useful for environments where write-capable tools require additional approval.
+  read_only_servers:
+    assetType: mcp_servers
+    filters:
+      readOnlyTools:
+        operator: "="
+        value: true
+
+  # fully_audited: servers that have a verified source, a secure endpoint,
+  # and have passed static analysis security testing (SAST). These are the
+  # highest-trust servers in the catalog.
+  fully_audited:
+    assetType: mcp_servers
+    filters:
+      verifiedSource:
+        operator: "="
+        value: true
+      secureEndpoint:
+        operator: "="
+        value: true
+      sast:
+        operator: "="
+        value: true
+
+  # remote_servers: servers hosted externally and accessed via a network
+  # endpoint rather than deployed locally.
+  remote_servers:
+    assetType: mcp_servers
+    filters:
+      deploymentMode:
+        operator: "="
+        value: "remote"

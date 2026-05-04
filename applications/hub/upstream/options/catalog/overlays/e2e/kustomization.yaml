@@ -1,0 +1,58 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: model-catalog
+
+resources:
+- ../../base
+
+# Replace sources with test sources
+configMapGenerator:
+- behavior: replace
+  files:
+  - sources.yaml
+  name: model-catalog-sources
+  options:
+    disableNameSuffixHash: true
+- behavior: create
+  files:
+  - test-catalog.yaml
+  - disabled-catalog.yaml
+  - test-mcp-servers.yaml
+  name: model-catalog-testdata
+  options:
+    disableNameSuffixHash: true
+
+# Override HF API key (empty for public model access)
+secretGenerator:
+- behavior: replace
+  envs:
+  - hf-api-key.env
+  name: model-catalog-hf-api-key
+  options:
+    disableNameSuffixHash: true
+
+# Patch deployment for local testing
+# Add testdata volume mount
+patches:
+- patch: |-
+    - op: add
+      path: /spec/template/spec/volumes/-
+      value:
+        name: testdata
+        configMap:
+          name: model-catalog-testdata
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/-
+      value:
+        name: testdata
+        mountPath: /testdata
+  target:
+    group: apps
+    kind: Deployment
+    name: model-catalog-server
+    version: v1
+images:
+- name: ghcr.io/kubeflow/hub/server
+  newName: model-registry
+  newTag: catalog-test

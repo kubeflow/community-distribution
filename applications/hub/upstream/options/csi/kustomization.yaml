@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kubeflow
+
+resources:
+- clusterstoragecontainer.yaml
+images:
+- name: ghcr.io/kubeflow/hub/storage-initializer
+  newName: ghcr.io/kubeflow/hub/storage-initializer
+  newTag: v0.3.9
