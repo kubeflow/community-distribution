@@ -1,0 +1,69 @@
+name: ARM64/AArch64 Image Validation
+
+on:
+  push:
+    branches:
+    - master
+
+  pull_request:
+    paths:
+    - "example/**"
+    - "common/**"
+    - "tests/**"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  arm64-image-validation:
+    if: ${{ github.repository == 'kubeflow/manifests' }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install necessary tools
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y skopeo jq
+
+    - name: Validate images for ARM64 support
+      shell: bash
+      run: |
+        # Generate a kustomize build and extract images
+        kustomize build example > /tmp/kubeflow.yaml
+        grep -E '^[[:space:]]*image:[[:space:]]*' /tmp/kubeflow.yaml \
+          | sed -E 's/^[[:space:]]*image:[[:space:]]*//' \
+          | sed -E 's/[[:space:]]+$//' \
+          | sort -u > /tmp/kubeflow-images.txt
+        test -s /tmp/kubeflow-images.txt
+
+        # Allowlist: Exclude upstream images known to lack Linux/ARM64 support
+        grep -v -E '^ghcr\.io/kubeflow/trainer/mlx-runtime:v2\.2\.0$|^kserve/huggingfaceserver:v0\.16\.0(-gpu)?$' \
+          /tmp/kubeflow-images.txt > /tmp/kubeflow-images.final.txt || true
+
+        # Validate images for ARM64 support
+        missing=0
+        while IFS= read -r image; do
+          if [ -z "${image}" ]; then
+            continue
+          fi
+
+          raw="$(skopeo inspect --raw "docker://${image}" 2>/dev/null || true)"
+          if [ -n "${raw}" ] && echo "${raw}" | jq -e '.manifests[] | select(.platform.os == "linux" and .platform.architecture == "arm64")' >/dev/null 2>&1; then
+            continue  # Image supports ARM64
+          fi
+
+          # Report images that do not support ARM64
+          echo "${image}"
+          missing=$((missing + 1))
+        done < /tmp/kubeflow-images.final.txt
+
+        if [ "${missing}" -gt 0 ]; then
+          echo "ERROR: ${missing} images do not advertise linux/arm64 (allowlist applied from filtering step)."
+          exit 1
+        fi
+
+        echo "SUCCESS: All validated images support ARM64."

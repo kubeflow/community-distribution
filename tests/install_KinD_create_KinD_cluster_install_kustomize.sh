@@ -3,7 +3,7 @@ set -euxo pipefail
 
 KIND_VERSION="v0.31.0"
 KIND_NODE_IMAGE="kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f"
-KUSTOMIZE_VERSION="v5.8.1"
+KUSTOMIZE_VERSION="v5.8.1" # Replace with v5.8.0 if v5.8.1 is unavailable
 USER_BINARY_DIRECTORY="$HOME/.local/bin"
 
 if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
@@ -37,7 +37,6 @@ fi
     chmod +x ./kind-linux-amd64
     mv kind-linux-amd64 "${USER_BINARY_DIRECTORY}/kind"
 } || { echo "Failed to install KinD"; exit 1; }
-
 
 echo "Creating KinD cluster ..."
 echo "
@@ -74,10 +73,35 @@ echo "Install kubectl ..."
 kubectl cluster-info
 
 echo "Install Kustomize ..."
+
 {
     KUSTOMIZE_ASSET="kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"
-    curl --fail --show-error --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/${KUSTOMIZE_ASSET}"
-    curl --fail --show-error --silent --location "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/checksums.txt" | grep "  ${KUSTOMIZE_ASSET}$" > checksums.txt
+    DOWNLOAD_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/${KUSTOMIZE_ASSET}"
+
+    # Retry logic for downloading Kustomize
+    MAX_RETRIES=3
+    COUNT=0
+
+    while [ "$COUNT" -lt "$MAX_RETRIES" ]; do
+        echo "Attempting to download Kustomize version ${KUSTOMIZE_VERSION} (Attempt $((COUNT+1))/${MAX_RETRIES})..."
+        if curl --fail --silent --show-error --location --remote-name "${DOWNLOAD_URL}"; then
+            break
+        fi
+        COUNT=$((COUNT + 1))
+        sleep 5
+    done
+
+    if [ "$COUNT" -eq "$MAX_RETRIES" ]; then
+        echo "Failed to download Kustomize after $MAX_RETRIES attempts. Falling back to version v5.8.0."
+        KUSTOMIZE_VERSION="v5.8.0"
+        KUSTOMIZE_ASSET="kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"
+        DOWNLOAD_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/${KUSTOMIZE_ASSET}"
+        
+        curl --fail --silent --show-error --location --remote-name "${DOWNLOAD_URL}"
+    fi
+
+    # Verify checksums
+    curl --fail --silent --show-error --location "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/checksums.txt" | grep "  ${KUSTOMIZE_ASSET}$" > checksums.txt
     if [ "$(wc -l < checksums.txt)" -ne 1 ]; then
        echo "Failed to verify Kustomize checksums: expected exactly one checksum entry for ${KUSTOMIZE_ASSET}"
        exit 1
@@ -86,6 +110,8 @@ echo "Install Kustomize ..."
        echo "Failed to verify Kustomize checksums"
        exit 1
     fi
+
+    # Extract and install Kustomize
     tar -xzvf "${KUSTOMIZE_ASSET}"
     chmod a+x kustomize
     mv kustomize "${USER_BINARY_DIRECTORY}/kustomize"

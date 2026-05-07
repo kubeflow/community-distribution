@@ -15,3 +15,7 @@
 
 # Scanning reports of trivy
 image_lists/*
+
+# Ignore temporary files from KinD and Kustomize installation
+kind-linux-amd64.sha256sum
+kustomize_v5.8.1_linux_amd64.tar.gz
