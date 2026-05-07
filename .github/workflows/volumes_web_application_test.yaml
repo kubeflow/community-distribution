@@ -4,13 +4,13 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/volumes_web_application_test.yaml
-    - applications/notebooks-v1/upstream/volumes-web-app/**
+    - applications/notebooks-v1/**
     - tests/istio*
     - common/istio*/**
     - common/oauth2-proxy/**
+    - tests/install_notebooks_v1.sh
     - tests/oauth2-proxy_install.sh
     - tests/multi_tenancy_install.sh
-    - tests/volumes_web_application_install.sh
     - tests/volumes_web_application_test.sh
 
 permissions:
@@ -52,8 +52,8 @@ jobs:
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh
 
-    - name: Install Volumes Web Application
-      run: ./tests/volumes_web_application_install.sh
+    - name: Install Notebooks v1
+      run: ./tests/install_notebooks_v1.sh
 
     - name: Wait for VWA Pods
       run: |

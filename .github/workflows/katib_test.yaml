@@ -8,6 +8,7 @@ on:
     - applications/katib/upstream/**
     - common/istio*/**
     - tests/istio*
+    - tests/multi_tenancy_install.sh
     - common/cert-manager/**
     - experimental/security/PSS/*
 

@@ -6,6 +6,7 @@ on:
     - .github/workflows/model_catalog*
     - applications/model-registry/upstream/options/catalog/**
     - tests/istio*
+    - tests/multi_tenancy_install.sh
     - common/istio*/**
 
 permissions:

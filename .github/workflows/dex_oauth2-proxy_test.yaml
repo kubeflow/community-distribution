@@ -11,6 +11,8 @@ on:
     - common/dex/base/**
     - tests/istio*
     - tests/dex_login_test.py
+    - tests/install_dashboard.sh
+    - tests/multi_tenancy_install.sh
 
 permissions:
   contents: read
@@ -47,8 +49,8 @@ jobs:
     - name: Install dex
       run: ./tests/dex_install.sh
 
-    - name: Install central-dashboard
-      run: ./tests/central_dashboard_install.sh
+    - name: Install Dashboard
+      run: ./tests/install_dashboard.sh
 
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh

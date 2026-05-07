@@ -8,6 +8,7 @@ on:
     - .github/workflows/model_registry_test.yaml
     - applications/model-registry/upstream/**
     - tests/istio*
+    - tests/multi_tenancy_install.sh
     - common/istio*/**
 
 permissions:

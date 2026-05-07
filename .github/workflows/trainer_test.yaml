@@ -7,6 +7,7 @@ on:
     - applications/trainer/**
     - tests/trainer*
     - tests/istio*
+    - tests/multi_tenancy_install.sh
     - tests/oauth2-proxy_install.sh
     - common/cert-manager/**
     - common/oauth2-proxy/**

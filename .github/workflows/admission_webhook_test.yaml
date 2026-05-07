@@ -6,6 +6,7 @@ on:
     - .github/workflows/admission_webhook_test.yaml
     - applications/dashboard/**
     - tests/istio*
+    - tests/install_dashboard.sh
     - common/cert-manager/**
     - common/istio*/**
 
@@ -32,8 +33,5 @@ jobs:
     - name: Install cert-manager
       run: ./tests/cert_manager_install.sh
 
-    - name: Build & Apply manifests
-      run: |
-        cd applications/dashboard/upstream/poddefaults-webhooks
-        kustomize build overlays/cert-manager | kubectl apply -f -
-        kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 180s
+    - name: Install Dashboard
+      run: ./tests/install_dashboard.sh

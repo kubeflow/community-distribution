@@ -8,6 +8,7 @@ on:
     - tests/kserve*
 
     - tests/istio*
+    - tests/multi_tenancy_install.sh
     - common/istio*/**
     - common/knative/**
     - common/oauth2-proxy/**

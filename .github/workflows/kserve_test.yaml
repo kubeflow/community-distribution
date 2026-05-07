@@ -14,6 +14,7 @@ on:
     - tests/oauth2-proxy_install.sh
     - common/cert-manager/**
     - tests/istio*
+    - tests/multi_tenancy_install.sh
     - common/knative/**
     - tests/knative_install.sh
 

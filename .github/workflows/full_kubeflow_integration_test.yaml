@@ -51,8 +51,8 @@ jobs:
     - name: Install Dex
       run: ./tests/dex_install.sh
 
-    - name: Install Central Dashboard
-      run: ./tests/central_dashboard_install.sh
+    - name: Install Dashboard
+      run: ./tests/install_dashboard.sh
 
     - name: Install Knative
       run: ./tests/knative_install.sh
@@ -66,17 +66,8 @@ jobs:
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh
 
-    - name: Install Jupyter Web Application
-      run: kustomize build applications/notebooks-v1/upstream/jupyter-web-app/overlays/istio/ | kubectl apply -f -
-
-    - name: Install Notebook Controller
-      run: kustomize build applications/notebooks-v1/upstream/notebook-controller/overlays/kubeflow/ | kubectl apply -f -
-
-    - name: Install Admission Webhook
-      run: kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
-
-    - name: Install Volumes Web Application
-      run: ./tests/volumes_web_application_install.sh
+    - name: Install Notebooks v1
+      run: ./tests/install_notebooks_v1.sh
 
     - name: Install Katib
       run: ./tests/katib_install.sh
