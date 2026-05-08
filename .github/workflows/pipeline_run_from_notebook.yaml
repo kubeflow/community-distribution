@@ -10,6 +10,7 @@ on:
     - tests/install_dashboard.sh
     - tests/install_notebooks_v1.sh
     - tests/multi_tenancy_install.sh
+    - tests/cert_manager_install.sh
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**

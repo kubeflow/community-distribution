@@ -6,8 +6,10 @@ on:
     - .github/workflows/volumes_web_application_test.yaml
     - applications/notebooks-v1/**
     - tests/istio*
+    - common/cert-manager/**
     - common/istio*/**
     - common/oauth2-proxy/**
+    - tests/cert_manager_install.sh
     - tests/install_notebooks_v1.sh
     - tests/oauth2-proxy_install.sh
     - tests/multi_tenancy_install.sh

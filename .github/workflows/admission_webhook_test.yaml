@@ -9,6 +9,7 @@ on:
     - tests/install_dashboard.sh
     - common/cert-manager/**
     - common/istio*/**
+    - tests/cert_manager_install.sh
 
 permissions:
   contents: read

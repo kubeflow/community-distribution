@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
-    - .github/workflows/notebook_controller_m2m_test.yaml
+    - .github/workflows/notebook_controller_test.yaml
     - applications/notebooks-v1/**
     - common/cert-manager/**
     - common/oauth2-proxy/**

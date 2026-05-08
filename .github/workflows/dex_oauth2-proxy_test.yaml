@@ -11,6 +11,7 @@ on:
     - common/dex/base/**
     - tests/istio*
     - tests/dex_login_test.py
+    - tests/cert_manager_install.sh
     - tests/install_dashboard.sh
     - tests/multi_tenancy_install.sh
 
