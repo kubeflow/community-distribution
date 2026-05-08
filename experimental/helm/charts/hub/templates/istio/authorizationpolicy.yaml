@@ -14,5 +14,5 @@ spec:
     matchLabels:
       component: model-registry-server
   rules:
-  - {}
+  {{- toYaml .Values.istio.authorizationPolicy.rules | nindent 2 }}
 {{- end }}

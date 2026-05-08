@@ -25,7 +25,17 @@ istio:
       matchLabels:
         component: model-registry-server
     rules:
-    - {}
+    - from:
+      - source:
+          principals:
+          - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
+    - when:
+      - key: request.headers[authorization]
+        values:
+        - "*"
+      - key: request.headers[kubeflow-userid]
+        notValues:
+        - "*"
           
   gateway:
     enabled: false
