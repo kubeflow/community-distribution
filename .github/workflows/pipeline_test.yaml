@@ -76,7 +76,7 @@ jobs:
 
     - name: V1 Pipeline Test
       run: |
-        pip3 install "kfp>=1.8.23,<2.0.0"
+        pip3 install "kfp>=1.8.24,<2.0.0"
         TOKEN="$(kubectl -n $KF_PROFILE create token default-editor)"
         python3 tests/pipeline_v1_test.py "${TOKEN}" "${KF_PROFILE}"
 
