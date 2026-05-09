@@ -6,7 +6,7 @@ on:
     - .github/workflows/admission_webhook_test.yaml
     - applications/dashboard/**
     - tests/istio*
-    - tests/install_dashboard.sh
+    - tests/dashboard_install.sh
     - common/cert-manager/**
     - common/istio*/**
     - tests/cert_manager_install.sh
@@ -35,4 +35,4 @@ jobs:
       run: ./tests/cert_manager_install.sh
 
     - name: Install Dashboard
-      run: ./tests/install_dashboard.sh
+      run: ./tests/dashboard_install.sh

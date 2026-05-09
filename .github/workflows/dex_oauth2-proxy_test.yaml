@@ -12,7 +12,7 @@ on:
     - tests/istio*
     - tests/dex_login_test.py
     - tests/cert_manager_install.sh
-    - tests/install_dashboard.sh
+    - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
 
 permissions:
@@ -51,7 +51,7 @@ jobs:
       run: ./tests/dex_install.sh
 
     - name: Install Dashboard
-      run: ./tests/install_dashboard.sh
+      run: ./tests/dashboard_install.sh
 
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh

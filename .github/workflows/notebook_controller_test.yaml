@@ -10,7 +10,7 @@ on:
     - common/istio*/**
     - tests/istio*
     - tests/cert_manager_install.sh
-    - tests/install_notebooks_v1.sh
+    - tests/notebooks_install.sh
     - tests/oauth2-proxy_install.sh
     - tests/multi_tenancy_install.sh
 
@@ -47,7 +47,7 @@ jobs:
       run: ./tests/multi_tenancy_install.sh
 
     - name: Install Notebooks v1
-      run: ./tests/install_notebooks_v1.sh
+      run: ./tests/notebooks_install.sh
 
     - name: Create KF Profile
       run: kustomize build common/user-namespace/base | kubectl apply -f -

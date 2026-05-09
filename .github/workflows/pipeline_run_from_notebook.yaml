@@ -7,8 +7,8 @@ on:
     - applications/notebooks-v1/**
     - applications/pipeline/upstream/**
     - tests/istio*
-    - tests/install_dashboard.sh
-    - tests/install_notebooks_v1.sh
+    - tests/dashboard_install.sh
+    - tests/notebooks_install.sh
     - tests/multi_tenancy_install.sh
     - tests/cert_manager_install.sh
     - common/cert-manager/**
@@ -51,10 +51,10 @@ jobs:
       run: ./tests/pipelines_install.sh
 
     - name: Install Dashboard
-      run: ./tests/install_dashboard.sh
+      run: ./tests/dashboard_install.sh
 
     - name: Install Notebooks v1
-      run: ./tests/install_notebooks_v1.sh
+      run: ./tests/notebooks_install.sh
 
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh

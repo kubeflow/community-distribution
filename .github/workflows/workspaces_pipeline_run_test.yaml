@@ -13,7 +13,7 @@ on:
     - common/istio*/**
     - common/kubeflow-namespace/**
     - tests/cert_manager_install.sh
-    - tests/install_dashboard.sh
+    - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
     - tests/pipelines_install.sh
     - tests/workspaces_install.sh
@@ -55,7 +55,7 @@ jobs:
       run: ./tests/pipelines_install.sh
 
     - name: Install Dashboard
-      run: ./tests/install_dashboard.sh
+      run: ./tests/dashboard_install.sh
 
     - name: Install Kubeflow Workspaces
       run: ./tests/workspaces_install.sh

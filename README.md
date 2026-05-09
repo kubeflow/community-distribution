@@ -334,19 +334,15 @@ data:
 For Keycloak, we have rough guidelines in <https://github.com/kubeflow/manifests/blob/master/common/dex/README.md>.
 
 
-#### Central Dashboard
+#### Dashboard
 
 ```sh
-./tests/central_dashboard_install.sh
+./tests/dashboard_install.sh
 ```
 
 #### Admission Webhook
 
-Install the Admission Webhook for PodDefaults:
-
-```sh
-kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
-```
+The PodDefaults admission webhook is installed by the Dashboard step above.
 
 #### Knative (used by KServe)
 
@@ -411,8 +407,7 @@ For detailed pipeline compilation instructions, please refer to the [Kubeflow Pi
 #### Notebooks 1.0
 
 ```sh
-kustomize build applications/notebooks-v1/upstream/notebook-controller/overlays/kubeflow | kubectl apply -f -
-kustomize build applications/notebooks-v1/upstream/jupyter-web-app/overlays/istio | kubectl apply -f -
+./tests/notebooks_install.sh
 ```
 
 #### Workspaces (Notebooks 2.0)
@@ -421,22 +416,15 @@ This feature is still in development.
 
 #### PVC Viewer Controller
 
-```sh
-kustomize build applications/notebooks-v1/upstream/pvcviewer-controller/base | kubectl apply -f -
-```
+The PVC Viewer Controller is installed by the Notebooks 1.0 step above.
 
 #### Volumes Web Application
 
-```sh
-./tests/volumes_web_application_install.sh
-```
+The Volumes Web Application is installed by the Notebooks 1.0 step above.
 
 #### Tensorboard web application and controller
 
-```sh
-kustomize build applications/notebooks-v1/upstream/tensorboards-web-app/overlays/istio | kubectl apply -f -
-kustomize build applications/notebooks-v1/upstream/tensorboard-controller/overlays/kubeflow | kubectl apply -f -
-```
+The Tensorboard web application and controller are installed by the Notebooks 1.0 step above.
 
 #### Trainer (training operator v2)
 

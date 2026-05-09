@@ -52,7 +52,7 @@ jobs:
       run: ./tests/dex_install.sh
 
     - name: Install Dashboard
-      run: ./tests/install_dashboard.sh
+      run: ./tests/dashboard_install.sh
 
     - name: Install Knative
       run: ./tests/knative_install.sh
@@ -67,7 +67,7 @@ jobs:
       run: ./tests/kubeflow_profile_install.sh
 
     - name: Install Notebooks v1
-      run: ./tests/install_notebooks_v1.sh
+      run: ./tests/notebooks_install.sh
 
     - name: Install Katib
       run: ./tests/katib_install.sh
