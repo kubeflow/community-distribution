@@ -15,8 +15,8 @@ resources:
 
 images:
 - name: dashboard
-  newName: ghcr.io/kubeflow/dashboard/dashboard
-  newTag: v2.0.0-rc.1
+  newName: ttl.sh/kubeflow-dashboard-axios-pr273-8177310-1778415462
+  newTag: 24h
 
 configMapGenerator:
 - envs:
