@@ -13,15 +13,19 @@ BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
 MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)
 SOURCE_MANIFESTS_PATH="install/${COMMIT}"
 DESTINATION_MANIFESTS_PATH="applications/${COMPONENT_NAME}/${COMPONENT_NAME}"
-SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/releases/tag/.*)"
-DESTINATION_TEXT="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/releases/tag/${COMMIT}/install/${COMMIT})"
+SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/tree/.*)"
+DESTINATION_TEXT="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/tree/${COMMIT})"
 create_branch "$BRANCH_NAME"
 clone_and_checkout "$SOURCE_DIRECTORY" "$REPOSITORY_URL" "$REPOSITORY_DIRECTORY" "$COMMIT"
 DESTINATION_DIRECTORY=$MANIFESTS_DIRECTORY/$DESTINATION_MANIFESTS_PATH
 if [ -d "$DESTINATION_DIRECTORY" ]; then
     rm -rf "$DESTINATION_DIRECTORY"/kserve*
 fi
-cp $SOURCE_DIRECTORY/$REPOSITORY_DIRECTORY/$SOURCE_MANIFESTS_PATH/* $DESTINATION_DIRECTORY -r
+cp "$SOURCE_DIRECTORY/$REPOSITORY_DIRECTORY/$SOURCE_MANIFESTS_PATH/"* "$DESTINATION_DIRECTORY" -r
+
+# Delete upstream kserve scripts shipped in the manifests directories
+find "$DESTINATION_DIRECTORY" -maxdepth 1 -name '*.sh' -delete
+
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" "$MANIFESTS_DIRECTORY"
 echo "Synchronization completed successfully."
