@@ -6,3 +6,4 @@ resources:
 - workspace_home_pvc.yaml
 - workspace_secret.yaml
 - workspace_service_account.yaml
+- workspacekind_imagesource_configmap.yaml

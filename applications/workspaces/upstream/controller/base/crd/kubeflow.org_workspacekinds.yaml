@@ -4516,24 +4516,44 @@ spec:
                        - a small (favicon-sized) icon used in the Workspace Spawner UI
                     properties:
                       configMap:
+                        description: the ConfigMap reference for the asset
                         properties:
                           key:
-                            example: apple-touch-icon-152x152.png
+                            description: the key in the ConfigMap which contains the
+                              data
+                            example: jupyterlab-logo.svg
                             maxLength: 253
                             minLength: 1
                             pattern: ^[-._a-zA-Z0-9]+$
                             type: string
+                          mediaType:
+                            description: the media type of the asset data in the ConfigMap
+                            enum:
+                            - image/svg+xml
+                            example: image/svg+xml
+                            type: string
                           name:
+                            description: the name of the ConfigMap
                             example: my-logos
                             maxLength: 253
                             minLength: 1
                             pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                             type: string
+                          namespace:
+                            description: the namespace of the ConfigMap
+                            example: kubeflow
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                            type: string
                         required:
                         - key
+                        - mediaType
                         - name
+                        - namespace
                         type: object
                       url:
+                        description: the URL of the asset
                         example: https://jupyter.org/assets/favicons/apple-touch-icon-152x152.png
                         type: string
                     type: object
@@ -4547,24 +4567,44 @@ spec:
                        - a 1:1 (card size) logo used in the Workspace Spawner UI
                     properties:
                       configMap:
+                        description: the ConfigMap reference for the asset
                         properties:
                           key:
-                            example: apple-touch-icon-152x152.png
+                            description: the key in the ConfigMap which contains the
+                              data
+                            example: jupyterlab-logo.svg
                             maxLength: 253
                             minLength: 1
                             pattern: ^[-._a-zA-Z0-9]+$
                             type: string
+                          mediaType:
+                            description: the media type of the asset data in the ConfigMap
+                            enum:
+                            - image/svg+xml
+                            example: image/svg+xml
+                            type: string
                           name:
+                            description: the name of the ConfigMap
                             example: my-logos
                             maxLength: 253
                             minLength: 1
                             pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                             type: string
+                          namespace:
+                            description: the namespace of the ConfigMap
+                            example: kubeflow
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                            type: string
                         required:
                         - key
+                        - mediaType
                         - name
+                        - namespace
                         type: object
                       url:
+                        description: the URL of the asset
                         example: https://jupyter.org/assets/favicons/apple-touch-icon-152x152.png
                         type: string
                     type: object
@@ -4640,6 +4680,48 @@ spec:
                 - imageConfig
                 - podConfig
                 type: object
+              spawnerIcon:
+                description: status of the spawner icon
+                properties:
+                  configMap:
+                    description: status of the configMap reference
+                    properties:
+                      errorMessage:
+                        description: error message when reading the configMap
+                        type: string
+                      errorType:
+                        description: cause of the error when reading the configMap
+                        enum:
+                        - NotFound
+                        - KeyNotFound
+                        - Other
+                        type: string
+                    type: object
+                  sha256:
+                    description: sha256 hash of image asset content
+                    type: string
+                type: object
+              spawnerLogo:
+                description: status of the spawner logo
+                properties:
+                  configMap:
+                    description: status of the configMap reference
+                    properties:
+                      errorMessage:
+                        description: error message when reading the configMap
+                        type: string
+                      errorType:
+                        description: cause of the error when reading the configMap
+                        enum:
+                        - NotFound
+                        - KeyNotFound
+                        - Other
+                        type: string
+                    type: object
+                  sha256:
+                    description: sha256 hash of image asset content
+                    type: string
+                type: object
               workspaces:
                 default: 0
                 description: the number of Workspaces that are using this WorkspaceKind
@@ -4647,6 +4729,8 @@ spec:
                 type: integer
             required:
             - podTemplateOptions
+            - spawnerIcon
+            - spawnerLogo
             - workspaces
             type: object
         type: object

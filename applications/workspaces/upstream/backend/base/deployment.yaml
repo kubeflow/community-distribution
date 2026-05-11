@@ -18,6 +18,8 @@ spec:
       serviceAccountName: workspaces-backend
       securityContext:
         runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       terminationGracePeriodSeconds: 30
       containers:
       - name: workspaces-backend

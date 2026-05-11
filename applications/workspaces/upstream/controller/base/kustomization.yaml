@@ -5,9 +5,9 @@ kind: Kustomization
 namespace: kubeflow-workspaces
 
 resources:
-- namespace.yaml
 - crd
 - manager
+- namespace
 - webhook
 # [WEBHOOK] To enable conversion webhook, uncomment all the sections with [WEBHOOK] prefix including the one in crd/kustomization.yaml
 

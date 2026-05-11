@@ -10,9 +10,10 @@ resources:
 labels:
 - includeSelectors: true
   pairs:
+    app: workspaces-frontend
     app.kubernetes.io/component: ui
 
 images:
 - name: workspaces-frontend
   newName: ghcr.io/kubeflow/notebooks/workspaces-frontend
-  newTag: v2.0.0-alpha.1
+  newTag: v2.0.0-alpha.2

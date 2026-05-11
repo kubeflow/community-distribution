@@ -31,7 +31,9 @@ spec:
       url: "https://jupyter.org/assets/favicons/apple-touch-icon-152x152.png"
       #configMap:
       #   name: "my-logos"
-      #   key: "apple-touch-icon-152x152.png"
+      #   namespace: "my-namespace"
+      #   key: "icon.svg"
+      #   mediaType: "image/svg+xml"
 
     ## the logo of the WorkspaceKind
     ##  - a 1:1 (card size) logo used in the Workspace Spawner UI
@@ -40,7 +42,9 @@ spec:
       url: "https://upload.wikimedia.org/wikipedia/commons/3/38/Jupyter_logo.svg"
       #configMap:
       #   name: "my-logos"
-      #   key: "Jupyter_logo.svg"
+      #   namespace: "my-namespace"
+      #   key: "logo.svg"
+      #   mediaType: "image/svg+xml"
 
   ## ================================================================
   ## DEFINITION CONFIGS

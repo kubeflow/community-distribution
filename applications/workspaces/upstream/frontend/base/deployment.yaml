@@ -15,6 +15,10 @@ spec:
     metadata:
       labels: {}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       terminationGracePeriodSeconds: 30
       containers:
       - name: workspaces-frontend

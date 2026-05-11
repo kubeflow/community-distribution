@@ -5,7 +5,11 @@ resources:
 - destination-rule.yaml
 - virtual-service.yaml
 - authorization-policy.yaml
+- network-policy.yaml
 
 labels:
 - pairs:
     app.kubernetes.io/component: api
+
+patches:
+- path: deployment_patch.yaml

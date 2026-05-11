@@ -19,4 +19,4 @@ labels:
 images:
 - name: workspaces-controller
   newName: ghcr.io/kubeflow/notebooks/workspaces-controller
-  newTag: v2.0.0-alpha.1
+  newTag: v2.0.0-alpha.2

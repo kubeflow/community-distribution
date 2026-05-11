@@ -6,6 +6,7 @@ spec:
   action: ALLOW
   selector:
     matchLabels:
+      app: workspaces-backend
       app.kubernetes.io/component: api
       app.kubernetes.io/managed-by: kustomize
       app.kubernetes.io/name: workspaces-backend

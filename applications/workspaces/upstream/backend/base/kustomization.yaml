@@ -12,9 +12,10 @@ resources:
 labels:
 - includeSelectors: true
   pairs:
+    app: workspaces-backend
     app.kubernetes.io/component: api
 
 images:
 - name: workspaces-backend
   newName: ghcr.io/kubeflow/notebooks/workspaces-backend
-  newTag: v2.0.0-alpha.1
+  newTag: v2.0.0-alpha.2

@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workspaces-backend
+spec:
+  template:
+    spec:
+      containers:
+      - name: workspaces-backend
+        env:
+        - name: PROXY_URL_PREFIX
+          value: "/workspaces"
