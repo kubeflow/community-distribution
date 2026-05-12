@@ -21,7 +21,7 @@ data:
         requests:
           cpu: 10m
       externalIstiod: false
-      hub: gcr.io/istio-release
+      hub: registry.istio.io/release
       imagePullPolicy: ""
       imagePullSecrets: []
       istioNamespace: istio-system
@@ -79,7 +79,7 @@ data:
           aud: istio-ca
       sts:
         servicePort: 0
-      tag: "1.26.1"
+      tag: "1.29.2"
       variant: ""
       waypoint:
         affinity: {}

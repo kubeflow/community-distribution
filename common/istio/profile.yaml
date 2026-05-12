@@ -16,9 +16,9 @@ spec:
         env:
         - name: ENABLE_NATIVE_SIDECARS
           value: "true"
-  hub: gcr.io/istio-release
+  hub: registry.istio.io/release
   profile: default
-  tag: 1.29.1
+  tag: 1.29.2
   values:
     defaultRevision: ""
     gateways:
