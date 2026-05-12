@@ -64,8 +64,6 @@ patches:
             - name: demo-perf-data
               mountPath: /demo-perf-data
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 65534
             allowPrivilegeEscalation: false
             runAsNonRoot: true
             runAsUser: 65534
