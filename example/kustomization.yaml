@@ -34,6 +34,7 @@ sortOptions:
 
 resources:
 # Cert-Manager
+- ../common/cert-manager/base
 - ../common/cert-manager/overlays/kubeflow
 # Istio
 - ../common/istio/istio-crds/base
