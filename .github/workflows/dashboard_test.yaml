@@ -1,11 +1,14 @@
-name: Test Tensorboard Controller
+name: Test Dashboard
 on:
   pull_request:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
-    - .github/workflows/tensorboard_controller_test.yaml
-    - applications/notebooks-v1/upstream/tensorboard-controller/**
+    - .github/workflows/dashboard_test.yaml
+    - applications/dashboard/**
+    - common/cert-manager/**
     - tests/istio*
+    - tests/cert_manager_install.sh
+    - tests/dashboard_install.sh
     - common/istio*/**
 
 permissions:
@@ -13,9 +16,8 @@ permissions:
   actions: read
 
 jobs:
-  tensorboard_controller_test:
+  dashboard_test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
     - name: Checkout
       uses: actions/checkout@v5
@@ -26,11 +28,11 @@ jobs:
     - name: Create kubeflow namespace
       run: kustomize build common/kubeflow-namespace/base | kubectl apply -f -
 
+    - name: Install cert-manager
+      run: ./tests/cert_manager_install.sh
+
     - name: Install Istio
       run: ./tests/istio-cni_install.sh
 
-    - name: Build & Apply manifests
-      run: |
-        cd applications/notebooks-v1/upstream/tensorboard-controller
-        kustomize build overlays/kubeflow | kubectl apply -f -
-        kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 180s
+    - name: Install Dashboard
+      run: ./tests/dashboard_install.sh

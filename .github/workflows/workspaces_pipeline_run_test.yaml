@@ -4,6 +4,7 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/workspaces_pipeline_run_test.yaml
+    - applications/dashboard/**
     - applications/workspaces/**
     - applications/pipeline/upstream/**
     - tests/istio*
@@ -12,6 +13,7 @@ on:
     - common/istio*/**
     - common/kubeflow-namespace/**
     - tests/cert_manager_install.sh
+    - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
     - tests/pipelines_install.sh
     - tests/workspaces_install.sh
@@ -52,8 +54,8 @@ jobs:
     - name: Install KF Pipelines
       run: ./tests/pipelines_install.sh
 
-    - name: Install PodDefaults Webhook
-      run: kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
+    - name: Install Dashboard
+      run: ./tests/dashboard_install.sh
 
     - name: Install Kubeflow Workspaces
       run: ./tests/workspaces_install.sh

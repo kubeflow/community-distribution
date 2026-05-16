@@ -12,6 +12,8 @@ on:
     - tests/cert_manager_install.sh
     - tests/oauth2-proxy_install.sh
     - tests/multi_tenancy_install.sh
+    - tests/profile_controller_install.sh
+    - applications/dashboard/upstream/profile-controller/**
     - tests/workspaces_install.sh
     - tests/workspaces_test.sh
 
@@ -43,6 +45,9 @@ jobs:
 
     - name: Install kubeflow-istio-resources
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install Profile Controller
+      run: ./tests/profile_controller_install.sh
 
     - name: Install KF Multi Tenancy
       run: ./tests/multi_tenancy_install.sh

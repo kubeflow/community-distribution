@@ -4,13 +4,17 @@ on:
     paths:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - .github/workflows/volumes_web_application_test.yaml
-    - applications/notebooks-v1/upstream/volumes-web-app/**
+    - applications/notebooks-v1/**
     - tests/istio*
+    - common/cert-manager/**
     - common/istio*/**
     - common/oauth2-proxy/**
+    - tests/cert_manager_install.sh
+    - tests/notebooks_install.sh
     - tests/oauth2-proxy_install.sh
     - tests/multi_tenancy_install.sh
-    - tests/volumes_web_application_install.sh
+    - tests/profile_controller_install.sh
+    - applications/dashboard/upstream/profile-controller/**
     - tests/volumes_web_application_test.sh
 
 permissions:
@@ -46,14 +50,17 @@ jobs:
     - name: Install Kubeflow Istio Resources
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
 
+    - name: Install Profile Controller
+      run: ./tests/profile_controller_install.sh
+
     - name: Install Multi-Tenancy
       run: ./tests/multi_tenancy_install.sh
 
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh
 
-    - name: Install Volumes Web Application
-      run: ./tests/volumes_web_application_install.sh
+    - name: Install Notebooks v1
+      run: ./tests/notebooks_install.sh
 
     - name: Wait for VWA Pods
       run: |

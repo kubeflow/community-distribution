@@ -9,6 +9,9 @@ on:
     - tests/knative_serving_install.sh
 
     - tests/istio*
+    - tests/multi_tenancy_install.sh
+    - tests/profile_controller_install.sh
+    - applications/dashboard/upstream/profile-controller/**
     - common/istio*/**
     - common/knative/**
     - common/oauth2-proxy/**
@@ -45,6 +48,9 @@ jobs:
 
     - name: Install Kubeflow Istio Resources
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install Profile Controller
+      run: ./tests/profile_controller_install.sh
 
     - name: Install Multi-Tenancy
       run: ./tests/multi_tenancy_install.sh

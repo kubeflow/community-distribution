@@ -7,6 +7,9 @@ on:
     - applications/training-operator/upstream/**
     - tests/training_operator_job.yaml
     - tests/istio*
+    - tests/multi_tenancy_install.sh
+    - tests/profile_controller_install.sh
+    - applications/dashboard/upstream/profile-controller/**
     - tests/oauth2-proxy_install.sh
     - common/cert-manager/**
     - common/oauth2-proxy/**
@@ -44,6 +47,9 @@ jobs:
 
     - name: Install Kubeflow Istio Resources
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install Profile Controller
+      run: ./tests/profile_controller_install.sh
 
     - name: Install Multi-Tenancy
       run: ./tests/multi_tenancy_install.sh

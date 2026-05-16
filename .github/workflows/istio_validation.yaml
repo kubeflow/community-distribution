@@ -6,6 +6,9 @@ on:
     - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
     - tests/istio*
     - tests/ambient*
+    - tests/multi_tenancy_install.sh
+    - tests/profile_controller_install.sh
+    - applications/dashboard/upstream/profile-controller/**
     - .github/workflows/istio_validation.yaml
     - common/istio/**
     - common/cert-manager/**
@@ -127,6 +130,9 @@ jobs:
 
     - name: Install Kubeflow Istio Resources
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install Profile Controller
+      run: ./tests/profile_controller_install.sh
 
     - name: Install Multi-Tenancy
       run: ./tests/multi_tenancy_install.sh

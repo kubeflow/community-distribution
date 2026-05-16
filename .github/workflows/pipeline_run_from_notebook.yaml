@@ -7,6 +7,10 @@ on:
     - applications/notebooks-v1/**
     - applications/pipeline/upstream/**
     - tests/istio*
+    - tests/dashboard_install.sh
+    - tests/notebooks_install.sh
+    - tests/multi_tenancy_install.sh
+    - tests/cert_manager_install.sh
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**
@@ -46,13 +50,11 @@ jobs:
     - name: Install KF Pipelines
       run: ./tests/pipelines_install.sh
 
-    - name: Build & Apply manifests
-      run: |
-        kustomize build applications/notebooks-v1/upstream/jupyter-web-app/overlays/istio/ | kubectl apply -f -
-        kustomize build applications/notebooks-v1/upstream/notebook-controller/overlays/kubeflow/ | kubectl apply -f -
-        kustomize build applications/dashboard/upstream/poddefaults-webhooks/overlays/cert-manager | kubectl apply -f -
-        kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 300s \
-          --field-selector=status.phase!=Succeeded
+    - name: Install Dashboard
+      run: ./tests/dashboard_install.sh
+
+    - name: Install Notebooks v1
+      run: ./tests/notebooks_install.sh
 
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh
