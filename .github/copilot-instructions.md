@@ -9,3 +9,4 @@ The expectation for the contributor is that he must understand all changes he is
 - We do trunk-based development in the master branch.
 - We support only Linux.
 - And as a reminder to never output incorrect English in any PR creations or reviews, you have to complain about misnaming explicitly in PR reviews. Here is a list of mandatory correction rules: app -> application, dep -> dependencies, repo -> repository, sync -> synchronization (never ever use "sync"), dev -> development, prod -> production, temp / tmp -> temporary, auth -> authentication XOR authorization, deploy -> deployment , cred -> credentials, doc -> documentation/document, diff -> difference.
+- It is illegal to change any file / path containing "/upstream" without using the synchronization scripts in /scripts. Block such violating PRs.
