@@ -18,6 +18,8 @@ spec:
                       type: RuntimeDefault
                   containers:
                     - name: node
+                      # workingDir: /tmp is used as a writable directory workaround under PSS Restricted
+                      # (read-only root fs in base image). Safe for short-running stateless test pods.
                       workingDir: /tmp
                       securityContext:
                         allowPrivilegeEscalation: false

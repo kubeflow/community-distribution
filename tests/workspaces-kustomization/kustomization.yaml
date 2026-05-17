@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../applications/workspaces/upstream/controller/samples/jupyterlab_v1beta1_workspacekind.yaml
+patches:
+- path: jupyterlab_workspacekind_patch.yaml

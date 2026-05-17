@@ -19,7 +19,7 @@ create_branch "$BRANCH_NAME"
 mkdir -p "$SOURCE_DIRECTORY"
 cd "$SOURCE_DIRECTORY"
 if [ ! -d "istio-${COMMIT}" ]; then
-    wget "https://github.com/${REPOSITORY_NAME}/releases/download/${COMMIT}/istio-${COMMIT}-linux-amd64.tar.gz"
+    curl -L -O "https://github.com/${REPOSITORY_NAME}/releases/download/${COMMIT}/istio-${COMMIT}-linux-amd64.tar.gz"
     tar xvfz istio-${COMMIT}-linux-amd64.tar.gz
 fi
 ISTIOCTL="${SOURCE_DIRECTORY}/istio-${COMMIT}/bin/istioctl"

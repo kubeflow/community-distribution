@@ -3,7 +3,7 @@ set -euxo pipefail
 
 KF_PROFILE=${1:-kubeflow-user-example-com}
 
-kubectl apply -f tests/jupyterlab_v1beta1_workspacekind.yaml
+kustomize build --load-restrictor LoadRestrictionsNone tests/workspaces-kustomization | kubectl apply -f -
 kubectl apply -f tests/workspace.test.kubeflow-user-example-com.yaml
 kubectl wait --for=jsonpath='{.status.state}'=Running \
   workspace/test -n "${KF_PROFILE}" \

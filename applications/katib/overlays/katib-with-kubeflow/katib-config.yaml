@@ -1,3 +1,6 @@
+# Katib Config patch to enable PSS compliance.
+# injectSecurityContext: true clones securityContext properties from primary
+# trial containers to sidecar metrics-collectors, preventing admission blocks.
 apiVersion: config.kubeflow.org/v1beta1
 kind: KatibConfig
 init:

@@ -252,41 +252,8 @@ jobs:
     - name: Test basic connectivity
       run: |
         kubectl expose deployment test-application --port=80 --target-port=8080 -n $KF_PROFILE
-        CLIENT_OVERRIDES=$(cat <<EOF
-{
-  "spec": {
-    "securityContext": {
-      "runAsNonRoot": true,
-      "runAsUser": 1000,
-      "seccompProfile": {
-        "type": "RuntimeDefault"
-      }
-    },
-    "containers": [
-      {
-        "name": "test-client",
-        "image": "busybox",
-        "stdin": true,
-        "tty": true,
-        "securityContext": {
-          "allowPrivilegeEscalation": false,
-          "capabilities": {
-            "drop": ["ALL"]
-          },
-          "runAsNonRoot": true,
-          "runAsUser": 1000,
-          "seccompProfile": {
-            "type": "RuntimeDefault"
-          }
-        }
-      }
-    ]
-  }
-}
-EOF
-)
-        kubectl run test-client --image=busybox --rm -i --restart=Never -n $KF_PROFILE \
-          --overrides="${CLIENT_OVERRIDES}" -- \
+        kubectl run test-client --image=busybox:1.36.1 --rm -i --restart=Never -n $KF_PROFILE \
+          --overrides='{"spec": {"securityContext": {"runAsNonRoot": true, "runAsUser": 1000, "seccompProfile": {"type": "RuntimeDefault"}}, "containers": [{"name": "test-client", "image": "busybox:1.36.1", "stdin": true, "tty": true, "securityContext": {"allowPrivilegeEscalation": false, "capabilities": {"drop": ["ALL"]}, "runAsNonRoot": true, "runAsUser": 1000, "seccompProfile": {"type": "RuntimeDefault"}}}]}}' -- \
           wget -qO- --timeout=10 test-application.$KF_PROFILE.svc.cluster.local
 
     - name: Apply Pod Security Standards Restricted levels
