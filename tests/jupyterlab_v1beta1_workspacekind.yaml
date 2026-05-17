@@ -208,6 +208,10 @@ spec:
     ##
     securityContext:
       fsGroup: 100
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
 
     ## container SecurityContext for Workspace Pods (MUTABLE)
     ##  - spec for SecurityContext:
@@ -219,6 +223,9 @@ spec:
         drop:
           - ALL
       runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
 
     ## ==============================================================
     ## WORKSPACE OPTIONS

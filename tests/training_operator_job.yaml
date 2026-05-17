@@ -30,6 +30,9 @@ spec:
                 drop:
                 - ALL
               runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
             command:
             - "python3"
             - "/opt/pytorch-mnist/mnist.py"
@@ -70,6 +73,22 @@ spec:
             runAsUser: 1000
             seccompProfile:
               type: RuntimeDefault
+          initContainers:
+          - name: init-pytorch
+            image: alpine:3.18
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
+            command:
+            - sh
+            - -c
+            - until nslookup pytorch-simple-master-0; do echo waiting for master; sleep 2; done;
           containers:
           - name: pytorch
             image: docker.io/kubeflowkatib/pytorch-mnist:v1beta1-45c5727
@@ -81,6 +100,9 @@ spec:
                 drop:
                 - ALL
               runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
             command:
             - "python3"
             - "/opt/pytorch-mnist/mnist.py"

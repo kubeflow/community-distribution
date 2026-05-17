@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 
-cd applications/katib/upstream && kustomize build installs/katib-with-kubeflow | kubectl apply -f - && cd ../../../
+cd applications/katib && kustomize build overlays/katib-with-kubeflow | kubectl apply -f - && cd ../../
 
 kubectl wait --for=condition=Available deployment/katib-controller -n kubeflow --timeout=300s
 

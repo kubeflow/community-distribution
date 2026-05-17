@@ -8,5 +8,5 @@ KF_PROFILE=kubeflow-user-example-com
 kubectl -n $KF_PROFILE get pods,configmaps,secrets
 kubectl label namespace $KF_PROFILE \
   pod-security.kubernetes.io/enforce=restricted \
-  pod-security.kubernetes.io/enforce-version=latest \
+  pod-security.kubernetes.io/enforce-version=v1.29 \
   --overwrite

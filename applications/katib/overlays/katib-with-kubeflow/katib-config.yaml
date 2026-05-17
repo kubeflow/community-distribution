@@ -1,0 +1,6 @@
+apiVersion: config.kubeflow.org/v1beta1
+kind: KatibConfig
+init:
+  controller:
+    webhookPort: 8443
+    injectSecurityContext: true

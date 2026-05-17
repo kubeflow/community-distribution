@@ -5,8 +5,12 @@ source "${SCRIPT_DIRECTORY}/library.sh"
 setup_error_handling
 COMPONENT_NAME="istio"
 REPOSITORY_NAME="istio/istio"
-COMMIT="1.30.0-rc.0"
+COMMIT="1.30.0"
 PREVIOUS_COMMIT="1.29.2"
+if [[ "${COMMIT}" =~ -(rc|beta|alpha)([.-]|$) ]]; then
+    echo "Refusing to synchronize pre-release Istio version: ${COMMIT}. Pin COMMIT to a stable GA release tag."
+    exit 1
+fi
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
 MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)

@@ -59,6 +59,9 @@ spec:
                   drop:
                   - ALL
                 runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
               command:
               - "python3"
               - "/opt/pytorch-mnist/mnist.py"
