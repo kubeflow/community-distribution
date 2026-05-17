@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: kubeflow
+    istio-injection: enabled
+    pod-security.kubernetes.io/enforce: restricted
+  name: {{ .Values.global.namespace }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: kubeflow
+    istio-injection: enabled
+    pod-security.kubernetes.io/enforce: restricted
+  name: {{ .Values.global.systemNamespace }}

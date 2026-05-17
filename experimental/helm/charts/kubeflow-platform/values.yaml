@@ -1,0 +1,5 @@
+# Default values for kubeflow-platform.
+
+rbac:
+  # -- Keep shared Kubeflow ClusterRoles aligned with common/kubeflow-roles/base.
+  enabled: true

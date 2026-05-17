@@ -1,0 +1,7 @@
+# CI values for default Kustomize parity.
+global:
+  namespace: kubeflow
+  systemNamespace: kubeflow-system
+
+networkPolicies:
+  enabled: true

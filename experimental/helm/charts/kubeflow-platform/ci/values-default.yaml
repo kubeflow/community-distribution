@@ -1,0 +1,3 @@
+# CI values for default Kustomize parity.
+rbac:
+  enabled: true

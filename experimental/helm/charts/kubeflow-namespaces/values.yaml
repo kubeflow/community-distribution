@@ -1,0 +1,11 @@
+# Default values for kubeflow-namespaces.
+
+global:
+  # -- Primary Kubeflow namespace.
+  namespace: kubeflow
+  # -- Kubeflow system namespace.
+  systemNamespace: kubeflow-system
+
+networkPolicies:
+  # -- Keep namespace NetworkPolicies aligned with common/kubeflow-namespace/base.
+  enabled: true
