@@ -1,0 +1,30 @@
+# Cert Manager Helm Wrapper Chart
+
+This chart wraps the upstream cert-manager Helm chart and adds the Kubeflow-specific cert-manager resources from `common/cert-manager/overlays/kubeflow`.
+
+It installs:
+
+- upstream cert-manager `v1.19.4`
+- cert-manager CRDs
+- optional `ClusterIssuer/kubeflow-self-signing-issuer`
+- optional Kubeflow cert-manager NetworkPolicies
+
+In the Kubeflow platform install, apply the foundation charts first. Then install this wrapper as a platform dependency from `kubeflow-system`; the wrapper still creates and manages the `cert-manager` workload namespace.
+
+```bash
+helm install kubeflow-namespaces ./experimental/helm/charts/kubeflow-namespaces --namespace default
+helm install kubeflow-platform ./experimental/helm/charts/kubeflow-platform --namespace kubeflow-system
+
+helm install cert-manager ./experimental/helm/charts/cert-manager --namespace kubeflow-system --wait
+helm upgrade cert-manager ./experimental/helm/charts/cert-manager --namespace kubeflow-system \
+  --values ./experimental/helm/charts/cert-manager/ci/values-kubeflow.yaml --wait
+```
+
+The install is split into base install plus upgrade because `ClusterIssuer` cannot be created until cert-manager CRDs are available.
+
+Validate parity with:
+
+```bash
+./tests/helm_kustomize_compare.sh cert-manager base
+./tests/helm_kustomize_compare.sh cert-manager kubeflow
+```

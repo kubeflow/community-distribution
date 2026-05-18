@@ -11,7 +11,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, hub, kserve-models-web-app"
+    echo "Components: katib, hub, kserve-models-web-app, cert-manager"
     exit 1
 fi
 
@@ -132,9 +132,29 @@ case "$COMPONENT" in
         )
         ;;
 
+    "cert-manager")
+        CHART_DIR="$ROOT_DIR/experimental/helm/charts/cert-manager"
+        MANIFESTS_DIR="$ROOT_DIR/common/cert-manager"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["base"]="$MANIFESTS_DIR/base"
+            ["kubeflow"]="$MANIFESTS_DIR/base $MANIFESTS_DIR/overlays/kubeflow"
+        )
+
+        declare -A HELM_VALUES=(
+            ["base"]="$CHART_DIR/ci/values-base.yaml"
+            ["kubeflow"]="$CHART_DIR/ci/values-kubeflow.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["base"]="kubeflow-system"
+            ["kubeflow"]="kubeflow-system"
+        )
+        ;;
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-app"
+        echo "Supported components: katib, hub, kserve-models-web-app, cert-manager"
         exit 1
         ;;
 esac
@@ -154,7 +174,14 @@ NAMESPACE="${NAMESPACES[$SCENARIO]}"
 
 echo "Comparing $COMPONENT manifests for scenario: $SCENARIO"
 
-if [ ! -d "$KUSTOMIZE_PATH" ]; then
+if [[ "$COMPONENT" == "cert-manager" && "$SCENARIO" == "kubeflow" ]]; then
+    for path in $KUSTOMIZE_PATH; do
+        if [ ! -d "$path" ]; then
+            echo "ERROR: Kustomize path does not exist: $path"
+            exit 1
+        fi
+    done
+elif [ ! -d "$KUSTOMIZE_PATH" ]; then
     echo "ERROR: Kustomize path does not exist: $KUSTOMIZE_PATH"
     exit 1
 fi
@@ -173,7 +200,15 @@ KUSTOMIZE_OUTPUT="/tmp/kustomize-${COMPONENT}-${SCENARIO}.yaml"
 HELM_OUTPUT="/tmp/helm-${COMPONENT}-${SCENARIO}.yaml"
 
 cd "$ROOT_DIR"
-kustomize build "$KUSTOMIZE_PATH" > "$KUSTOMIZE_OUTPUT"
+if [[ "$COMPONENT" == "cert-manager" && "$SCENARIO" == "kubeflow" ]]; then
+    : > "$KUSTOMIZE_OUTPUT"
+    for path in $KUSTOMIZE_PATH; do
+        kustomize build "$path" >> "$KUSTOMIZE_OUTPUT"
+        printf "\n---\n" >> "$KUSTOMIZE_OUTPUT"
+    done
+else
+    kustomize build "$KUSTOMIZE_PATH" > "$KUSTOMIZE_OUTPUT"
+fi
 
 # Generate Helm manifests (different approach for KServe Models Web App)
 cd "$ROOT_DIR"
@@ -187,6 +222,12 @@ if [[ "$COMPONENT" == "kserve-models-web-app" ]]; then
         helm template kserve-models-web-application "$CHART_DIR" \
             --namespace "$NAMESPACE" > "$HELM_OUTPUT"
     fi
+elif [[ "$COMPONENT" == "cert-manager" ]]; then
+    helm repo add jetstack https://charts.jetstack.io --force-update >/dev/null
+    helm dependency build "$CHART_DIR" >/dev/null
+    helm template cert-manager "$CHART_DIR" \
+        --namespace "$NAMESPACE" \
+        --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
 else
     cd "$CHART_DIR"
     if [[ "$COMPONENT" == "katib" ]]; then
