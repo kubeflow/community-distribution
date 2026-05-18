@@ -59,6 +59,12 @@ data:
                 "icon": "kubeflow:models"
             },
             {
+                "icon": "assignment",
+                "link": "/model-registry/",
+                "text": "Model Registry",
+                "type": "item"
+            },
+            {
                 "icon": "kubeflow:pipeline-centered",
                 "items": [
                     {
