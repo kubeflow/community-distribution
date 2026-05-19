@@ -4,6 +4,7 @@ set -euxo pipefail
 KF_PROFILE=${1:-kubeflow-user-example-com}
 
 kustomize build --load-restrictor LoadRestrictionsNone tests/workspaces-kustomization | kubectl apply -f -
+sleep 15 # Wait for Notebook Controller to sync the new WorkspaceKind definition
 kubectl apply -f tests/workspace.test.kubeflow-user-example-com.yaml
 kubectl wait --for=jsonpath='{.status.state}'=Running \
   workspace/test -n "${KF_PROFILE}" \
