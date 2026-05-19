@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: ztunnel
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.30.0-rc.0
-    helm.sh/chart: ztunnel-1.30.0-rc.0
+    app.kubernetes.io/version: 1.30.0
+    helm.sh/chart: ztunnel-1.30.0
   name: ztunnel
   namespace: istio-system
 ---
@@ -21,8 +21,8 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: ztunnel
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.30.0-rc.0
-    helm.sh/chart: ztunnel-1.30.0-rc.0
+    app.kubernetes.io/version: 1.30.0
+    helm.sh/chart: ztunnel-1.30.0
   name: ztunnel
   namespace: istio-system
 spec:
@@ -41,8 +41,8 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ztunnel
         app.kubernetes.io/part-of: istio
-        app.kubernetes.io/version: 1.30.0-rc.0
-        helm.sh/chart: ztunnel-1.30.0-rc.0
+        app.kubernetes.io/version: 1.30.0
+        helm.sh/chart: ztunnel-1.30.0
         istio.io/dataplane-mode: none
         sidecar.istio.io/inject: 'false'
     spec:
@@ -90,7 +90,7 @@ spec:
             resourceFieldRef:
               divisor: '1'
               resource: limits.cpu
-        image: registry.istio.io/release/ztunnel:1.30.0-rc.0
+        image: registry.istio.io/release/ztunnel:1.30.0
         name: istio-proxy
         ports:
         - containerPort: 15020

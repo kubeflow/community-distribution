@@ -5,7 +5,7 @@ source "${SCRIPT_DIRECTORY}/library.sh"
 setup_error_handling
 COMPONENT_NAME="istio"
 REPOSITORY_NAME="istio/istio"
-COMMIT="1.30.0-rc.0"
+COMMIT="1.30.0"
 PREVIOUS_COMMIT="1.29.2"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
