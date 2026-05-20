@@ -1,14 +1,10 @@
-# CI values for Kubeflow cert-manager parity.
+# CI values for Kubeflow cert-manager resources with an externally managed cert-manager.
 cert-manager:
-  enabled: true
-  crds:
-    enabled: true
+  enabled: false
   namespace: cert-manager
-  startupapicheck:
-    enabled: false
 
 namespaceResource:
-  enabled: true
+  enabled: false
 
 kubeflow:
   enabled: true

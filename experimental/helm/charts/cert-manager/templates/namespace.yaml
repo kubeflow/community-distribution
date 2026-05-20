@@ -1,7 +1,9 @@
 {{- $certManagerNamespace := (index .Values "cert-manager" "namespace") | default "cert-manager" -}}
+{{ if .Values.namespaceResource.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ $certManagerNamespace | quote }}
   labels:
     pod-security.kubernetes.io/enforce: restricted
+{{ end }}

@@ -22,9 +22,19 @@ helm upgrade cert-manager ./experimental/helm/charts/cert-manager --namespace ku
 
 The install is split into base install plus upgrade because `ClusterIssuer` cannot be created until cert-manager CRDs are available.
 
+If the cluster already has a company-managed cert-manager installation, disable the upstream dependency and namespace resource, then install only the Kubeflow-specific resources:
+
+```bash
+helm install cert-manager ./experimental/helm/charts/cert-manager --namespace kubeflow-system \
+  --values ./experimental/helm/charts/cert-manager/ci/values-existing-cert-manager.yaml --wait
+```
+
+In this mode, cert-manager CRDs, webhook, and controllers must already exist.
+
 Validate parity with:
 
 ```bash
 ./tests/helm_kustomize_compare.sh cert-manager base
 ./tests/helm_kustomize_compare.sh cert-manager kubeflow
+./tests/helm_kustomize_compare.sh cert-manager existing
 ```

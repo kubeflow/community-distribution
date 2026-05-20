@@ -23,6 +23,7 @@ dependencies:
 - name: cert-manager
   version: v1.19.4
   repository: https://charts.jetstack.io
+  condition: cert-manager.enabled
 
 annotations:
   category: Security

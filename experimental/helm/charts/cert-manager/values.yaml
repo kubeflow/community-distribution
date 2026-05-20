@@ -1,11 +1,16 @@
 # Default values for the Kubeflow cert-manager wrapper chart.
 
 cert-manager:
+  enabled: true
   crds:
     enabled: true
   namespace: cert-manager
   startupapicheck:
     enabled: false
+
+namespaceResource:
+  # -- Create the cert-manager workload namespace.
+  enabled: true
 
 kubeflow:
   # -- Enable Kubeflow-specific cert-manager resources.

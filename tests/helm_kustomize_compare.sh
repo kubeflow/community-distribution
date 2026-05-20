@@ -139,16 +139,19 @@ case "$COMPONENT" in
         declare -A KUSTOMIZE_PATHS=(
             ["base"]="$MANIFESTS_DIR/base"
             ["kubeflow"]="$MANIFESTS_DIR/base $MANIFESTS_DIR/overlays/kubeflow"
+            ["existing"]="$MANIFESTS_DIR/overlays/kubeflow"
         )
 
         declare -A HELM_VALUES=(
             ["base"]="$CHART_DIR/ci/values-base.yaml"
             ["kubeflow"]="$CHART_DIR/ci/values-kubeflow.yaml"
+            ["existing"]="$CHART_DIR/ci/values-existing-cert-manager.yaml"
         )
 
         declare -A NAMESPACES=(
             ["base"]="kubeflow-system"
             ["kubeflow"]="kubeflow-system"
+            ["existing"]="kubeflow-system"
         )
         ;;
 
