@@ -1,0 +1,16 @@
+apiVersion: v2
+name: istio
+description: A Helm wrapper chart for Istio with Kubeflow platform defaults
+type: application
+version: 0.1.0
+appVersion: 1.29.2
+keywords:
+  - kubeflow
+  - istio
+  - service-mesh
+home: https://www.kubeflow.org/
+sources:
+  - https://github.com/kubeflow/manifests
+  - https://github.com/istio/istio
+maintainers:
+  - name: Kubeflow Manifests WG

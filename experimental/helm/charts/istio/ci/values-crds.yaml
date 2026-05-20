@@ -1,0 +1,11 @@
+# CI values for the first Istio CRD lifecycle step.
+crds:
+  enabled: true
+namespace:
+  enabled: false
+networkPolicies:
+  enabled: false
+install:
+  enabled: false
+oauth2Proxy:
+  enabled: false

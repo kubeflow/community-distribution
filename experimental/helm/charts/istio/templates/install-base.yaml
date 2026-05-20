@@ -1,0 +1,3 @@
+{{- if and .Values.install.enabled (not .Values.oauth2Proxy.enabled) }}
+{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/install-base.yaml") }}
+{{- end }}

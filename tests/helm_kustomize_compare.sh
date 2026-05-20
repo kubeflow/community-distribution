@@ -11,7 +11,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, hub, kserve-models-web-app"
+    echo "Components: katib, hub, kserve-models-web-app, istio"
     exit 1
 fi
 
@@ -132,9 +132,32 @@ case "$COMPONENT" in
         )
         ;;
 
+    "istio")
+        CHART_DIR="$ROOT_DIR/experimental/helm/charts/istio"
+        MANIFESTS_DIR="$ROOT_DIR/common/istio"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["crds"]="$MANIFESTS_DIR/istio-crds/base"
+            ["base"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/base"
+            ["oauth2-proxy"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/overlays/oauth2-proxy"
+        )
+
+        declare -A HELM_VALUES=(
+            ["crds"]="$CHART_DIR/ci/values-crds.yaml"
+            ["base"]="$CHART_DIR/ci/values-base.yaml"
+            ["oauth2-proxy"]="$CHART_DIR/ci/values-oauth2-proxy.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["crds"]="kubeflow-system"
+            ["base"]="kubeflow-system"
+            ["oauth2-proxy"]="kubeflow-system"
+        )
+        ;;
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-app"
+        echo "Supported components: katib, hub, kserve-models-web-app, istio"
         exit 1
         ;;
 esac
@@ -154,10 +177,12 @@ NAMESPACE="${NAMESPACES[$SCENARIO]}"
 
 echo "Comparing $COMPONENT manifests for scenario: $SCENARIO"
 
-if [ ! -d "$KUSTOMIZE_PATH" ]; then
-    echo "ERROR: Kustomize path does not exist: $KUSTOMIZE_PATH"
-    exit 1
-fi
+for path in $KUSTOMIZE_PATH; do
+    if [ ! -d "$path" ]; then
+        echo "ERROR: Kustomize path does not exist: $path"
+        exit 1
+    fi
+done
 
 if [ ! -d "$CHART_DIR" ]; then
     echo "ERROR: Helm chart directory does not exist: $CHART_DIR"
@@ -173,7 +198,11 @@ KUSTOMIZE_OUTPUT="/tmp/kustomize-${COMPONENT}-${SCENARIO}.yaml"
 HELM_OUTPUT="/tmp/helm-${COMPONENT}-${SCENARIO}.yaml"
 
 cd "$ROOT_DIR"
-kustomize build "$KUSTOMIZE_PATH" > "$KUSTOMIZE_OUTPUT"
+: > "$KUSTOMIZE_OUTPUT"
+for path in $KUSTOMIZE_PATH; do
+    kustomize build "$path" >> "$KUSTOMIZE_OUTPUT"
+    printf "\n---\n" >> "$KUSTOMIZE_OUTPUT"
+done
 
 # Generate Helm manifests (different approach for KServe Models Web App)
 cd "$ROOT_DIR"
@@ -191,6 +220,11 @@ else
     cd "$CHART_DIR"
     if [[ "$COMPONENT" == "katib" ]]; then
         helm template katib . \
+            --namespace "$NAMESPACE" \
+            --include-crds \
+            --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
+    elif [[ "$COMPONENT" == "istio" ]]; then
+        helm template istio . \
             --namespace "$NAMESPACE" \
             --include-crds \
             --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
