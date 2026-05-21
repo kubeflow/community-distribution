@@ -1,0 +1,70 @@
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      rbac.authorization.kubeflow.org/aggregate-to-kubeflow-istio-admin: "true"
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: "true"
+  name: kubeflow-istio-admin
+rules: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-edit: "true"
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-istio-admin: "true"
+  name: kubeflow-istio-edit
+rules:
+- apiGroups:
+  - istio.io
+  - networking.istio.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-view: "true"
+  name: kubeflow-istio-view
+rules:
+- apiGroups:
+  - istio.io
+  - networking.istio.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - security.istio.io
+  resources:
+  - authorizationpolicies
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: kubeflow-gateway
+  namespace: kubeflow
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http
+      number: 80
+      protocol: HTTP

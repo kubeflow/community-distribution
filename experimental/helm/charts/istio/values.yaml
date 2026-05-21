@@ -35,3 +35,11 @@ oauth2Proxy:
   service: oauth2-proxy.oauth2-proxy.svc.cluster.local
   # -- oauth2-proxy extension provider service port.
   port: 80
+
+cluster-local-gateway:
+  # -- Render the Kubeflow cluster-local gateway resources.
+  enabled: false
+
+kubeflowIstioResources:
+  # -- Render Kubeflow-specific Istio gateway and RBAC resources.
+  enabled: false

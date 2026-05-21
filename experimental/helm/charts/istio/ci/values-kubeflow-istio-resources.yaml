@@ -1,0 +1,15 @@
+# CI values for Kubeflow Istio resources parity.
+crds:
+  enabled: false
+namespace:
+  enabled: false
+networkPolicies:
+  enabled: false
+install:
+  enabled: false
+oauth2Proxy:
+  enabled: false
+cluster-local-gateway:
+  enabled: false
+kubeflowIstioResources:
+  enabled: true

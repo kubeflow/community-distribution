@@ -140,18 +140,27 @@ case "$COMPONENT" in
             ["crds"]="$MANIFESTS_DIR/istio-crds/base"
             ["base"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/base"
             ["oauth2-proxy"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/overlays/oauth2-proxy"
+            ["cluster-local-gateway"]="$MANIFESTS_DIR/cluster-local-gateway/base"
+            ["kubeflow-istio-resources"]="$MANIFESTS_DIR/kubeflow-istio-resources/base"
+            ["platform-full"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/overlays/oauth2-proxy $MANIFESTS_DIR/cluster-local-gateway/base $MANIFESTS_DIR/kubeflow-istio-resources/base"
         )
 
         declare -A HELM_VALUES=(
             ["crds"]="$CHART_DIR/ci/values-crds.yaml"
             ["base"]="$CHART_DIR/ci/values-base.yaml"
             ["oauth2-proxy"]="$CHART_DIR/ci/values-oauth2-proxy.yaml"
+            ["cluster-local-gateway"]="$CHART_DIR/ci/values-cluster-local-gateway.yaml"
+            ["kubeflow-istio-resources"]="$CHART_DIR/ci/values-kubeflow-istio-resources.yaml"
+            ["platform-full"]="$CHART_DIR/ci/values-platform-full.yaml"
         )
 
         declare -A NAMESPACES=(
             ["crds"]="kubeflow-system"
             ["base"]="kubeflow-system"
             ["oauth2-proxy"]="kubeflow-system"
+            ["cluster-local-gateway"]="kubeflow-system"
+            ["kubeflow-istio-resources"]="kubeflow-system"
+            ["platform-full"]="kubeflow-system"
         )
         ;;
 
