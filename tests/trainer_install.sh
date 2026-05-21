@@ -12,7 +12,7 @@ kubectl wait --for=condition=Available deployment/kubeflow-trainer-controller-ma
 kubectl get crd jobsets.jobset.x-k8s.io
 kubectl wait --for=condition=Available deployment/jobset-controller-manager -n kubeflow-system --timeout=120s
 
-kustomize build upstream/overlays/runtimes | kubectl apply --server-side --force-conflicts -f -
+kustomize build overlays/runtimes | kubectl apply --server-side --force-conflicts -f -
 
 kubectl apply -f upstream/overlays/kubeflow-platform/kubeflow-trainer-roles.yaml
 

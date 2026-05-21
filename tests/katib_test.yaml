@@ -44,9 +44,26 @@ spec:
             annotations:
               sidecar.istio.io/inject: "false"
           spec:
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
             containers:
             - name: training-container
               image: ghcr.io/kubeflow/katib/pytorch-mnist-cpu:v0.19.0
+              # workingDir: /tmp is used as a writable directory workaround under PSS Restricted
+              # (read-only root fs in base image). Safe for short-running stateless test pods.
+              workingDir: /tmp
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                  - ALL
+                runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
               command:
               - "python3"
               - "/opt/pytorch-mnist/mnist.py"

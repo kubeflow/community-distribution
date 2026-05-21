@@ -14,10 +14,27 @@ spec:
           labels:
             sidecar.istio.io/inject: "false"
         spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: pytorch
             image: docker.io/kubeflowkatib/pytorch-mnist:v1beta1-45c5727
             imagePullPolicy: Always
+            # workingDir: /tmp is used as a writable directory workaround under PSS Restricted
+            # (read-only root fs in base image). Safe for short-running stateless test pods.
+            workingDir: /tmp
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
             command:
             - "python3"
             - "/opt/pytorch-mnist/mnist.py"
@@ -53,10 +70,44 @@ spec:
           labels:
             sidecar.istio.io/inject: "false"
         spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+          # Use reproducible, pinned stable busybox image for network probe
+          - name: init-pytorch
+            image: busybox:1.36.1
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
+            command:
+            - sh
+            - -c
+            - until nslookup pytorch-simple-master-0; do echo waiting for master; sleep 2; done;
           containers:
           - name: pytorch
             image: docker.io/kubeflowkatib/pytorch-mnist:v1beta1-45c5727
             imagePullPolicy: Always
+            # workingDir: /tmp is used as a writable directory workaround under PSS Restricted
+            # (read-only root fs in base image). Safe for short-running stateless test pods.
+            workingDir: /tmp
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
             command:
             - "python3"
             - "/opt/pytorch-mnist/mnist.py"

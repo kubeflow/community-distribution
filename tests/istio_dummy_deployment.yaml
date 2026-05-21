@@ -13,37 +13,14 @@ spec:
         app: test-application
     spec:
       securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
         seccompProfile:
           type: RuntimeDefault
       containers:
       - name: nginx
-        image: nginx:alpine
-        ports:
-        - containerPort: 8080
-        command: ["/bin/sh", "-c"]
-        args:
-        - |
-          cat > /tmp/nginx.conf << 'EOF'
-          pid /tmp/nginx.pid;
-          events {}
-          http {
-            client_body_temp_path /tmp/client_temp;
-            proxy_temp_path /tmp/proxy_temp;
-            fastcgi_temp_path /tmp/fastcgi_temp;
-            uwsgi_temp_path /tmp/uwsgi_temp;
-            scgi_temp_path /tmp/scgi_temp;
-            server {
-              listen 8080;
-              location / { return 200 'Hello from test application\n'; }
-            }
-          }
-          EOF
-          nginx -c /tmp/nginx.conf -g 'daemon off;'
+        image: nginxinc/nginx-unprivileged:latest
         securityContext:
-          runAsNonRoot: true
-          runAsUser: 101
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
           capabilities:
-            drop:
-            - ALL
+            drop: ["ALL"]
