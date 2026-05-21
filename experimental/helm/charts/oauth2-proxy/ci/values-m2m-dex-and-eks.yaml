@@ -1,0 +1,12 @@
+istioExternalAuth:
+  enabled: true
+
+m2m:
+  enabled: true
+  issuer: https://oidc.eks.AWS_REGION.amazonaws.com/id/CLUSTER_ID
+
+clusterJwksProxy:
+  enabled: false
+
+parameters:
+  forceHttps: "true"

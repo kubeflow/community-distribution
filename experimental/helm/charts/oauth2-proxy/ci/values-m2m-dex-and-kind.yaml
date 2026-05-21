@@ -1,0 +1,16 @@
+istioExternalAuth:
+  enabled: true
+
+m2m:
+  enabled: true
+  issuer: https://kubernetes.default.svc.cluster.local
+  jwksUri: http://cluster-jwks-proxy.istio-system.svc.cluster.local/openid/v1/jwks
+  additionalJwtRules:
+  - issuer: https://kubernetes.default.svc
+    jwksUri: http://cluster-jwks-proxy.istio-system.svc.cluster.local/openid/v1/jwks
+
+clusterJwksProxy:
+  enabled: true
+
+parameters:
+  allowSelfSignedIssuer: "true"

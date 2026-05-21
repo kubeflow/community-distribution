@@ -1,0 +1,8 @@
+istioExternalAuth:
+  enabled: false
+
+m2m:
+  enabled: false
+
+clusterJwksProxy:
+  enabled: false

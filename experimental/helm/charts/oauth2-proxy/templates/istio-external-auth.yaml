@@ -1,0 +1,68 @@
+{{- if .Values.istioExternalAuth.enabled }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: istio-ingressgateway-oauth2-proxy
+  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+spec:
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+  - to:
+    - operation:
+        notPaths:
+        - /dex/*
+        - /dex/**
+        - /oauth2/*
+    when:
+    - key: request.headers[authorization]
+      notValues:
+      - '*'
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: istio-ingressgateway-require-jwt
+  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+spec:
+  action: DENY
+  rules:
+  - from:
+    - source:
+        notRequestPrincipals:
+        - '*'
+    to:
+    - operation:
+        notPaths:
+        - /dex/*
+        - /dex/**
+        - /oauth2/*
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+---
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: dex-jwt
+  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+spec:
+  jwtRules:
+  - forwardOriginalToken: true
+    fromHeaders:
+    - name: Authorization
+      prefix: 'Bearer '
+    issuer: http://dex.auth.svc.cluster.local:5556/dex
+    outputClaimToHeaders:
+    - claim: email
+      header: kubeflow-userid
+    - claim: groups
+      header: kubeflow-groups
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+{{- end }}

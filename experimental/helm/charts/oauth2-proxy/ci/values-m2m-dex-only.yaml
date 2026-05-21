@@ -1,0 +1,11 @@
+istioExternalAuth:
+  enabled: true
+
+m2m:
+  enabled: false
+
+clusterJwksProxy:
+  enabled: false
+
+parameters:
+  allowSelfSignedIssuer: "true"
