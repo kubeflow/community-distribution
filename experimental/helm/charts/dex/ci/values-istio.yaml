@@ -1,0 +1,5 @@
+istio:
+  enabled: true
+
+networkPolicies:
+  enabled: false

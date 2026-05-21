@@ -1,0 +1,59 @@
+# Default values for the Kubeflow Dex chart.
+
+global:
+  # -- Namespace for Dex workloads.
+  authNamespace: auth
+  # -- Namespace containing the Kubeflow gateway.
+  kubeflowNamespace: kubeflow
+  # -- Namespace for Istio ingress gateway and control-plane resources.
+  istioNamespace: istio-system
+  # -- Namespace for oauth2-proxy workloads.
+  oauth2ProxyNamespace: oauth2-proxy
+
+namespace:
+  # -- Render the Dex workload namespace.
+  enabled: true
+
+rbac:
+  # -- Render Dex RBAC resources.
+  enabled: true
+
+dex:
+  # -- Render Dex workload resources.
+  enabled: true
+  image: ghcr.io/dexidp/dex:v2.45.0
+  replicas: 2
+
+config:
+  # -- Dex issuer URL.
+  issuer: http://dex.auth.svc.cluster.local:5556/dex
+  # -- Skip Dex approval screen.
+  skipApprovalScreen: true
+  # -- Enable Dex password database.
+  enablePasswordDB: true
+  # -- Static user email.
+  staticUserEmail: user@example.com
+  # -- Static user username.
+  staticUsername: user
+  # -- Static user ID.
+  staticUserID: "15841185641784"
+  # -- OAuth client redirect URI.
+  redirectURI: /oauth2/callback
+
+oidcClient:
+  # -- OAuth client ID used by oauth2-proxy.
+  id: kubeflow-oidc-authservice
+  # -- OAuth client secret used by oauth2-proxy.
+  secret: pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok
+
+staticPassword:
+  # -- Bcrypt hash for the default Dex static user password.
+  hash: $2y$12$4K/VkmDd1q1Orb3xAt82zu8gk7Ad6ReFR4LCP9UeYE90NLiN9Df72
+
+istio:
+  # -- Render Dex VirtualService.
+  enabled: false
+
+networkPolicies:
+  # -- Render Dex namespace NetworkPolicies.
+  enabled: false

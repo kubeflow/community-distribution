@@ -1,0 +1,139 @@
+{{- if .Values.dex.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dex
+  namespace: {{ include "dex.namespace" . }}
+---
+apiVersion: v1
+data:
+  config.yaml: |
+    issuer: {{ .Values.config.issuer }}
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      http: 0.0.0.0:5556
+    logger:
+      level: "debug"
+      format: text
+    oauth2:
+      skipApprovalScreen: {{ .Values.config.skipApprovalScreen }}
+    enablePasswordDB: {{ .Values.config.enablePasswordDB }}
+    staticPasswords:
+    - email: {{ .Values.config.staticUserEmail }}
+      hashFromEnv: DEX_USER_PASSWORD
+      username: {{ .Values.config.staticUsername }}
+      userID: {{ .Values.config.staticUserID | quote }}
+    staticClients:
+    # https://github.com/dexidp/dex/pull/1664
+    - idEnv: OIDC_CLIENT_ID
+      redirectURIs: [{{ .Values.config.redirectURI | quote }}]
+      name: 'Dex Login Application'
+      secretEnv: OIDC_CLIENT_SECRET
+kind: ConfigMap
+metadata:
+  name: dex
+  namespace: {{ include "dex.namespace" . }}
+---
+apiVersion: v1
+data:
+  OIDC_CLIENT_ID: {{ .Values.oidcClient.id | b64enc }}
+  OIDC_CLIENT_SECRET: {{ .Values.oidcClient.secret | b64enc }}
+kind: Secret
+metadata:
+  name: dex-oidc-client
+  namespace: {{ include "dex.namespace" . }}
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dex-passwords
+  namespace: {{ include "dex.namespace" . }}
+stringData:
+  DEX_USER_PASSWORD: {{ .Values.staticPassword.hash }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dex
+  namespace: {{ include "dex.namespace" . }}
+spec:
+  ports:
+  - name: dex
+    port: 5556
+    protocol: TCP
+    targetPort: 5556
+  selector:
+    app: dex
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: dex
+  name: dex
+  namespace: {{ include "dex.namespace" . }}
+spec:
+  replicas: {{ .Values.dex.replicas }}
+  selector:
+    matchLabels:
+      app: dex
+  template:
+    metadata:
+      labels:
+        app: dex
+    spec:
+      containers:
+      - command:
+        - dex
+        - serve
+        - /etc/dex/cfg/config.yaml
+        env:
+        - name: KUBERNETES_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        envFrom:
+        - secretRef:
+            name: dex-oidc-client
+        - secretRef:
+            name: dex-passwords
+        image: {{ .Values.dex.image }}
+        name: dex
+        ports:
+        - containerPort: 5556
+          name: http
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /dex/healthz
+            port: 5556
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 1001
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - mountPath: /etc/dex/cfg
+          name: config
+      serviceAccountName: dex
+      volumes:
+      - configMap:
+          items:
+          - key: config.yaml
+            path: config.yaml
+          name: dex
+        name: config
+{{- end }}

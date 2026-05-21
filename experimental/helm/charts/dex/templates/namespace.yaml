@@ -1,0 +1,8 @@
+{{- if .Values.namespace.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+  name: {{ include "dex.namespace" . }}
+{{- end }}
