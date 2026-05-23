@@ -86,14 +86,8 @@ resources:
 # Spark Operator
 - ../applications/spark/spark-operator/overlays/kubeflow
 
-# Model Registry
-- ../applications/hub/upstream/overlays/postgres
-# Model Registry Istio networking (VirtualService for /api/model_registry/)
-- ../applications/hub/upstream/options/istio
-# Model Registry UI
-- ../applications/hub/upstream/options/ui/overlays/istio
-# Model Catalog (demo)
-- ../applications/hub/upstream/options/catalog/overlays/demo
+# Hub (Model Registry + Model Catalog)
+- ../applications/hub/overlays
 
 # Ray is an experimental integration
 # Here is the documentation for Ray: https://docs.ray.io/en/latest/

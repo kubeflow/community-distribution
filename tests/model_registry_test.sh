@@ -17,7 +17,7 @@ echo "=== Model Registry Integration Tests ==="
 # enforced here. These tests validate the Model Registry REST API functionality.
 # AuthorizationPolicy enforcement is validated through the gateway tests below.
 echo "Test 1: Direct Model Registry API access..."
-nohup kubectl port-forward svc/model-registry-service -n kubeflow 8081:8080 &
+nohup kubectl port-forward svc/model-registry-service -n kubeflow-user-example-com 8081:8080 &
 timeout 30s bash -c 'until curl -s localhost:8081 > /dev/null 2>&1; do sleep 1; done'
 
 # ---- Test 2: Create a RegisteredModel ----

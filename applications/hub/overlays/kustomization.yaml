@@ -1,0 +1,61 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeflow-user-example-com
+
+resources:
+- ../upstream/overlays/postgres
+- ../upstream/options/istio
+- ../upstream/options/ui/overlays/istio
+- ../upstream/options/catalog/overlays/demo
+
+patches:
+# Gateway references: Istio resolves gateway names relative to the
+# VirtualService namespace. kubeflow-gateway lives in the kubeflow namespace,
+# so VirtualServices in kubeflow-user-example-com must use the fully-qualified
+# cross-namespace reference.
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: VirtualService
+    name: model-registry
+  patch: |-
+    - op: replace
+      path: /spec/gateways/0
+      value: kubeflow/kubeflow-gateway
+    - op: replace
+      path: /spec/http/0/route/0/destination/host
+      value: model-registry-service.kubeflow-user-example-com.svc.cluster.local
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: VirtualService
+    name: model-registry-ui
+  patch: |-
+    - op: replace
+      path: /spec/gateways/0
+      value: kubeflow/kubeflow-gateway
+    - op: replace
+      path: /spec/http/0/route/0/destination/host
+      value: model-registry-ui-service.kubeflow-user-example-com.svc.cluster.local
+
+# Destination host FQDNs: services move to kubeflow-user-example-com with the
+# namespace override. DestinationRule hosts must reference the correct namespace.
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: DestinationRule
+    name: model-registry-service
+  patch: |-
+    - op: replace
+      path: /spec/host
+      value: model-registry-service.kubeflow-user-example-com.svc.cluster.local
+- target:
+    group: networking.istio.io
+    version: v1alpha3
+    kind: DestinationRule
+    name: model-registry-ui
+  patch: |-
+    - op: replace
+      path: /spec/host
+      value: model-registry-ui-service.kubeflow-user-example-com.svc.cluster.local
