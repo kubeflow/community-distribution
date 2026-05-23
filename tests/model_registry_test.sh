@@ -23,7 +23,6 @@ PORT_FORWARD_PID=$!
 cleanup_port_forward() {
   if [ -n "$PORT_FORWARD_PID" ]; then
     kill "$PORT_FORWARD_PID" 2>/dev/null
-    wait "$PORT_FORWARD_PID" 2>/dev/null
   fi
 }
 trap cleanup_port_forward EXIT
