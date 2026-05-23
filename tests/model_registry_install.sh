@@ -9,6 +9,12 @@ set -euxo pipefail
 
 echo "Installing Model Registry components..."
 
+# Fail fast if the profile namespace has not been provisioned
+if ! kubectl get namespace kubeflow-user-example-com >/dev/null 2>&1; then
+    echo "ERROR: namespace kubeflow-user-example-com does not exist. Create a Kubeflow Profile first."
+    exit 1
+fi
+
 # Build and apply all Hub components (Model Registry + Istio + UI + Catalog)
 # The overlay sets namespace: kubeflow-user-example-com and patches Istio
 # gateway references and destination host FQDNs.

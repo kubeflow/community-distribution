@@ -86,7 +86,7 @@ resources:
 # Spark Operator
 - ../applications/spark/spark-operator/overlays/kubeflow
 
-# Hub (Model Registry + Model Catalog)
+# Hub (Model Registry + UI + Istio resources + Model Catalog)
 - ../applications/hub/overlays
 
 # Ray is an experimental integration
