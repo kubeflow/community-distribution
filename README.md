@@ -550,10 +550,51 @@ For modifications and in-place upgrades of the Kubeflow platform, we provide a r
 - You might have to adjust your overlays and components if needed.
 - You might need to prune old resources. For that, you would add [labels](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/labels/) to all your resources from the start.
 - With labels, you can use `kubectl apply` with `--prune` and `--dry-run` to list prunable resources.
-- Sometimes there are major changes; for example, in the 1.9 release, we switched to oauth2-proxy, which needs additional attention (cleanup istio-system once); or 1.9.1 -> 1.10 `kubectl delete clusterrolebinding meta-controller-cluster-role-binding`
 - Nevertheless, with a bit of Kubernetes knowledge, one should be able to upgrade.
-- 1.10.2 -> 1.11.0 migrates from minio to seaweedfs, so you should delete minio and maybe migrate your data via S3 commands to seaweedfs.
-- KServe 0.16.x -> 0.17.0 restructures llmisvc role bindings, requiring a manual cleanup: `kubectl delete clusterrolebinding llmisvc-manager-rolebinding --ignore-not-found`
+
+### Handling Immutable Field Errors
+
+Some Kubernetes resources have immutable fields (e.g., `spec.selector` on Deployments). When an upstream component changes these fields between versions, `kubectl apply` will reject the update with an error like:
+
+```
+The Deployment "example" is invalid: spec.selector: Invalid value: field is immutable
+```
+
+The solution is to delete the affected resource before reapplying:
+
+```sh
+kubectl delete deployment <name> -n <namespace> --ignore-not-found
+# Then reapply your manifests
+```
+
+This will cause brief downtime for the affected controller but is safe since the new manifests will recreate it.
+
+### Version-Specific Upgrade Notes
+
+#### 1.9 -> 1.9.1 (oauth2-proxy migration)
+- We switched to oauth2-proxy, which needs additional attention (cleanup istio-system once).
+
+#### 1.9.1 -> 1.10
+```sh
+kubectl delete clusterrolebinding meta-controller-cluster-role-binding
+```
+
+#### 1.10.2 -> 1.11.0 (26.03)
+- Migrates from minio to seaweedfs. Delete minio and optionally migrate your data via S3 commands to seaweedfs.
+
+#### 26.03 -> next release
+
+The following manual steps are required when upgrading from `release-26.03` to the next release:
+
+1. **JobSet Controller Manager** ([#3428](https://github.com/kubeflow/manifests/issues/3428), introduced by [#3413](https://github.com/kubeflow/manifests/pull/3413)): The upstream JobSet upgrade from v0.10.1 to v0.11.0 changed `spec.selector.matchLabels` from 1 label to 4 labels, which is an immutable field. Delete the Deployment before applying:
+   ```sh
+   kubectl delete deployment jobset-controller-manager -n kubeflow-system --ignore-not-found
+   ```
+
+2. **KServe LLMiSVC RoleBinding**: KServe 0.16.x -> 0.17.0+ restructured LLMiSVC role bindings. Clean up the old binding:
+   ```sh
+   kubectl delete clusterrolebinding llmisvc-manager-rolebinding --ignore-not-found
+   ```
 
 ## Release Process
 
