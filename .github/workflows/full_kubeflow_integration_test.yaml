@@ -202,12 +202,12 @@ jobs:
     - name: Apply Pod Security Standards Restricted
       run: ./tests/PSS_enable.sh restricted
 
-    - name: Verify No Components in Default Namespace
+    - name: Fail if there are resources in the "default" namespace
       run: |
-        echo "==== Checking for leaked resources in default namespace ===="
+        echo "==== Checking for resources in the default namespace ===="
         DEFAULT_PODS=$(kubectl get pods -n default --no-headers --ignore-not-found 2>/dev/null | grep -v "^$" | wc -l)
         if [ "${DEFAULT_PODS}" -gt 0 ]; then
-          echo "ERROR: Found ${DEFAULT_PODS} pod(s) in the default namespace."
+          echo "ERROR: Found ${DEFAULT_PODS} pods in the default namespace."
           echo "No Kubeflow component should deploy to the default namespace."
           echo ""
           echo "==== Diagnostic dump ===="
@@ -217,7 +217,7 @@ jobs:
           kubectl get pods -n default -o wide
           exit 1
         fi
-        echo "PASS: default namespace is clean (0 pods)."
+        echo "PASSED: The default namespace does not contain pods."
 
     - name: Verify Components
       run: kubectl get pods --all-namespaces | grep -E '(Error|CrashLoopBackOff)' && exit 1 || true
