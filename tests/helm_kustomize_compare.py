@@ -6,6 +6,17 @@ import json
 from typing import Dict, List, Tuple, Any
 import re
 
+CERT_MANAGER_KUBEFLOW_RESOURCES = {
+    ("ClusterIssuer", "kubeflow-self-signing-issuer"),
+    ("NetworkPolicy", "cert-manager-webhook"),
+    ("NetworkPolicy", "default-allow-same-namespace-cert-manager"),
+}
+
+CERT_MANAGER_KUBEFLOW_LABELS = {
+    "app.kubernetes.io/component",
+    "app.kubernetes.io/name",
+}
+
 def load_manifests(file_path: str) -> List[Dict]:
     """Load YAML manifests from file."""
     with open(file_path, 'r') as f:
@@ -110,6 +121,9 @@ def normalize_manifest(manifest: Dict, component: str = "katib") -> Dict:
     
     # Clean Helm-specific metadata
     normalized = clean_helm_metadata(normalized, component)
+
+    if component == "cert-manager":
+        preserve_cert_manager_kubeflow_labels(manifest, normalized)
     
     # Normalize Kustomize hash references
     normalized = normalize_kustomize_refs(normalized)
@@ -157,6 +171,24 @@ def normalize_manifest(manifest: Dict, component: str = "katib") -> Dict:
             return obj
     
     return remove_empty_values(normalized)
+
+def preserve_cert_manager_kubeflow_labels(original: Dict, normalized: Dict) -> None:
+    """Keep labels that are intentionally added by cert-manager's Kubeflow overlay."""
+    kind = original.get("kind", "")
+    name = original.get("metadata", {}).get("name", "")
+
+    if (kind, name) not in CERT_MANAGER_KUBEFLOW_RESOURCES:
+        return
+
+    labels = original.get("metadata", {}).get("labels", {})
+    preserved_labels = {
+        key: value
+        for key, value in labels.items()
+        if key in CERT_MANAGER_KUBEFLOW_LABELS
+    }
+
+    if preserved_labels:
+        normalized.setdefault("metadata", {}).setdefault("labels", {}).update(preserved_labels)
 
 def get_resource_key(manifest: Dict, component: str = "katib") -> str:
     """Generate a unique key for the resource."""
