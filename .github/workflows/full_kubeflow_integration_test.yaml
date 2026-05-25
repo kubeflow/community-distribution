@@ -91,6 +91,9 @@ jobs:
     - name: Install Model Registry
       run: ./tests/model_registry_install.sh
 
+    - name: Install Model Catalog
+      run: ./tests/model_catalog_install.sh
+
     - name: Install Spark
       run: chmod u+x tests/*.sh && ./tests/spark_install.sh
 
