@@ -1,21 +1,33 @@
 #!/bin/bash
 set -euxo pipefail
 
+# Test Model Catalog API in the kubeflow namespace (cluster-wide singleton)
+# Prerequisites: Model Catalog installed (run model_catalog_install.sh first)
+# Usage: ./tests/model_catalog_test.sh
 
-if ! kubectl get deployment/model-catalog-server -n kubeflow-user-example-com; then
+echo "=== Model Catalog Integration Tests ==="
+
+if ! kubectl get deployment/model-catalog-server -n kubeflow; then
     echo "ERROR: Model Catalog deployment not found"
     exit 1
 fi
 
-if ! kubectl get svc/model-catalog -n kubeflow-user-example-com; then
+if ! kubectl get svc/model-catalog -n kubeflow; then
     echo "ERROR: Model Catalog service not found"
     exit 1
 fi
 
-kubectl get pods -n kubeflow-user-example-com -l app.kubernetes.io/name=model-catalog,app.kubernetes.io/component=server
+kubectl get pods -n kubeflow -l app.kubernetes.io/name=model-catalog,app.kubernetes.io/component=server
 
-nohup kubectl port-forward svc/model-catalog -n kubeflow-user-example-com 8082:8080 &
+nohup kubectl port-forward svc/model-catalog -n kubeflow 8082:8080 &
 PORT_FORWARD_PID=$!
+
+cleanup_port_forward() {
+  if [ -n "$PORT_FORWARD_PID" ]; then
+    kill "$PORT_FORWARD_PID" 2>/dev/null
+  fi
+}
+trap cleanup_port_forward EXIT
 
 MAX_RETRIES=30
 RETRY_COUNT=0
@@ -25,7 +37,6 @@ while ! curl -s localhost:8082 > /dev/null; do
     RETRY_COUNT=$((RETRY_COUNT + 1))
     if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
         echo "ERROR: Port-forwarding failed to become ready"
-        kill $PORT_FORWARD_PID 2>/dev/null 
         exit 1
     fi
 done
@@ -38,10 +49,8 @@ if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 404 ]; then
     echo "Model Catalog API is responding (HTTP $HTTP_CODE)"
 else
     echo "ERROR: Model Catalog API returned unexpected status code: $HTTP_CODE"
-    kill $PORT_FORWARD_PID 2>/dev/null 
     exit 1
 fi
 
-kill $PORT_FORWARD_PID 2>/dev/null 
-
-
+echo ""
+echo "=== All Model Catalog tests passed! ==="

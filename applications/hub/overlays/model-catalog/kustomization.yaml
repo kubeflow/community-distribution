@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Model Catalog is a read-only discovery service that aggregates external model
+# sources. It is a cluster-wide singleton deployed to the kubeflow namespace,
+# unlike Model Registry which is per-tenant in the user profile namespace.
+namespace: kubeflow
+
+resources:
+- ../../upstream/options/catalog/overlays/demo

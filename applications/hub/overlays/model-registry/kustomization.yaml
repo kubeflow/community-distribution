@@ -4,10 +4,9 @@ kind: Kustomization
 namespace: kubeflow-user-example-com
 
 resources:
-- ../upstream/overlays/postgres
-- ../upstream/options/istio
-- ../upstream/options/ui/overlays/istio
-- ../upstream/options/catalog/overlays/demo
+- ../../upstream/overlays/postgres
+- ../../upstream/options/istio
+- ../../upstream/options/ui/overlays/istio
 
 patches:
 # Gateway references: Istio resolves gateway names relative to the

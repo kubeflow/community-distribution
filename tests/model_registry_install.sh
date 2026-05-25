@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Install Model Registry server, UI, database, and catalog components
+# Install Model Registry server, UI, database, and Istio components
 # This script can be used for local testing without GitHub Actions
 # Prerequisites: kubeflow-user-example-com namespace must exist (created by Profile controller),
 #                kustomize must be installed
@@ -15,11 +15,11 @@ if ! kubectl get namespace kubeflow-user-example-com >/dev/null 2>&1; then
     exit 1
 fi
 
-# Build and apply all Hub components (Model Registry + Istio + UI + Catalog)
+# Build and apply Model Registry components (server + database + UI + Istio)
 # The overlay sets namespace: kubeflow-user-example-com and patches Istio
 # gateway references and destination host FQDNs.
-echo "Deploying Hub components to kubeflow-user-example-com..."
-kustomize build applications/hub/overlays \
+echo "Deploying Model Registry components to kubeflow-user-example-com..."
+kustomize build applications/hub/overlays/model-registry \
   | kubectl apply -f -
 
 # Wait for Model Registry database deployment
@@ -52,29 +52,6 @@ if ! kubectl wait --for=condition=available -n kubeflow-user-example-com deploym
     exit 1
 fi
 
-# Wait for Model Catalog PostgreSQL StatefulSet
-echo "Waiting for Model Catalog database to become ready..."
-if ! kubectl wait --for=condition=ready -n kubeflow-user-example-com pod \
-  -l app.kubernetes.io/name=postgres,app.kubernetes.io/part-of=model-catalog \
-  --timeout=120s; then
-    echo "ERROR: Model Catalog database pod failed"
-    kubectl get pods -n kubeflow-user-example-com -l app.kubernetes.io/part-of=model-catalog
-    kubectl describe statefulset/model-catalog-postgres -n kubeflow-user-example-com
-    kubectl logs statefulset/model-catalog-postgres -n kubeflow-user-example-com
-    exit 1
-fi
-
-# Wait for Model Catalog server deployment
-echo "Waiting for Model Catalog server to become ready..."
-if ! kubectl wait --for=condition=available -n kubeflow-user-example-com deployment/model-catalog-server --timeout=120s; then
-    echo "ERROR: Model Catalog server deployment failed"
-    kubectl get pods -n kubeflow-user-example-com -l app.kubernetes.io/part-of=model-catalog
-    kubectl describe deployment/model-catalog-server -n kubeflow-user-example-com
-    kubectl logs deployment/model-catalog-server -n kubeflow-user-example-com --all-containers
-    exit 1
-fi
-
 echo "Model Registry installation complete!"
 kubectl get pods -n kubeflow-user-example-com -l component=model-registry-server
 kubectl get pods -n kubeflow-user-example-com -l app=model-registry-ui
-kubectl get pods -n kubeflow-user-example-com -l app.kubernetes.io/part-of=model-catalog

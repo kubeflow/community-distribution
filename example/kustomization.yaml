@@ -86,8 +86,10 @@ resources:
 # Spark Operator
 - ../applications/spark/spark-operator/overlays/kubeflow
 
-# Hub (Model Registry + UI + Istio resources + Model Catalog)
-- ../applications/hub/overlays
+# Hub — Model Registry (per-tenant: deployed to user profile namespace)
+- ../applications/hub/overlays/model-registry
+# Hub — Model Catalog (cluster-wide singleton: deployed to kubeflow namespace)
+- ../applications/hub/overlays/model-catalog
 
 # Ray is an experimental integration
 # Here is the documentation for Ray: https://docs.ray.io/en/latest/
