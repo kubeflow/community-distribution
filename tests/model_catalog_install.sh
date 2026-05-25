@@ -26,9 +26,9 @@ if ! kubectl wait --for=condition=ready -n kubeflow pod \
   -l app.kubernetes.io/name=postgres,app.kubernetes.io/part-of=model-catalog \
   --timeout=120s; then
     echo "ERROR: Model Catalog database pod failed"
-    kubectl get pods -n kubeflow -l app.kubernetes.io/part-of=model-catalog
-    kubectl describe statefulset/model-catalog-postgres -n kubeflow
-    kubectl logs statefulset/model-catalog-postgres -n kubeflow
+    kubectl get pods -n kubeflow -l app.kubernetes.io/part-of=model-catalog || true
+    kubectl describe statefulset/model-catalog-postgres -n kubeflow || true
+    kubectl logs statefulset/model-catalog-postgres -n kubeflow || true
     exit 1
 fi
 
@@ -36,9 +36,9 @@ fi
 echo "Waiting for Model Catalog server to become ready..."
 if ! kubectl wait --for=condition=available -n kubeflow deployment/model-catalog-server --timeout=120s; then
     echo "ERROR: Model Catalog server deployment failed"
-    kubectl get pods -n kubeflow -l app.kubernetes.io/part-of=model-catalog
-    kubectl describe deployment/model-catalog-server -n kubeflow
-    kubectl logs deployment/model-catalog-server -n kubeflow --all-containers
+    kubectl get pods -n kubeflow -l app.kubernetes.io/part-of=model-catalog || true
+    kubectl describe deployment/model-catalog-server -n kubeflow || true
+    kubectl logs deployment/model-catalog-server -n kubeflow --all-containers || true
     exit 1
 fi
 
