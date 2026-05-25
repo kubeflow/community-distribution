@@ -2,7 +2,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+{{- with .Values.namespace.labels }}
   labels:
-    pod-security.kubernetes.io/enforce: restricted
+{{ toYaml . | indent 4 }}
+{{- end }}
   name: {{ include "dex.namespace" . }}
 {{- end }}

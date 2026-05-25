@@ -1,3 +1,12 @@
+config:
+  logLevel: debug
+
+oidcClient:
+  secret: pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok
+
+staticPassword:
+  hash: $2y$12$4K/VkmDd1q1Orb3xAt82zu8gk7Ad6ReFR4LCP9UeYE90NLiN9Df72
+
 istio:
   enabled: true
 

@@ -18,8 +18,9 @@ helm install dex ./experimental/helm/charts/dex \
 
 ## Caveats
 
-The default static user, OIDC client secret, and password hash match the current
-Kustomize manifests for parity. They are not production credential guidance.
+The CI values contain the static user, OIDC client secret, and password hash
+needed to match the current Kustomize manifests. Chart defaults use placeholders
+and are not production credential guidance.
 
 The Dex `AuthCode` CRD is installed from the chart `crds/` directory. Helm
 installs CRDs before templates, but CRDs have special upgrade and deletion

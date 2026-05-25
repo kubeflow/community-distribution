@@ -167,9 +167,9 @@ def get_resource_key(manifest: Dict, component: str = "katib") -> str:
     if kind in ['Secret', 'ConfigMap']:
         name = re.sub(r'-[a-z0-9]{10}$', '', name)
     
-    # Include namespace in key for components that render same-name resources
-    # across release/workload namespaces or multiple workload namespaces.
-    if component in ["katib", "dex"] and namespace:
+    # Include namespace for namespaced resources so same-name objects in
+    # different namespaces cannot overwrite each other in the comparison map.
+    if namespace:
         return f"{kind}/{namespace}/{name}"
     else:
         return f"{kind}/{name}"

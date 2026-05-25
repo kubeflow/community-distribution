@@ -16,7 +16,7 @@ data:
     web:
       http: 0.0.0.0:5556
     logger:
-      level: "debug"
+      level: {{ .Values.config.logLevel | quote }}
       format: text
     oauth2:
       skipApprovalScreen: {{ .Values.config.skipApprovalScreen }}

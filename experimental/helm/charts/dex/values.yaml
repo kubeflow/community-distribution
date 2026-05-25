@@ -13,6 +13,8 @@ global:
 namespace:
   # -- Render the Dex workload namespace.
   enabled: true
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
 
 rbac:
   # -- Render Dex RBAC resources.
@@ -27,6 +29,8 @@ dex:
 config:
   # -- Dex issuer URL.
   issuer: http://dex.auth.svc.cluster.local:5556/dex
+  # -- Dex log level.
+  logLevel: info
   # -- Skip Dex approval screen.
   skipApprovalScreen: true
   # -- Enable Dex password database.
@@ -44,11 +48,11 @@ oidcClient:
   # -- OAuth client ID used by oauth2-proxy.
   id: kubeflow-oidc-authservice
   # -- OAuth client secret used by oauth2-proxy.
-  secret: pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok
+  secret: REPLACE_ME_OIDC_CLIENT_SECRET
 
 staticPassword:
   # -- Bcrypt hash for the default Dex static user password.
-  hash: $2y$12$4K/VkmDd1q1Orb3xAt82zu8gk7Ad6ReFR4LCP9UeYE90NLiN9Df72
+  hash: REPLACE_ME_STATIC_PASSWORD_HASH
 
 istio:
   # -- Render Dex VirtualService.
