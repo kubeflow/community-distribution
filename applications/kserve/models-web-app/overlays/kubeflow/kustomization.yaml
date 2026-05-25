@@ -5,7 +5,6 @@ kind: Kustomization
 namespace: kubeflow
 
 # Labels to add to all resources and selectors.
-
 generatorOptions:
   disableNameSuffixHash: true
 
@@ -13,34 +12,34 @@ generatorOptions:
 # defines the ConfigMap generator, shared configuration, components,
 # and the VirtualService patch used in this environment.
 configMapGenerator:
-- behavior: replace
-  literals:
-  - USERID_HEADER=kubeflow-userid
-  - USERID_PREFIX=""
-  - APP_PREFIX=/kserve-endpoints
-  - GRAFANA_PREFIX=/grafana
-  - GRAFANA_CPU_MEMORY_DB=db/knative-serving-revision-cpu-and-memory-usage
-  - GRAFANA_HTTP_REQUESTS_DB=db/knative-serving-revision-http-requests
-  name: kserve-models-web-application-config
+  - behavior: replace
+    literals:
+      - USERID_HEADER=kubeflow-userid
+      - USERID_PREFIX=""
+      - APP_PREFIX=/kserve-endpoints
+      - GRAFANA_PREFIX=/grafana
+      - GRAFANA_CPU_MEMORY_DB=db/knative-serving-revision-cpu-and-memory-usage
+      - GRAFANA_HTTP_REQUESTS_DB=db/knative-serving-revision-http-requests
+    name: kserve-models-web-application-config
 
 configurations:
-- params.yaml
+  - params.yaml
 resources:
-- ../../base
+  - ../../base
 
 labels:
-- includeSelectors: true
-  pairs:
-    app: kserve
-    app.kubernetes.io/name: kserve
+  - includeSelectors: true
+    pairs:
+      app: kserve
+      app.kubernetes.io/name: kserve
 
 components:
-- ../../components/istio
+  - ../../components/istio
 patches:
-- path: patches/web-application-vsvc.yaml
-  target:
-    group: networking.istio.io
-    kind: VirtualService
-    name: kserve-models-web-application
-    namespace: kserve
-    version: v1beta1
+  - path: patches/web-application-vsvc.yaml
+    target:
+      group: networking.istio.io
+      kind: VirtualService
+      name: kserve-models-web-application
+      namespace: kserve
+      version: v1beta1

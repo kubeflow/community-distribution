@@ -3,9 +3,6 @@ kind: VirtualService
 metadata:
   name: kserve-models-web-application
   namespace: kserve
-  labels:
-    app.kubernetes.io/component: kserve-models-web-application
-    kustomize.component: kserve-models-web-application
 spec:
   gateways:
   - knative-serving/knative-ingress-gateway
