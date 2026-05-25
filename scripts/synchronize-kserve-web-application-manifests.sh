@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="models-web-app"
 REPOSITORY_NAME="kserve/models-web-app"
 REPOSITORY_URL="https://github.com/kserve/models-web-app.git"
-COMMIT="a3d4a25e1d5da3db9e4e71551f7ccdfb3db85d53"
+COMMIT="v0.18.0"
 REPOSITORY_DIRECTORY="models-web-app"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kserve-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-kserve-${COMPONENT_NAME}-manifests-${COMMIT?}}
