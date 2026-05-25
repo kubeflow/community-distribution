@@ -1,12 +1,6 @@
 #!/bin/bash
 set -euxo pipefail
 
-# Test Model Catalog API in the kubeflow namespace (cluster-wide singleton)
-# Prerequisites: Model Catalog installed (run model_catalog_install.sh first)
-# Usage: ./tests/model_catalog_test.sh
-
-echo "=== Model Catalog Integration Tests ==="
-
 if ! kubectl get deployment/model-catalog-server -n kubeflow; then
     echo "ERROR: Model Catalog deployment not found"
     exit 1
@@ -52,6 +46,3 @@ else
     echo "ERROR: Model Catalog API returned unexpected status code: $HTTP_CODE"
     exit 1
 fi
-
-echo ""
-echo "=== All Model Catalog tests passed! ==="
