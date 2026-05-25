@@ -16,14 +16,6 @@ kubectl get pods -n kubeflow -l app.kubernetes.io/name=model-catalog,app.kuberne
 nohup kubectl port-forward svc/model-catalog -n kubeflow 8082:8080 &
 PORT_FORWARD_PID=$!
 
-cleanup_port_forward() {
-  if [ -n "$PORT_FORWARD_PID" ]; then
-    kill "$PORT_FORWARD_PID" 2>/dev/null
-    wait "$PORT_FORWARD_PID" 2>/dev/null
-  fi
-}
-trap cleanup_port_forward EXIT
-
 MAX_RETRIES=30
 RETRY_COUNT=0
 while ! curl -s localhost:8082 > /dev/null; do
