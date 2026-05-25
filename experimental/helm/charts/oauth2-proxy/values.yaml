@@ -12,9 +12,9 @@ credentials:
   # -- OAuth client ID used by oauth2-proxy.
   clientID: kubeflow-oidc-authservice
   # -- OAuth client secret used by oauth2-proxy.
-  clientSecret: pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok
+  clientSecret: REPLACE_ME_CLIENT_SECRET
   # -- Cookie secret used by oauth2-proxy.
-  cookieSecret: 7d16fee92f8d11b8940b081b3f8b8acb
+  cookieSecret: REPLACE_ME_COOKIE_SECRET
 
 parameters:
   # -- Configure oauth2-proxy cookie secure behavior.
@@ -55,4 +55,4 @@ m2m:
 clusterJwksProxy:
   # -- Render the cluster JWKS proxy used by kind-like clusters.
   enabled: false
-  image: docker.io/bitnamisecure/kubectl:latest
+  image: ""

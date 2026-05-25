@@ -1,3 +1,7 @@
+credentials:
+  clientSecret: pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok
+  cookieSecret: 7d16fee92f8d11b8940b081b3f8b8acb
+
 istioExternalAuth:
   enabled: false
 
