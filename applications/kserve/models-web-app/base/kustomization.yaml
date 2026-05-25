@@ -1,24 +1,24 @@
 resources:
-- rbac.yaml
-- service.yaml
-- deployment.yaml
+  - rbac.yaml
+  - service.yaml
+  - deployment.yaml
 namespace: kserve
 
 images:
-- name: kserve/models-web-app
-  newName: ghcr.io/kserve/models-web-app
-  newTag: 0.16.1
+  - name: kserve/models-web-app
+    newName: ghcr.io/kserve/models-web-app
+    newTag: 0.18.0
 configMapGenerator:
-- literals:
-  - APP_DISABLE_AUTH="True"
-  - GRAFANA_PREFIX="/grafana"
-  - GRAFANA_CPU_MEMORY_DB="db/knative-serving-revision-cpu-and-memory-usage"
-  - GRAFANA_HTTP_REQUESTS_DB="db/knative-serving-revision-http-requests"
-  name: kserve-models-web-application-config
+  - literals:
+      - APP_DISABLE_AUTH="True"
+      - GRAFANA_PREFIX="/grafana"
+      - GRAFANA_CPU_MEMORY_DB="db/knative-serving-revision-cpu-and-memory-usage"
+      - GRAFANA_HTTP_REQUESTS_DB="db/knative-serving-revision-http-requests"
+    name: kserve-models-web-application-config
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 labels:
-- includeSelectors: true
-  pairs:
-    app.kubernetes.io/component: kserve-models-web-application
-    kustomize.component: kserve-models-web-application
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/component: kserve-models-web-application
+      kustomize.component: kserve-models-web-application

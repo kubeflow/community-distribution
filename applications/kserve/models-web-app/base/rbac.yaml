@@ -32,6 +32,8 @@ rules:
   - inferenceservices/status
   - inferencegraphs
   - inferencegraphs/status
+  - trainedmodels
+  - trainedmodels/status
   verbs:
   - get
   - list
