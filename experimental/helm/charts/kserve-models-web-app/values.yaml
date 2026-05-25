@@ -19,7 +19,7 @@ global:
   # -- Image registry for KServe Models Web App images
   imageRegistry: ghcr.io/kserve
   # -- Global image tag for KServe Models Web App
-  imageTag: 0.16.1
+  imageTag: 0.18.0
   # -- Global image pull policy
   imagePullPolicy: Always
   # -- Global image pull secrets

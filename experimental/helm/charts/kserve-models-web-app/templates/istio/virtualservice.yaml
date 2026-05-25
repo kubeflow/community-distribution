@@ -5,8 +5,8 @@ metadata:
   name: {{ include "kserve-models-web-app.virtualServiceName" . }}
   namespace: {{ include "kserve-models-web-app.namespace" . }}
   labels:
-    {{- include "kserve-models-web-app.labels" . | nindent 4 }}
-    {{- include "kserve-models-web-app.kustomizeLabels" . | nindent 4 }}
+    helm.sh/chart: {{ include "kserve-models-web-app.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
     {{- if .Values.kubeflow.enabled }}
     {{- include "kserve-models-web-app.kserveLabels" . | nindent 4 }}
     {{- end }}
@@ -41,4 +41,4 @@ spec:
         port:
           number: {{ .Values.service.port }}
   {{- end }}
-{{- end }} 
+{{- end }}
