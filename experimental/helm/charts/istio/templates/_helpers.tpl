@@ -11,7 +11,7 @@ templates embedded in Istio injector ConfigMaps.
 {{- $content = replace "- kubeflow/*" (printf "- %s/*" ($root.Values.global.kubeflowNamespace | toString)) $content -}}
 {{- if .oauth2 -}}
 {{- $content = replace "service: oauth2-proxy.oauth2-proxy.svc.cluster.local" (printf "service: %s" ($root.Values.oauth2Proxy.service | toString)) $content -}}
-{{- $content = replace "        port: 80\n      name: oauth2-proxy" (printf "        port: %d\n      name: oauth2-proxy" (int $root.Values.oauth2Proxy.port)) $content -}}
+{{- $content = regexReplaceAll "(service: [^\\n]+\\n[[:space:]]*port: )[0-9]+(\\n[[:space:]]*name: oauth2-proxy)" $content (printf "${1}%d${2}" (int $root.Values.oauth2Proxy.port)) -}}
 {{- end -}}
 {{- $content -}}
 {{- end -}}

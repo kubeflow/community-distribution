@@ -138,11 +138,11 @@ case "$COMPONENT" in
 
         declare -A KUSTOMIZE_PATHS=(
             ["crds"]="$MANIFESTS_DIR/istio-crds/base"
-            ["base"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/base"
-            ["oauth2-proxy"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/overlays/oauth2-proxy"
+            ["base"]="$MANIFESTS_DIR/istio-crds/base"$'\n'"$MANIFESTS_DIR/istio-namespace/base"$'\n'"$MANIFESTS_DIR/istio-install/base"
+            ["oauth2-proxy"]="$MANIFESTS_DIR/istio-crds/base"$'\n'"$MANIFESTS_DIR/istio-namespace/base"$'\n'"$MANIFESTS_DIR/istio-install/overlays/oauth2-proxy"
             ["cluster-local-gateway"]="$MANIFESTS_DIR/cluster-local-gateway/base"
             ["kubeflow-istio-resources"]="$MANIFESTS_DIR/kubeflow-istio-resources/base"
-            ["platform-full"]="$MANIFESTS_DIR/istio-crds/base $MANIFESTS_DIR/istio-namespace/base $MANIFESTS_DIR/istio-install/overlays/oauth2-proxy $MANIFESTS_DIR/cluster-local-gateway/base $MANIFESTS_DIR/kubeflow-istio-resources/base"
+            ["platform-full"]="$MANIFESTS_DIR/istio-crds/base"$'\n'"$MANIFESTS_DIR/istio-namespace/base"$'\n'"$MANIFESTS_DIR/istio-install/overlays/oauth2-proxy"$'\n'"$MANIFESTS_DIR/cluster-local-gateway/base"$'\n'"$MANIFESTS_DIR/kubeflow-istio-resources/base"
         )
 
         declare -A HELM_VALUES=(
@@ -183,10 +183,11 @@ fi
 KUSTOMIZE_PATH="${KUSTOMIZE_PATHS[$SCENARIO]}"
 HELM_VALUES_ARG="${HELM_VALUES[$SCENARIO]}"
 NAMESPACE="${NAMESPACES[$SCENARIO]}"
+mapfile -t KUSTOMIZE_ROOTS <<< "$KUSTOMIZE_PATH"
 
 echo "Comparing $COMPONENT manifests for scenario: $SCENARIO"
 
-for path in $KUSTOMIZE_PATH; do
+for path in "${KUSTOMIZE_ROOTS[@]}"; do
     if [ ! -d "$path" ]; then
         echo "ERROR: Kustomize path does not exist: $path"
         exit 1
@@ -208,9 +209,12 @@ HELM_OUTPUT="/tmp/helm-${COMPONENT}-${SCENARIO}.yaml"
 
 cd "$ROOT_DIR"
 : > "$KUSTOMIZE_OUTPUT"
-for path in $KUSTOMIZE_PATH; do
+for i in "${!KUSTOMIZE_ROOTS[@]}"; do
+    path="${KUSTOMIZE_ROOTS[$i]}"
+    if [ "$i" -gt 0 ]; then
+        printf "\n---\n" >> "$KUSTOMIZE_OUTPUT"
+    fi
     kustomize build "$path" >> "$KUSTOMIZE_OUTPUT"
-    printf "\n---\n" >> "$KUSTOMIZE_OUTPUT"
 done
 
 # Generate Helm manifests (different approach for KServe Models Web App)
