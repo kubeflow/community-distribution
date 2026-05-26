@@ -81,7 +81,7 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Spark Operator	|	applications/spark/spark-operator	|	[2.5.0](https://github.com/kubeflow/spark-operator/tree/v2.5.0) | 9m | 41Mi | 0GB |
 | Istio | common/istio | [1.30.0](https://github.com/istio/istio/releases/tag/1.30.0) | 750m | 2364Mi | 0GB |
 | Knative | common/knative/knative-serving <br /> common/knative/knative-eventing | [v1.22.0](https://github.com/knative/serving/releases/tag/knative-v1.22.0) <br /> [v1.22.0](https://github.com/knative/eventing/releases/tag/knative-v1.22.0) | 1450m | 1038Mi | 0GB |
-| Cert Manager | common/cert-manager | [1.19.4](https://github.com/cert-manager/cert-manager/releases/tag/v1.19.4) | 3m | 128Mi | 0GB |
+| Cert Manager | common/cert-manager | [1.20.2](https://github.com/cert-manager/cert-manager/releases/tag/v1.20.2) | 3m | 128Mi | 0GB |
 | Dex | common/dex | [2.45.1](https://github.com/dexidp/dex/releases/tag/v2.45.1) | 3m | 27Mi | 0GB |
 | OAuth2-Proxy | common/oauth2-proxy | [7.14.3](https://github.com/oauth2-proxy/oauth2-proxy/releases/tag/v7.14.3) | 3m | 27Mi | 0GB |
 | **Total** | | | **4380m** | **12341Mi** | **65GB** |
