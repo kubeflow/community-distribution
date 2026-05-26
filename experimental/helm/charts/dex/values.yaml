@@ -23,7 +23,7 @@ rbac:
 dex:
   # -- Render Dex workload resources.
   enabled: true
-  image: ghcr.io/dexidp/dex:v2.45.0
+  image: ghcr.io/dexidp/dex:v2.45.1
   replicas: 2
 
 config:
