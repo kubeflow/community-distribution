@@ -5,7 +5,7 @@ source "${SCRIPT_DIRECTORY}/library.sh"
 setup_error_handling
 COMPONENT_NAME="oauth2-proxy"
 REPOSITORY_NAME="oauth2-proxy/oauth2-proxy"
-COMMIT="v7.14.3"
+COMMIT="v7.15.2"
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
 MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)
 DESTINATION_DIRECTORY=$MANIFESTS_DIRECTORY/common/${COMPONENT_NAME}
