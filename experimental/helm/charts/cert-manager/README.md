@@ -4,7 +4,7 @@ This chart wraps the upstream cert-manager Helm chart and adds the Kubeflow-spec
 
 It installs:
 
-- upstream cert-manager `v1.19.4`
+- upstream cert-manager `v1.20.2`
 - cert-manager CRDs
 - optional `ClusterIssuer/kubeflow-self-signing-issuer`
 - optional Kubeflow cert-manager NetworkPolicies

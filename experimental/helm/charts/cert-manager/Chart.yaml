@@ -6,7 +6,7 @@ description: A Helm wrapper chart for cert-manager with Kubeflow platform defaul
 
 version: 0.1.0
 
-appVersion: v1.19.4
+appVersion: v1.20.2
 
 keywords:
 - cert-manager
@@ -21,7 +21,7 @@ sources:
 
 dependencies:
 - name: cert-manager
-  version: v1.19.4
+  version: v1.20.2
   repository: https://charts.jetstack.io
   condition: cert-manager.enabled
 
