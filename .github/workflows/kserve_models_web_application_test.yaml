@@ -11,6 +11,7 @@ on:
     - tests/istio*
     - tests/multi_tenancy_install.sh
     - tests/profile_controller_install.sh
+    - tests/kubeflow_profile_install.sh
     - applications/dashboard/upstream/profile-controller/**
     - common/istio*/**
     - common/knative/**

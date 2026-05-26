@@ -8,6 +8,8 @@ on:
     - tests/ambient*
     - tests/multi_tenancy_install.sh
     - tests/profile_controller_install.sh
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
     - applications/dashboard/upstream/profile-controller/**
     - .github/workflows/istio_validation.yaml
     - common/istio/**
