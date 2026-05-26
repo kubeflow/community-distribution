@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="dex"
 REPOSITORY_NAME="dexidp/dex"
 REPOSITORY_URL="https://github.com/dexidp/dex.git"
-COMMIT="v2.45.0"
+COMMIT="v2.45.1"
 REPOSITORY_DIRECTORY="dex"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
