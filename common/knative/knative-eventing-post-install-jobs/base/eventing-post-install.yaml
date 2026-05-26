@@ -7,7 +7,7 @@ metadata:
     app: "storage-version-migration-eventing"
     app.kubernetes.io/name: knative-eventing
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "1.21.0"
+    app.kubernetes.io/version: "1.22.0"
   name: storage-version-migration-eventing
 spec:
   ttlSecondsAfterFinished: 600
@@ -18,7 +18,7 @@ spec:
         app: "storage-version-migration-eventing"
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "1.21.0"
+        app.kubernetes.io/version: "1.22.0"
         sidecar.istio.io/inject: "false"
       annotations:
         sidecar.istio.io/inject: "false"
@@ -27,7 +27,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:728a991fa5162aa82ce9a52f41e5d5b1d690ec18b2108c5726f6a82b203aa635
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:3251489b1e27cf54ed0c83e8e2d9a2f4eae28bd400f08174a1c41b10388eff3f
           env:
             - name: IGNORE_NOT_FOUND
               value: "true"

@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     serving.knative.dev/controller: "true"
     networking.knative.dev/ingress-provider: istio
 rules:
@@ -21,7 +21,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -42,7 +42,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -63,7 +63,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
     experimental.istio.io/disable-gateway-port-translation: "true"
 spec:
@@ -86,7 +86,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 data:
   _example: |
@@ -126,6 +126,14 @@ data:
     # If labelSelector is specified, the external gateway will be used by the knative service with matching labels.
     # See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/ for more details about labelSelector.
     # Only one external gateway can be specified without a selector. It will act as the default external gateway.
+    #
+    # To use mesh-only mode (no external ingress gateways), set to an empty list:
+    #   external-gateways: "[]"
+    # Both external-gateways and local-gateways must be set to "[]" for mesh-only mode.
+    #
+    # IMPORTANT: Do not add or remove gateways after Knative Services have been
+    # created. Existing services will not be updated to reflect the new gateway
+    # configuration and may become unreachable.
     external-gateways: |
       - name: knative-ingress-gateway
         namespace: knative-serving
@@ -169,6 +177,14 @@ data:
     # If labelSelector is specified, the local gateway will be used by the knative service with matching labels.
     # See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/ for more details about labelSelector.
     # Only one local gateway can be specified without a selector. It will act as the default local gateway.
+    #
+    # To use mesh-only mode (no local gateways), set to an empty list:
+    #   local-gateways: "[]"
+    # Both external-gateways and local-gateways must be set to "[]" for mesh-only mode.
+    #
+    # IMPORTANT: Do not add or remove gateways after Knative Services have been
+    # created. Existing services will not be updated to reflect the new gateway
+    # configuration and may become unreachable.
     local-gateways: |
       - name: knative-local-gateway
         namespace: knative-serving
@@ -192,7 +208,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -210,7 +226,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -228,7 +244,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -241,12 +257,12 @@ spec:
         app: net-istio-controller
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.21.1"
+        app.kubernetes.io/version: "1.22.0"
     spec:
       serviceAccountName: controller
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/controller@sha256:915a3a9b8caea8cceb59258ca2b941c83f0ab230aef5c1dd3b9499574ac3f379
+          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/controller@sha256:d849c758f269bf651bd2dd6a973a11d4029ecc2ba4c3bc0fd07b86252d5ab087
           resources:
             requests:
               cpu: 30m
@@ -306,7 +322,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 spec:
   selector:
@@ -320,12 +336,12 @@ spec:
         role: net-istio-webhook
         app.kubernetes.io/component: net-istio
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "1.21.1"
+        app.kubernetes.io/version: "1.22.0"
     spec:
       serviceAccountName: controller
       containers:
         - name: webhook
-          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/webhook@sha256:4d9c50245aeafb269876d05ddb95d235372abfe2b2ac1c9d8c7cd3a2ccf2d6b7
+          image: gcr.io/knative-releases/knative.dev/net-istio/cmd/webhook@sha256:2563f60b712dbba6cb4f67a0925437c2841ce57433d9733528cfdfd566106995
           resources:
             requests:
               cpu: 20m
@@ -385,7 +401,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 ---
 apiVersion: v1
@@ -397,7 +413,7 @@ metadata:
     role: net-istio-webhook
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 spec:
   ports:
@@ -420,7 +436,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 webhooks:
   - admissionReviewVersions:
@@ -444,7 +460,7 @@ metadata:
   labels:
     app.kubernetes.io/component: net-istio
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.21.1"
+    app.kubernetes.io/version: "1.22.0"
     networking.knative.dev/ingress-provider: istio
 webhooks:
   - admissionReviewVersions:
