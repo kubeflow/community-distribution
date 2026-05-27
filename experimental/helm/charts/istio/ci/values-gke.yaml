@@ -1,5 +1,5 @@
-# CI values for Istio platform parity with oauth2-proxy patches.
-profile: oauth2-proxy
+# CI values for Istio GKE parity.
+profile: gke
 crds:
   enabled: true
 namespace:

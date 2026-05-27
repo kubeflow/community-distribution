@@ -1,0 +1,3 @@
+{{- if and .Values.install.enabled (eq .Values.profile "gke") }}
+{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/install-gke.yaml" "oauth2" true) }}
+{{- end }}

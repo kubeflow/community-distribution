@@ -1,4 +1,5 @@
 # CI values for Istio base parity without oauth2-proxy patches.
+profile: base
 crds:
   enabled: true
 namespace:
@@ -7,5 +8,3 @@ networkPolicies:
   enabled: true
 install:
   enabled: true
-oauth2Proxy:
-  enabled: false

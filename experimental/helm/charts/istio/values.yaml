@@ -1,8 +1,11 @@
 # Default values for the Kubeflow Istio wrapper chart.
 #
 # The safe default renders only Istio CRDs. Install the chart first with the
-# CRD-only values, then upgrade with the base or oauth2-proxy values after the
-# CRDs are available to the API server.
+# CRD-only values, then upgrade with a supported profile after the CRDs are
+# available to the API server.
+
+# -- Istio install profile used when install.enabled=true. Supported values: base, oauth2-proxy, gke.
+profile: oauth2-proxy
 
 global:
   # -- Namespace for Istio control-plane workloads.
@@ -29,8 +32,6 @@ install:
   enabled: false
 
 oauth2Proxy:
-  # -- Render the oauth2-proxy patched Istio install.
-  enabled: false
   # -- oauth2-proxy extension provider service host.
   service: oauth2-proxy.oauth2-proxy.svc.cluster.local
   # -- oauth2-proxy extension provider service port.

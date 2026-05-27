@@ -12,7 +12,7 @@ declare -A COMPONENT_SCENARIOS=(
     ["katib"]="standalone cert-manager external-db leader-election openshift standalone-postgres with-kubeflow"
     ["hub"]="base overlay-postgres overlay-db controller-manager controller-rbac controller-default controller-prometheus controller-network-policy ui-base ui-standalone ui-integrated ui-istio istio csi"
     ["kserve-models-web-app"]="base kubeflow"
-    ["istio"]="crds base oauth2-proxy cluster-local-gateway kubeflow-istio-resources platform-full"
+    ["istio"]="crds base oauth2-proxy gke cluster-local-gateway kubeflow-istio-resources platform-full"
 )
 
 test_component() {

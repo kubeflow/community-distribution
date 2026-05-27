@@ -7,8 +7,6 @@ networkPolicies:
   enabled: false
 install:
   enabled: false
-oauth2Proxy:
-  enabled: false
 cluster-local-gateway:
   enabled: false
 kubeflowIstioResources:
