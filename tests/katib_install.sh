@@ -13,6 +13,7 @@ if ! kubectl get deployment katib-controller -n kubeflow -o yaml | grep -q -- "-
   ]'
 fi
 
+kubectl rollout status deployment/katib-controller -n kubeflow --timeout=300s
 kubectl wait --for=condition=Available deployment/katib-controller -n kubeflow --timeout=300s
 
 kubectl wait --for=condition=Available deployment/katib-mysql -n kubeflow --timeout=300s
