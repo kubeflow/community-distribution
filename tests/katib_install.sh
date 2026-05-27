@@ -1,18 +1,27 @@
 #!/bin/bash
 set -euxo pipefail
 
-cd applications/katib/upstream && kustomize build installs/katib-with-kubeflow | kubectl apply -f - && cd ../../../
+KATIB_CI_OVERLAY=$(mktemp -d .katib-ci-overlay.XXXXXX)
+trap 'rm -rf "$KATIB_CI_OVERLAY"' EXIT
 
-if ! kubectl get deployment katib-controller -n kubeflow -o yaml | grep -q -- "--inject-security-context=true"; then
-  kubectl patch deployment katib-controller -n kubeflow --type=json -p='[
-    {
-      "op": "add",
-      "path": "/spec/template/spec/containers/0/args/-",
-      "value": "--inject-security-context=true"
-    }
-  ]'
-fi
+cat > "$KATIB_CI_OVERLAY/kustomization.yaml" <<'EOF'
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../applications/katib/upstream/installs/katib-with-kubeflow
+patches:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: katib-controller
+  patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/args/-
+      value: --inject-security-context=true
+EOF
 
+kustomize build "$KATIB_CI_OVERLAY" | kubectl apply -f -
 kubectl rollout status deployment/katib-controller -n kubeflow --timeout=300s
 kubectl wait --for=condition=Available deployment/katib-controller -n kubeflow --timeout=300s
 
