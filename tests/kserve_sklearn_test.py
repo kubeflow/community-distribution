@@ -70,14 +70,6 @@ KSERVE_TEST_NAMESPACE = os.environ.get(
 IRIS_INPUT = {"instances": [[6.8, 2.8, 4.8, 1.4], [6.0, 3.4, 4.5, 1.6]]}
 
 
-def restricted_pod_security_context():
-    return client.V1PodSecurityContext(
-        run_as_non_root=True,
-        run_as_user=1000,
-        seccomp_profile=client.V1SeccompProfile(type="RuntimeDefault"),
-    )
-
-
 def restricted_container_security_context():
     return client.V1SecurityContext(
         allow_privilege_escalation=False,
@@ -238,7 +230,6 @@ def delete_predictor_authorization_policy(namespace):
 def test_sklearn_kserve():
     predictor = V1beta1PredictorSpec(
         min_replicas=1,
-        security_context=restricted_pod_security_context(),
         sklearn=V1beta1SKLearnSpec(
             storage_uri="gs://kfserving-examples/models/sklearn/1.0/model",
             security_context=restricted_container_security_context(),

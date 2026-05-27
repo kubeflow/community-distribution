@@ -44,11 +44,6 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   predictor:
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 1000
-      seccompProfile:
-        type: RuntimeDefault
     sklearn:
       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
       securityContext:
@@ -201,11 +196,6 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   predictor:
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 1000
-      seccompProfile:
-        type: RuntimeDefault
     sklearn:
       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
       securityContext:
