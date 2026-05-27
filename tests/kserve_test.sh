@@ -8,6 +8,21 @@ export KSERVE_INGRESS_HOST_PORT=${KSERVE_INGRESS_HOST_PORT:-localhost:8080}
 export KSERVE_M2M_TOKEN="$(kubectl -n ${NAMESPACE} create token default-editor)"
 export KSERVE_TEST_NAMESPACE=${NAMESPACE}
 
+kubectl patch clusterstoragecontainer default --type=merge --patch '{
+  "spec": {
+    "container": {
+      "securityContext": {
+        "allowPrivilegeEscalation": false,
+        "capabilities": {"drop": ["ALL"]},
+        "runAsNonRoot": true,
+        "runAsUser": 1000,
+        "seccompProfile": {"type": "RuntimeDefault"}
+      }
+    }
+  }
+}'
+kubectl get clusterstoragecontainer default -o yaml
+
 # ============================================================
 # Test 1: Model Prediction via KServe Python SDK
 # ============================================================
@@ -29,8 +44,22 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   predictor:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
     sklearn:
       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       resources:
         requests:
           cpu: "50m"
@@ -172,8 +201,22 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   predictor:
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
     sklearn:
       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       resources:
         requests:
           cpu: "50m"
