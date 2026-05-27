@@ -6,6 +6,7 @@ on:
     - .github/workflows/training_operator_test.yaml
     - applications/training-operator/upstream/**
     - tests/training_operator_job.yaml
+    - tests/training_operator_install.sh
     - tests/training_operator_test.sh
     - tests/istio*
     - tests/multi_tenancy_install.sh

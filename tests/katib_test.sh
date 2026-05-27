@@ -14,17 +14,6 @@ dump_katib_debug() {
   kubectl logs -n kubeflow deployment/katib-controller --tail=100 || true
 }
 
-if ! kubectl get deployment katib-controller -n kubeflow -o yaml | grep -q -- "--inject-security-context=true"; then
-  kubectl patch deployment katib-controller -n kubeflow --type=json -p='[
-    {
-      "op": "add",
-      "path": "/spec/template/spec/containers/0/args/-",
-      "value": "--inject-security-context=true"
-    }
-  ]'
-fi
-kubectl rollout status deployment/katib-controller -n kubeflow --timeout=180s
-
 kubectl apply -f tests/katib_test.yaml
 kubectl wait --for=condition=Running experiments.kubeflow.org -n "$KF_PROFILE" --all --timeout=180s || (
   dump_katib_debug
