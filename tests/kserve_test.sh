@@ -434,6 +434,15 @@ spec:
   predictor:
     sklearn:
       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       resources:
         requests:
           cpu: "50m"
