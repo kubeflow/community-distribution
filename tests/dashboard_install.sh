@@ -4,10 +4,10 @@ set -euxo pipefail
 echo "Installing Kubeflow Dashboard ..."
 
 dump_dashboard_debug() {
-  kubectl -n kubeflow get deployment,pods -l app.kubernetes.io/part-of=kubeflow-dashboard -o wide || true
-  kubectl -n kubeflow describe deployment/dashboard || true
-  kubectl -n kubeflow describe pods -l app=dashboard || true
-  kubectl -n kubeflow get events --sort-by=.metadata.creationTimestamp || true
+  kubectl -n kubeflow get deployment,pods -l app.kubernetes.io/part-of=kubeflow-dashboard -o wide
+  kubectl -n kubeflow describe deployment/dashboard
+  kubectl -n kubeflow describe pods -l app=dashboard
+  kubectl -n kubeflow get events --sort-by=.metadata.creationTimestamp
 }
 
 kustomize build applications/dashboard/overlays/istio | kubectl apply -f -
