@@ -8,6 +8,7 @@ awk '
   { print }
   $0 == "    webhookPort: 8443" { print "    injectSecurityContext: true" }
 ' applications/katib/upstream/installs/katib-cert-manager/katib-config.yaml > "$KATIB_CI_OVERLAY/katib-config.yaml"
+grep -q "injectSecurityContext: true" "$KATIB_CI_OVERLAY/katib-config.yaml"
 
 cat > "$KATIB_CI_OVERLAY/kustomization.yaml" <<'EOF'
 apiVersion: kustomize.config.k8s.io/v1beta1

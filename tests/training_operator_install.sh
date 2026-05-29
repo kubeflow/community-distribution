@@ -5,6 +5,8 @@ cd applications/training-operator/upstream
 kustomize build overlays/kubeflow | kubectl apply --server-side --force-conflicts -f -
 cd -
 
+PYTORCH_INIT_TEMPLATE_ARG="--pytorch-init-container-template-file=/etc/restricted-pytorch-init-container/initContainer.yaml"
+
 kubectl apply -f - <<'EOF'
 apiVersion: v1
 kind: ConfigMap
@@ -35,35 +37,53 @@ data:
           type: RuntimeDefault
 EOF
 
-if ! kubectl get deployment training-operator -n kubeflow -o yaml | grep -q -- "--pytorch-init-container-template-file=/etc/restricted-pytorch-init-container/initContainer.yaml"; then
-  kubectl patch deployment training-operator -n kubeflow --type=json -p='[
-    {
-      "op": "add",
-      "path": "/spec/template/spec/containers/0/args",
-      "value": [
-        "--pytorch-init-container-template-file=/etc/restricted-pytorch-init-container/initContainer.yaml"
-      ]
-    },
-    {
-      "op": "add",
-      "path": "/spec/template/spec/containers/0/volumeMounts/-",
-      "value": {
-        "name": "restricted-pytorch-init-container",
-        "mountPath": "/etc/restricted-pytorch-init-container",
-        "readOnly": true
-      }
-    },
-    {
-      "op": "add",
-      "path": "/spec/template/spec/volumes/-",
-      "value": {
-        "name": "restricted-pytorch-init-container",
-        "configMap": {
-          "name": "restricted-pytorch-init-container"
-        }
-      }
-    }
-  ]'
+kubectl patch deployment training-operator -n kubeflow --type=strategic -p='
+spec:
+  template:
+    spec:
+      containers:
+      - name: training-operator
+        volumeMounts:
+        - name: restricted-pytorch-init-container
+          mountPath: /etc/restricted-pytorch-init-container
+          readOnly: true
+      volumes:
+      - name: restricted-pytorch-init-container
+        configMap:
+          name: restricted-pytorch-init-container
+'
+
+TRAINING_OPERATOR_CONTAINER_INDEX=$(
+  kubectl get deployment training-operator -n kubeflow -o json | \
+    jq -r '.spec.template.spec.containers | to_entries[] | select(.value.name == "training-operator") | .key'
+)
+if [ -z "$TRAINING_OPERATOR_CONTAINER_INDEX" ]; then
+  echo "ERROR: training-operator container not found"
+  exit 1
+fi
+
+if ! kubectl get deployment training-operator -n kubeflow -o json | \
+  jq -e --argjson index "$TRAINING_OPERATOR_CONTAINER_INDEX" --arg arg "$PYTORCH_INIT_TEMPLATE_ARG" \
+    '(.spec.template.spec.containers[$index].args // []) | index($arg)' >/dev/null; then
+  if kubectl get deployment training-operator -n kubeflow -o json | \
+    jq -e --argjson index "$TRAINING_OPERATOR_CONTAINER_INDEX" \
+      '.spec.template.spec.containers[$index] | has("args")' >/dev/null; then
+    ARGS_PATCH=$(
+      jq -n \
+        --arg path "/spec/template/spec/containers/${TRAINING_OPERATOR_CONTAINER_INDEX}/args/-" \
+        --arg arg "$PYTORCH_INIT_TEMPLATE_ARG" \
+        '[{"op": "add", "path": $path, "value": $arg}]'
+    )
+  else
+    ARGS_PATCH=$(
+      jq -n \
+        --arg path "/spec/template/spec/containers/${TRAINING_OPERATOR_CONTAINER_INDEX}/args" \
+        --arg arg "$PYTORCH_INIT_TEMPLATE_ARG" \
+        '[{"op": "add", "path": $path, "value": [$arg]}]'
+    )
+  fi
+
+  kubectl patch deployment training-operator -n kubeflow --type=json -p "$ARGS_PATCH"
 fi
 
 kubectl wait --for=condition=Available deployment/training-operator -n kubeflow --timeout=180s
