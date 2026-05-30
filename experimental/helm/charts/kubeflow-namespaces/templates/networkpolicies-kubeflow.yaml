@@ -288,11 +288,9 @@ spec:
     - port: 8080
       protocol: TCP
   podSelector:
-    matchExpressions:
-    - key: component
-      operator: In
-      values:
-      - model-catalog-server
+    matchLabels:
+      app.kubernetes.io/name: model-catalog
+      app.kubernetes.io/component: server
   policyTypes:
   - Ingress
 ---
