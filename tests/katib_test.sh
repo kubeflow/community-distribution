@@ -5,14 +5,14 @@ KF_PROFILE=${1:-kubeflow-user-example-com}
 KATIB_SUGGESTION_DEPLOYMENT=grid-grid
 
 dump_katib_debug() {
-  kubectl get experiments.kubeflow.org -n "$KF_PROFILE" -o yaml || true
-  kubectl get trials.kubeflow.org -n "$KF_PROFILE" -o yaml || true
-  kubectl get deployments,replicasets,jobs,pods -n "$KF_PROFILE" -o wide --show-labels || true
-  kubectl describe experiments.kubeflow.org -n "$KF_PROFILE" || true
-  kubectl describe trials.kubeflow.org -n "$KF_PROFILE" || true
-  kubectl describe deployments,replicasets,jobs,pods -n "$KF_PROFILE" || true
-  kubectl get events -n "$KF_PROFILE" --sort-by=.metadata.creationTimestamp || true
-  kubectl logs -n kubeflow deployment/katib-controller --tail=100 || true
+  kubectl get experiments.kubeflow.org -n "$KF_PROFILE" -o yaml
+  kubectl get trials.kubeflow.org -n "$KF_PROFILE" -o yaml
+  kubectl get deployments,replicasets,jobs,pods -n "$KF_PROFILE" -o wide --show-labels
+  kubectl describe experiments.kubeflow.org -n "$KF_PROFILE"
+  kubectl describe trials.kubeflow.org -n "$KF_PROFILE"
+  kubectl describe deployments,replicasets,jobs,pods -n "$KF_PROFILE"
+  kubectl get events -n "$KF_PROFILE" --sort-by=.metadata.creationTimestamp
+  kubectl logs -n kubeflow deployment/katib-controller --tail=100
 }
 
 wait_for_katib_suggestion_deployment() {

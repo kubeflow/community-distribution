@@ -4,10 +4,10 @@ set -euxo pipefail
 echo "Installing Kubeflow Notebooks v1 ..."
 
 dump_notebooks_debug() {
-  kubectl -n kubeflow get deployments,pods -o wide || true
-  kubectl -n kubeflow describe deployments || true
-  kubectl -n kubeflow describe pods || true
-  kubectl -n kubeflow get events --sort-by=.metadata.creationTimestamp || true
+  kubectl -n kubeflow get deployments,pods -o wide
+  kubectl -n kubeflow describe deployments
+  kubectl -n kubeflow describe pods
+  kubectl -n kubeflow get events --sort-by=.metadata.creationTimestamp
 }
 
 wait_for_notebooks_deployment() {

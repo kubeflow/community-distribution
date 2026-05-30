@@ -4,13 +4,13 @@ set -euxo pipefail
 KF_PROFILE=${1:-kubeflow-user-example-com}
 
 dump_workspace_debug() {
-  kubectl get workspace test -n "${KF_PROFILE}" -o yaml || true
-  kubectl describe workspace test -n "${KF_PROFILE}" || true
-  kubectl get workspacekind jupyterlab -o yaml || true
-  kubectl get pods -n "${KF_PROFILE}" -o wide --show-labels || true
-  kubectl describe pods -n "${KF_PROFILE}" || true
-  kubectl get events -n "${KF_PROFILE}" --sort-by=.metadata.creationTimestamp || true
-  kubectl logs -n kubeflow-workspaces deployment/workspaces-controller --tail=200 || true
+  kubectl get workspace test -n "${KF_PROFILE}" -o yaml
+  kubectl describe workspace test -n "${KF_PROFILE}"
+  kubectl get workspacekind jupyterlab -o yaml
+  kubectl get pods -n "${KF_PROFILE}" -o wide --show-labels
+  kubectl describe pods -n "${KF_PROFILE}"
+  kubectl get events -n "${KF_PROFILE}" --sort-by=.metadata.creationTimestamp
+  kubectl logs -n kubeflow-workspaces deployment/workspaces-controller --tail=200
 }
 
 patch_workspacekind_for_restricted_pss() {

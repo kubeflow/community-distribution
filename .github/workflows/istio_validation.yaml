@@ -286,8 +286,8 @@ jobs:
                 type: RuntimeDefault
         EOF
         kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod/test-client -n $KF_PROFILE --timeout=120s || (
-          kubectl logs pod/test-client -n $KF_PROFILE || true
-          kubectl describe pod/test-client -n $KF_PROFILE || true
+          kubectl logs pod/test-client -n $KF_PROFILE
+          kubectl describe pod/test-client -n $KF_PROFILE
           exit 1
         )
         kubectl logs pod/test-client -n $KF_PROFILE

@@ -3,12 +3,12 @@ set -euxo pipefail
 KF_PROFILE=${1:-kubeflow-user-example-com}
 
 dump_training_operator_debug() {
-  kubectl get pytorchjob pytorch-simple -n "$KF_PROFILE" -o yaml || true
-  kubectl get pods -n "$KF_PROFILE" -o wide --show-labels || true
-  kubectl describe pytorchjob pytorch-simple -n "$KF_PROFILE" || true
-  kubectl describe pods -n "$KF_PROFILE" || true
-  kubectl get events -n "$KF_PROFILE" --sort-by=.metadata.creationTimestamp || true
-  kubectl logs -n kubeflow deployment/training-operator --tail=100 || true
+  kubectl get pytorchjob pytorch-simple -n "$KF_PROFILE" -o yaml
+  kubectl get pods -n "$KF_PROFILE" -o wide --show-labels
+  kubectl describe pytorchjob pytorch-simple -n "$KF_PROFILE"
+  kubectl describe pods -n "$KF_PROFILE"
+  kubectl get events -n "$KF_PROFILE" --sort-by=.metadata.creationTimestamp
+  kubectl logs -n kubeflow deployment/training-operator --tail=100
 }
 
 sed 's/name: pytorch-simple/name: pytorch-simple\n  namespace: '"$KF_PROFILE"'/g' \
