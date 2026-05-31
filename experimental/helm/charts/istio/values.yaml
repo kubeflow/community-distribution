@@ -37,7 +37,7 @@ oauth2Proxy:
   # -- oauth2-proxy extension provider service port.
   port: 80
 
-cluster-local-gateway:
+clusterLocalGateway:
   # -- Render the Kubeflow cluster-local gateway resources.
   enabled: false
 

@@ -7,7 +7,7 @@ networkPolicies:
   enabled: false
 install:
   enabled: false
-cluster-local-gateway:
+clusterLocalGateway:
   enabled: true
 kubeflowIstioResources:
   enabled: false

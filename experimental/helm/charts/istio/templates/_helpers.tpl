@@ -2,6 +2,14 @@
 Render a static Kustomize-generated manifest file while preserving the Go
 templates embedded in Istio injector ConfigMaps.
 */}}
+{{- define "kubeflow-istio.validateNamespace" -}}
+{{- $name := .name -}}
+{{- $value := .value | toString -}}
+{{- if or (gt (len $value) 63) (not (regexMatch "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" $value)) -}}
+{{- fail (printf "%s must be a valid DNS-1123 label, got %q" $name $value) -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "kubeflow-istio.renderFile" -}}
 {{- $root := .root -}}
 {{- $content := $root.Files.Get .path -}}

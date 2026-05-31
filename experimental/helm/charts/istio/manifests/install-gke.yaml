@@ -1,3 +1,5 @@
+# Generated from common/istio/istio-install/overlays/gke with kustomize build.
+# Regenerate with the command documented in experimental/helm/charts/istio/README.md.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
