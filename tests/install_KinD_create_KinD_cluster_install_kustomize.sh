@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-KIND_VERSION="v0.31.0"
-KIND_NODE_IMAGE="kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f"
+KIND_VERSION="v0.32.0"
+KIND_NODE_IMAGE="kindest/node:v1.36.1@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5"
 KUSTOMIZE_VERSION="v5.8.1"
 USER_BINARY_DIRECTORY="$HOME/.local/bin"
 
@@ -47,14 +47,16 @@ kind: Cluster
 # See: https://kubernetes.slack.com/archives/CEKK1KTN2/p1600268272383600
 kubeadmConfigPatches:
   - |
-    apiVersion: kubeadm.k8s.io/v1beta3
+    apiVersion: kubeadm.k8s.io/v1beta4
     kind: ClusterConfiguration
     metadata:
       name: config
     apiServer:
       extraArgs:
-        \"service-account-issuer\": \"https://kubernetes.default.svc\"
-        \"service-account-signing-key-file\": \"/etc/kubernetes/pki/sa.key\"
+        - name: service-account-issuer
+          value: https://kubernetes.default.svc
+        - name: service-account-signing-key-file
+          value: /etc/kubernetes/pki/sa.key
 nodes:
 - role: control-plane
   image: ${KIND_NODE_IMAGE}
