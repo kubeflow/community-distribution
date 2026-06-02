@@ -1,3 +1,3 @@
 {{- if and .Values.install.enabled (eq .Values.profile "oauth2-proxy") }}
-{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/install-oauth2-proxy.yaml" "oauth2" true) }}
+{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/install-oauth2-proxy.yaml" "oauth2ProxyService" true) }}
 {{- end }}
