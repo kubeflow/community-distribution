@@ -13,6 +13,7 @@ kubectl get crd jobsets.jobset.x-k8s.io
 kubectl wait --for=condition=Available deployment/jobset-controller-manager -n kubeflow-system --timeout=120s
 
 kustomize build overlays/runtimes | kubectl apply --server-side --force-conflicts -f -
+kubectl patch clustertrainingruntime torch-distributed --type='json' -p='[{"op": "add", "path": "/spec/template/spec/replicatedJobs/0/template/metadata", "value": {"labels": {"trainer.kubeflow.org/trainjob-ancestor-step": "trainer"}}}, {"op": "add", "path": "/spec/template/spec/replicatedJobs/0/template/spec/template/spec/containers/0/image", "value": "pytorch/pytorch:2.10.0-cuda12.8-cudnn9-runtime"}]'
 
 kubectl apply -f upstream/overlays/kubeflow-platform/kubeflow-trainer-roles.yaml
 
