@@ -16,4 +16,4 @@ labels:
 images:
 - name: workspaces-frontend
   newName: ghcr.io/kubeflow/notebooks/workspaces-frontend
-  newTag: v2.0.0-alpha.2
+  newTag: v2.0.0-alpha.3

@@ -26,7 +26,8 @@ spec:
           removePathPrefix: true
           requestHeaders:
             set:
-              "X-RStudio-Root-Path": "{{ .PathPrefix }}"
+              "X-RStudio-Root-Path": |-
+                {{ httpPathPrefix "rstudio" }}
     extraEnv: []
     extraVolumeMounts:
       - name: "dshm"

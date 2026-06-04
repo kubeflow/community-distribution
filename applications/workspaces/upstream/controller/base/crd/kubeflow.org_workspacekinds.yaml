@@ -317,6 +317,8 @@ spec:
                       environment variables for Workspace Pods (MUTABLE)
                        - the following go template functions are available:
                           - `httpPathPrefix(portId string)`: returns the HTTP path prefix of the specified port
+                    example:
+                      NB_PREFIX: '{{ httpPathPrefix ''jupyterlab'' }}'
                     items:
                       description: EnvVar represents an environment variable present
                         in a Container.
@@ -3711,15 +3713,14 @@ spec:
                                 header manipulation rules for incoming HTTP requests
                                  - sets the `spec.http[].headers.request` of the Istio VirtualService
                                    https://istio.io/latest/docs/reference/config/networking/virtual-service/#Headers-HeaderOperations
-                                 - the following string templates are available:
-                                    - `.PathPrefix`: the path prefix of the Workspace (e.g. '/workspace/connect/{profile_name}/{workspace_name}/')
                               properties:
                                 add:
                                   additionalProperties:
                                     type: string
-                                  description: append the given values to the headers
-                                    specified by keys (will create a comma-separated
-                                    list of values)
+                                  description: |-
+                                    append the given values to the headers specified by keys (will create a comma-separated list of values)
+                                     - the following go template functions are available in the values:
+                                        - `httpPathPrefix(portId string)`: returns the HTTP path prefix of the specified port
                                   example:
                                     My-Header: value-to-append
                                   type: object
@@ -3733,10 +3734,13 @@ spec:
                                 set:
                                   additionalProperties:
                                     type: string
-                                  description: overwrite the headers specified by
-                                    key with the given values
+                                  description: |-
+                                    overwrite the headers specified by key with the given values
+                                     - the following go template functions are available in the values:
+                                        - `httpPathPrefix(portId string)`: returns the HTTP path prefix of the specified port
                                   example:
-                                    X-RStudio-Root-Path: '{{ .PathPrefix }}'
+                                    X-RStudio-Root-Path: '{{ httpPathPrefix ''rstudio''
+                                      }}'
                                   type: object
                               type: object
                           type: object
