@@ -73,3 +73,23 @@ jobs:
 
     - name: Test Volumes Web Application API
       run: ./tests/volumes_web_application_test.sh "${KF_PROFILE}"
+
+    - name: Collect Logs on Failure
+      if: failure()
+      run: |
+        mkdir -p logs
+        kubectl get all --all-namespaces > logs/resources.txt
+        kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
+        for namespace in kubeflow istio-system cert-manager auth kubeflow-user-example-com; do
+            kubectl describe pods -n $namespace > logs/$namespace-pods.txt 2>&1 || true
+            for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || true); do
+                kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true
+            done
+        done
+
+    - name: Upload Diagnostic Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: kubeflow-test-logs
+        path: logs/

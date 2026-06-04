@@ -3,16 +3,6 @@ set -euxo pipefail
 
 KF_PROFILE=${1:-kubeflow-user-example-com}
 
-dump_workspace_debug() {
-  kubectl get workspace test -n "${KF_PROFILE}" -o yaml
-  kubectl describe workspace test -n "${KF_PROFILE}"
-  kubectl get workspacekind jupyterlab -o yaml
-  kubectl get pods -n "${KF_PROFILE}" -o wide --show-labels
-  kubectl describe pods -n "${KF_PROFILE}"
-  kubectl get events -n "${KF_PROFILE}" --sort-by=.metadata.creationTimestamp
-  kubectl logs -n kubeflow-workspaces deployment/workspaces-controller --tail=200
-}
-
 patch_workspacekind_for_restricted_pss() {
   kubectl patch workspacekind jupyterlab --type=json -p='[
     {
@@ -41,10 +31,7 @@ patch_workspacekind_for_restricted_pss() {
 kubectl apply -f applications/workspaces/upstream/controller/samples/jupyterlab_v1beta1_workspacekind.yaml
 patch_workspacekind_for_restricted_pss
 kubectl apply -f tests/workspace.test.kubeflow-user-example-com.yaml
-kubectl wait --for=jsonpath='{.status.state}'=Running workspace/test -n "${KF_PROFILE}" --timeout=600s || (
-  dump_workspace_debug
-  exit 1
-)
+kubectl wait --for=jsonpath='{.status.state}'=Running workspace/test -n "${KF_PROFILE}" --timeout=600s
 
 WORKSPACE_POD="$(kubectl -n "${KF_PROFILE}" get pods \
   -l notebooks.kubeflow.org/workspace-name=test \

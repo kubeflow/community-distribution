@@ -17,33 +17,6 @@ kubectl get deployment kubeflow-trainer-controller-manager -n kubeflow-system
 kubectl get pods -n kubeflow-system -l app.kubernetes.io/name=trainer
 kubectl get clustertrainingruntimes torch-distributed
 
-kubectl patch clustertrainingruntime torch-distributed --type=json -p='[
-  {
-    "op": "add",
-    "path": "/spec/template/spec/replicatedJobs/0/template/spec/template/spec/securityContext",
-    "value": {
-      "runAsNonRoot": true,
-      "runAsUser": 1000,
-      "seccompProfile": {"type": "RuntimeDefault"}
-    }
-  },
-  {
-    "op": "add",
-    "path": "/spec/template/spec/replicatedJobs/0/template/spec/template/spec/containers/0/workingDir",
-    "value": "/tmp"
-  },
-  {
-    "op": "add",
-    "path": "/spec/template/spec/replicatedJobs/0/template/spec/template/spec/containers/0/securityContext",
-    "value": {
-      "allowPrivilegeEscalation": false,
-      "capabilities": {"drop": ["ALL"]},
-      "runAsNonRoot": true,
-      "runAsUser": 1000,
-      "seccompProfile": {"type": "RuntimeDefault"}
-    }
-  }
-]'
 kubectl get clustertrainingruntime torch-distributed -o yaml
 
 pip install kubeflow
