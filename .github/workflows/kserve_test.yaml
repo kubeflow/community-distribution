@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 15
     steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
     - name: Install KinD, Create KinD cluster and Install kustomize
       run: ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
@@ -66,7 +66,7 @@ jobs:
       run: ./tests/kubeflow_profile_install.sh
 
     - name: Setup python 3.12
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
         python-version: 3.12
 
@@ -99,7 +99,7 @@ jobs:
 
     - name: Upload Diagnostic Logs
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: kserve-test-logs
         path: logs/
