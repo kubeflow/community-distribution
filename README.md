@@ -587,6 +587,52 @@ The following manual steps are required when upgrading from `release-26.03` to t
    ```sh
    kubectl delete clusterrolebinding llmisvc-manager-rolebinding --ignore-not-found
    ```
+3. **Kubeflow Dashboard 2.0.0** ([#3469](https://github.com/kubeflow/manifests/issues/3469)): The Central Dashboard, Profile Controller + KFAM, and PodDefaults webhook moved to [`kubeflow/dashboard`](https://github.com/kubeflow/dashboard/releases/tag/v2.0.0) and must be cleaned up first before the new manifests can be applied. Delete the old `26.03` resources once before `kubectl apply`. Do NOT delete any `CustomResourceDefinition` or `Namespace`, so that existing `Profile` objects and therefore their namespaces survive:
+   ```sh
+   # Admission webhook (PodDefaults)
+   kubectl delete -n kubeflow --ignore-not-found \
+     serviceaccount/admission-webhook-service-account \
+     service/admission-webhook-service \
+     deployment/admission-webhook-deployment \
+     certificate.cert-manager.io/admission-webhook-cert \
+     issuer.cert-manager.io/admission-webhook-selfsigned-issuer
+   kubectl delete --ignore-not-found \
+     clusterrole/admission-webhook-cluster-role \
+     clusterrole/admission-webhook-kubeflow-poddefaults-admin \
+     clusterrole/admission-webhook-kubeflow-poddefaults-edit \
+     clusterrole/admission-webhook-kubeflow-poddefaults-view \
+     clusterrolebinding/admission-webhook-cluster-role-binding \
+     mutatingwebhookconfiguration/admission-webhook-mutating-webhook-configuration
+
+   # Central Dashboard
+   kubectl delete -n kubeflow --ignore-not-found \
+     serviceaccount/centraldashboard \
+     role.rbac.authorization.k8s.io/centraldashboard \
+     rolebinding.rbac.authorization.k8s.io/centraldashboard \
+     configmap/centraldashboard-config \
+     configmap/centraldashboard-parameters \
+     service/centraldashboard \
+     deployment/centraldashboard \
+     virtualservice.networking.istio.io/centraldashboard \
+     authorizationpolicy.security.istio.io/central-dashboard
+   kubectl delete --ignore-not-found \
+     clusterrole/centraldashboard \
+     clusterrolebinding/centraldashboard
+
+   # Profile Controller + KFAM (keep the Profiles CRD and all Profile objects)
+   kubectl delete -n kubeflow --ignore-not-found \
+     serviceaccount/profiles-controller-service-account \
+     role.rbac.authorization.k8s.io/profiles-leader-election-role \
+     rolebinding.rbac.authorization.k8s.io/profiles-leader-election-rolebinding \
+     service/profiles-kfam \
+     deployment/profiles-deployment \
+     virtualservice.networking.istio.io/profiles-kfam \
+     authorizationpolicy.security.istio.io/profiles-kfam
+   kubectl delete --ignore-not-found \
+     clusterrolebinding/profiles-cluster-rolebinding
+   ```
+   The hashed `ConfigMap` resources (`namespace-labels-data-*`, `profiles-config-*`) are recreated under new hashes by the new manifests and can be left untouched.
+   > **WARNING:** Never delete the `Profiles` CRD; it would delete every profile namespace.
 
 ## Release Process
 
