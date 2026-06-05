@@ -40,7 +40,7 @@ This should only apply to “stable” components, as “alpha/beta” component
 
 - This repository is owned by the [Platform/Manifests/security Working Group](https://github.com/kubeflow/community/blob/master/wg-manifests/charter.md).
 - You can join the CNCF Slack and access our meetings at the [Kubeflow Community](https://www.kubeflow.org/docs/about/community/) website.
-- Our channel on the CNCF Slack is [**#kubeflow-platform**](https://app.slack.com/client/T08PSQ7BQ/C073W572LA2).
+- Our channel on the CNCF Slack is [**#kubeflow-community-distribution**](https://cloud-native.slack.com/archives/C073W572LA2).
 - You can also find our [biweekly meetings](https://bit.ly/kf-wg-manifests-meet), including the commentable [Agenda](https://bit.ly/kf-wg-manifests-notes).
 - If you want to contribute, please take a look at the [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -83,7 +83,6 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Dex | common/dex | [2.45.1](https://github.com/dexidp/dex/releases/tag/v2.45.1) | 3m | 27Mi | 0GB |
 | OAuth2-Proxy | common/oauth2-proxy | [7.15.2](https://github.com/oauth2-proxy/oauth2-proxy/releases/tag/v7.15.2) | 3m | 27Mi | 0GB |
 | **Total** | | | **4380m** | **12341Mi** | **65GB** |
-
 
 
 ## Installation
