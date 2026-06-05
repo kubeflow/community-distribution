@@ -6,4 +6,4 @@ resources:
 images:
 - name: ghcr.io/kubeflow/notebooks/pvcviewer-controller
   newName: ghcr.io/kubeflow/notebooks/pvcviewer-controller
-  newTag: v1.11.0-rc.1
+  newTag: v1.11.0
