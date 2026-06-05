@@ -64,13 +64,8 @@ This repository periodically synchronizes all official Kubeflow components from 
 | - | - | - | - | - | - |
 | Training Operator | applications/training-operator/upstream | [v1.9.2](https://github.com/kubeflow/training-operator/tree/v1.9.2/manifests) | 3m | 25Mi | 0GB |
 | Trainer | applications/trainer/upstream | [v2.2.0](https://github.com/kubeflow/trainer/tree/v2.2.0/manifests) | 8m | 143Mi | 0GB |
-| Notebook Controller | applications/notebooks-v1/upstream/notebook-controller | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/notebook-controller/config) | 5m | 93Mi | 0GB |
-| PVC Viewer Controller | applications/notebooks-v1/upstream/pvcviewer-controller | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/pvcviewer-controller/config) | 15m | 128Mi | 0GB |
-| Tensorboard Controller | applications/notebooks-v1/upstream/tensorboard-controller | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/tensorboard-controller/config) | 15m | 128Mi | 0GB |
+| Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.0](https://github.com/kubeflow/notebooks/tree/v1.11.0/) | 43m | 806Mi | 0GB |
 | Kubeflow Dashboard | applications/dashboard/upstream/ | [v2.0.0](https://github.com/kubeflow/dashboard/tree/v2.0.0/) | 10m | 302Mi | 0GB |
-| Jupyter Web Application | applications/notebooks-v1/upstream/jupyter-web-app | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/jupyter/manifests) | 4m | 231Mi | 0GB |
-| Tensorboards Web Application | applications/notebooks-v1/upstream/tensorboards-web-app | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/tensorboards/manifests) |  |  |  |
-| Volumes Web Application | applications/notebooks-v1/upstream/volumes-web-app | [v1.11.0-rc.1](https://github.com/kubeflow/notebooks/tree/v1.11.0-rc.1/components/crud-web-apps/volumes/manifests) | 4m | 226Mi | 0GB |
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
 | KServe Models Web Application | applications/kserve/models-web-app | [v0.18.0](https://github.com/kserve/models-web-app/tree/v0.18.0/manifests/kustomize) | 6m | 259Mi  | 0GB |
 | KServe | applications/kserve/kserve | [v0.18.0](https://github.com/kserve/kserve/tree/v0.18.0) | 600m | 1200Mi | 0GB |

@@ -23,7 +23,7 @@ commonLabels:
 images:
 - name: ghcr.io/kubeflow/notebooks/jupyter-web-app
   newName: ghcr.io/kubeflow/notebooks/jupyter-web-app
-  newTag: v1.11.0-rc.1
+  newTag: v1.11.0
 # We need the name to be unique without the suffix because the original name is what
 # gets used with patches
 configMapGenerator:
