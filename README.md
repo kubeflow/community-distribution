@@ -60,18 +60,18 @@ All components are deployable with `kustomize`. In addition, experimental Helm c
 
 This repository periodically synchronizes all official Kubeflow components from the respective upstream repositories. The following matrix shows the git version included for each component along with the rough resource requirements for each Kubeflow component, calculated as the maximum of actual usage and configured requests for CPU/memory as well as storage requirements from PVCs:
 
-| Component | Local Manifests Path | Upstream Revision | CPU (millicores) | Memory (Mi) |  PVC Storage (GB) |
+| Component | Local Manifests Path | Upstream Revision | CPU (millicores) | Memory (Mi) | PVC Storage (GB) |
 | - | - | - | - | - | - |
 | Training Operator | applications/training-operator/upstream | [v1.9.2](https://github.com/kubeflow/training-operator/tree/v1.9.2/manifests) | 3m | 25Mi | 0GB |
 | Trainer | applications/trainer/upstream | [v2.2.0](https://github.com/kubeflow/trainer/tree/v2.2.0/manifests) | 8m | 143Mi | 0GB |
 | Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.0](https://github.com/kubeflow/notebooks/tree/v1.11.0/) | 43m | 806Mi | 0GB |
 | Kubeflow Dashboard | applications/dashboard/upstream/ | [v2.0.0](https://github.com/kubeflow/dashboard/tree/v2.0.0/) | 10m | 302Mi | 0GB |
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
-| KServe Models Web Application | applications/kserve/models-web-app | [v0.18.0](https://github.com/kserve/models-web-app/tree/v0.18.0/manifests/kustomize) | 6m | 259Mi  | 0GB |
+| KServe Models Web Application | applications/kserve/models-web-app | [v0.18.0](https://github.com/kserve/models-web-app/tree/v0.18.0/manifests/kustomize) | 6m | 259Mi | 0GB |
 | KServe | applications/kserve/kserve | [v0.18.0](https://github.com/kserve/kserve/tree/v0.18.0) | 600m | 1200Mi | 0GB |
 | Kubeflow Pipelines | applications/pipeline/upstream | [2.16.1](https://github.com/kubeflow/pipelines/tree/2.16.1/manifests/kustomize) | 970m | 3552Mi | 35GB |
 | Kubeflow Hub | applications/hub/upstream | [v0.3.9](https://github.com/kubeflow/hub/tree/v0.3.9/manifests/kustomize) | 510m | 2112Mi | 20GB |
-| Spark Operator	|	applications/spark/spark-operator	|	[2.5.0](https://github.com/kubeflow/spark-operator/tree/v2.5.0) | 9m | 41Mi | 0GB |
+| Spark Operator | applications/spark/spark-operator | [2.5.0](https://github.com/kubeflow/spark-operator/tree/v2.5.0) | 9m | 41Mi | 0GB |
 | Istio | common/istio | [1.30.1](https://github.com/istio/istio/releases/tag/1.30.1) | 750m | 2364Mi | 0GB |
 | Knative | common/knative/knative-serving <br /> common/knative/knative-eventing | [v1.22.0](https://github.com/knative/serving/releases/tag/knative-v1.22.0) <br /> [v1.22.0](https://github.com/knative/eventing/releases/tag/knative-v1.22.0) | 1450m | 1038Mi | 0GB |
 | Cert Manager | common/cert-manager | [1.20.2](https://github.com/cert-manager/cert-manager/releases/tag/v1.20.2) | 3m | 128Mi | 0GB |
