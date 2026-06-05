@@ -1,0 +1,11 @@
+version: 2
+updates:
+- package-ecosystem: "github-actions"
+  open-pull-requests-limit: 5
+  cooldown:
+    default-days: 7
+  directory: "/"
+  schedule:
+    interval: "daily"
+  commit-message:
+    prefix: "chore"
