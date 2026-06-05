@@ -587,6 +587,7 @@ The following manual steps are required when upgrading from `release-26.03` to t
    ```sh
    kubectl delete clusterrolebinding llmisvc-manager-rolebinding --ignore-not-found
    ```
+
 3. **Kubeflow Dashboard 2.0.0** ([#3469](https://github.com/kubeflow/manifests/issues/3469)): The Central Dashboard, Profile Controller + KFAM, and PodDefaults webhook moved to [`kubeflow/dashboard`](https://github.com/kubeflow/dashboard/releases/tag/v2.0.0) and must be cleaned up first before the new manifests can be applied. Delete the old `26.03` resources once before `kubectl apply`. Do NOT delete any `CustomResourceDefinition` or `Namespace`, so that existing `Profile` objects and therefore their namespaces survive:
    ```sh
    # Admission webhook (PodDefaults)
