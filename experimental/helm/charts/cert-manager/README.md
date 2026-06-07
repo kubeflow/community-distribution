@@ -7,7 +7,7 @@ It installs:
 - upstream cert-manager `v1.20.2`
 - cert-manager CRDs
 - optional `ClusterIssuer/kubeflow-self-signing-issuer`
-- optional Kubeflow cert-manager NetworkPolicies
+- optional Kubeflow-specific cert-manager NetworkPolicies
 
 In the Kubeflow platform install, apply the foundation charts first. The `kubeflow-namespaces` chart provides `Namespace/cert-manager`; this wrapper stores its Helm release metadata in that same workload namespace.
 
