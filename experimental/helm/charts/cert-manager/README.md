@@ -9,12 +9,20 @@ It installs:
 - optional `ClusterIssuer/kubeflow-self-signing-issuer`
 - optional Kubeflow-specific cert-manager NetworkPolicies
 
-In the Kubeflow platform install, apply the foundation charts first. The `kubeflow-namespaces` chart provides `Namespace/cert-manager`; this wrapper stores its Helm release metadata in that same workload namespace.
+In the Kubeflow platform install, apply the foundation charts first:
+
+| Chart | Provides |
+| --- | --- |
+| `kubeflow-namespaces` | `Namespace/cert-manager` and other platform namespaces |
+| `kubeflow-platform` | shared Kubeflow platform RBAC |
+
+This wrapper stores its Helm release metadata in the `cert-manager` workload namespace.
 
 ```bash
 helm install kubeflow-namespaces ./experimental/helm/charts/kubeflow-namespaces --namespace default
 helm install kubeflow-platform ./experimental/helm/charts/kubeflow-platform --namespace kubeflow-system
 
+helm dep build ./experimental/helm/charts/cert-manager
 helm install cert-manager ./experimental/helm/charts/cert-manager --namespace cert-manager --wait
 helm upgrade cert-manager ./experimental/helm/charts/cert-manager --namespace cert-manager \
   --values ./experimental/helm/charts/cert-manager/ci/values-kubeflow.yaml --wait
