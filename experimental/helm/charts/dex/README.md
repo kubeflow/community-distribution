@@ -6,12 +6,13 @@ with `common/dex`.
 
 ## Install
 
-Install foundation, cert-manager, Istio, and oauth2-proxy first. Store Helm
-release metadata in `kubeflow-system`; Dex workloads still run in `auth`.
+Install foundation, cert-manager, Istio, and oauth2-proxy first. The
+`kubeflow-namespaces` foundation chart creates `Namespace/auth`; this chart
+stores Helm release metadata in that same workload namespace.
 
 ```bash
 helm install dex ./experimental/helm/charts/dex \
-  --namespace kubeflow-system \
+  --namespace auth \
   --values ./experimental/helm/charts/dex/ci/values-oauth2-proxy.yaml \
   --wait
 ```

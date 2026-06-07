@@ -149,9 +149,9 @@ case "$COMPONENT" in
         )
 
         declare -A NAMESPACES=(
-            ["base"]="kubeflow-system"
-            ["istio"]="kubeflow-system"
-            ["oauth2-proxy"]="kubeflow-system"
+            ["base"]="auth"
+            ["istio"]="auth"
+            ["oauth2-proxy"]="auth"
         )
         ;;
 

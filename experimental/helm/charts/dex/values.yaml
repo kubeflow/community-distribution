@@ -10,12 +10,6 @@ global:
   # -- Namespace for oauth2-proxy workloads.
   oauth2ProxyNamespace: oauth2-proxy
 
-namespace:
-  # -- Render the Dex workload namespace.
-  enabled: true
-  labels:
-    pod-security.kubernetes.io/enforce: restricted
-
 rbac:
   # -- Render Dex RBAC resources.
   enabled: true
