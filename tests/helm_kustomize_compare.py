@@ -160,6 +160,13 @@ def normalize_manifest(manifest: Dict, component: str = "katib") -> Dict:
     
     return remove_empty_values(normalized)
 
+def should_compare_manifest(manifest: Dict, component: str, scenario: str) -> bool:
+    """Select the resource subset owned by a comparison scenario."""
+    if component == "oauth2-proxy" and manifest.get("kind") == "Namespace":
+        return False
+
+    return True
+
 def get_resource_key(manifest: Dict, component: str = "katib") -> str:
     """Generate a unique key for the resource."""
     kind = manifest.get('kind', 'Unknown')
@@ -228,11 +235,15 @@ def compare_manifests(kustomize_file: str, helm_file: str, component: str, scena
     helm_resources = {}
     
     for manifest in kustomize_manifests:
+        if not should_compare_manifest(manifest, component, scenario):
+            continue
         normalized = normalize_manifest(manifest, component)
         key = get_resource_key(normalized, component)
         kustomize_resources[key] = normalized
     
     for manifest in helm_manifests:
+        if not should_compare_manifest(manifest, component, scenario):
+            continue
         normalized = normalize_manifest(manifest, component)
         key = get_resource_key(normalized, component)
         helm_resources[key] = normalized

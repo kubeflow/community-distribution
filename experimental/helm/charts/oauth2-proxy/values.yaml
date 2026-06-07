@@ -26,10 +26,6 @@ parameters:
   # -- Extra JWT issuers in oauth2-proxy --extra-jwt-issuers format.
   extraJwtIssuers: ""
 
-namespace:
-  # -- Render oauth2-proxy workload namespace.
-  enabled: true
-
 oauth2Proxy:
   # -- Render oauth2-proxy workload resources.
   enabled: true

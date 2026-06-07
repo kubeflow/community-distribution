@@ -6,12 +6,13 @@ stays aligned with `common/oauth2-proxy`.
 
 ## Install
 
-Install foundation, cert-manager, and Istio first. Store Helm release metadata
-in `kubeflow-system`; oauth2-proxy workloads still run in `oauth2-proxy`.
+Install foundation, cert-manager, and Istio first. The `kubeflow-namespaces`
+foundation chart creates `Namespace/oauth2-proxy`; this chart stores Helm
+release metadata in that same workload namespace.
 
 ```bash
 helm install oauth2-proxy ./experimental/helm/charts/oauth2-proxy \
-  --namespace kubeflow-system \
+  --namespace oauth2-proxy \
   --values ./experimental/helm/charts/oauth2-proxy/ci/values-m2m-dex-only.yaml
 ```
 
@@ -20,7 +21,7 @@ machine-to-machine auth, use:
 
 ```bash
 helm install oauth2-proxy ./experimental/helm/charts/oauth2-proxy \
-  --namespace kubeflow-system \
+  --namespace oauth2-proxy \
   --values ./experimental/helm/charts/oauth2-proxy/ci/values-m2m-dex-and-kind.yaml
 ```
 

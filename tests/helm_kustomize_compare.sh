@@ -151,10 +151,10 @@ case "$COMPONENT" in
         )
 
         declare -A NAMESPACES=(
-            ["base"]="kubeflow-system"
-            ["m2m-dex-only"]="kubeflow-system"
-            ["m2m-dex-and-kind"]="kubeflow-system"
-            ["m2m-dex-and-eks"]="kubeflow-system"
+            ["base"]="oauth2-proxy"
+            ["m2m-dex-only"]="oauth2-proxy"
+            ["m2m-dex-and-kind"]="oauth2-proxy"
+            ["m2m-dex-and-eks"]="oauth2-proxy"
         )
         ;;
 
