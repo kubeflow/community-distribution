@@ -3,9 +3,6 @@ cert-manager:
   enabled: false
   namespace: cert-manager
 
-namespaceResource:
-  enabled: false
-
 kubeflow:
   enabled: true
   clusterIssuer:

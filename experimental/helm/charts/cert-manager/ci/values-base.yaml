@@ -7,9 +7,6 @@ cert-manager:
   startupapicheck:
     enabled: false
 
-namespaceResource:
-  enabled: true
-
 kubeflow:
   enabled: false
   clusterIssuer:

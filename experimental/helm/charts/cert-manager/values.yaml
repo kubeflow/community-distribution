@@ -8,10 +8,6 @@ cert-manager:
   startupapicheck:
     enabled: false
 
-namespaceResource:
-  # -- Create the cert-manager workload namespace.
-  enabled: true
-
 kubeflow:
   # -- Enable Kubeflow-specific cert-manager resources.
   enabled: false

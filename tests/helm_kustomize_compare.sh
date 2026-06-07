@@ -149,9 +149,9 @@ case "$COMPONENT" in
         )
 
         declare -A NAMESPACES=(
-            ["base"]="kubeflow-system"
-            ["kubeflow"]="kubeflow-system"
-            ["existing"]="kubeflow-system"
+            ["base"]="cert-manager"
+            ["kubeflow"]="cert-manager"
+            ["existing"]="cert-manager"
         )
         ;;
 
