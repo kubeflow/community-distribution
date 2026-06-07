@@ -1,0 +1,18 @@
+{{- $platformNamespaces := list .Values.global.namespace .Values.global.systemNamespace "cert-manager" "istio-system" "oauth2-proxy" "auth" -}}
+{{- $skippedNamespaces := list -}}
+{{- range $ns := $platformNamespaces -}}
+{{- if not (eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" $ "name" $ns)) "true") -}}
+{{- $skippedNamespaces = append $skippedNamespaces $ns -}}
+{{- end -}}
+{{- end -}}
+{{- if $skippedNamespaces }}
+WARNING: The following namespaces were skipped because they already existed before this install:
+{{ range $ns := $skippedNamespaces }}  - {{ $ns }}
+{{ end }}
+If these namespaces are missing PSS labels, pods may fail admission. Apply labels manually:
+
+  kubectl label namespace <name> \
+    pod-security.kubernetes.io/enforce=restricted --overwrite
+
+Also verify any component-specific labels required by the Kustomize baseline.
+{{- end }}

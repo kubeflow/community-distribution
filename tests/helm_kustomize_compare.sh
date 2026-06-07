@@ -138,14 +138,17 @@ case "$COMPONENT" in
 
         declare -A KUSTOMIZE_PATHS=(
             ["base"]="$MANIFESTS_DIR/base"
+            ["platform-namespaces"]="$ROOT_DIR/common/kubeflow-namespace/base"$'\n'"$ROOT_DIR/common/cert-manager/base"$'\n'"$ROOT_DIR/common/istio/istio-namespace/base"$'\n'"$ROOT_DIR/common/oauth2-proxy/base"$'\n'"$ROOT_DIR/common/dex/base"
         )
 
         declare -A HELM_VALUES=(
             ["base"]="$CHART_DIR/ci/values-default.yaml"
+            ["platform-namespaces"]="$CHART_DIR/ci/values-default.yaml"
         )
 
         declare -A NAMESPACES=(
             ["base"]="default"
+            ["platform-namespaces"]="default"
         )
         ;;
 
@@ -188,10 +191,15 @@ NAMESPACE="${NAMESPACES[$SCENARIO]}"
 
 echo "Comparing $COMPONENT manifests for scenario: $SCENARIO"
 
-if [ ! -d "$KUSTOMIZE_PATH" ]; then
-    echo "ERROR: Kustomize path does not exist: $KUSTOMIZE_PATH"
-    exit 1
-fi
+while IFS= read -r path; do
+    if [ -z "$path" ]; then
+        continue
+    fi
+    if [ ! -d "$path" ]; then
+        echo "ERROR: Kustomize path does not exist: $path"
+        exit 1
+    fi
+done <<< "$KUSTOMIZE_PATH"
 
 if [ ! -d "$CHART_DIR" ]; then
     echo "ERROR: Helm chart directory does not exist: $CHART_DIR"
@@ -207,7 +215,18 @@ KUSTOMIZE_OUTPUT="/tmp/kustomize-${COMPONENT}-${SCENARIO}.yaml"
 HELM_OUTPUT="/tmp/helm-${COMPONENT}-${SCENARIO}.yaml"
 
 cd "$ROOT_DIR"
-kustomize build "$KUSTOMIZE_PATH" > "$KUSTOMIZE_OUTPUT"
+: > "$KUSTOMIZE_OUTPUT"
+path_index=0
+while IFS= read -r path; do
+    if [ -z "$path" ]; then
+        continue
+    fi
+    if [ "$path_index" -gt 0 ]; then
+        printf "\n---\n" >> "$KUSTOMIZE_OUTPUT"
+    fi
+    kustomize build "$path" >> "$KUSTOMIZE_OUTPUT"
+    path_index=$((path_index + 1))
+done <<< "$KUSTOMIZE_PATH"
 
 # Generate Helm manifests (different approach for KServe Models Web App)
 cd "$ROOT_DIR"
