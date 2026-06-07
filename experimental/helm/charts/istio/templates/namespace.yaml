@@ -1,3 +1,0 @@
-{{- if .Values.namespace.enabled }}
-{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/namespace.yaml") }}
-{{- end }}

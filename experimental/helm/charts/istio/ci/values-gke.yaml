@@ -2,8 +2,6 @@
 profile: gke
 crds:
   enabled: true
-namespace:
-  enabled: true
 networkPolicies:
   enabled: true
 install:

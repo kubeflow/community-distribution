@@ -157,13 +157,13 @@ case "$COMPONENT" in
         )
 
         declare -A NAMESPACES=(
-            ["crds"]="kubeflow-system"
-            ["base"]="kubeflow-system"
-            ["oauth2-proxy"]="kubeflow-system"
-            ["gke"]="kubeflow-system"
-            ["cluster-local-gateway"]="kubeflow-system"
-            ["kubeflow-istio-resources"]="kubeflow-system"
-            ["platform-full"]="kubeflow-system"
+            ["crds"]="istio-system"
+            ["base"]="istio-system"
+            ["oauth2-proxy"]="istio-system"
+            ["gke"]="istio-system"
+            ["cluster-local-gateway"]="istio-system"
+            ["kubeflow-istio-resources"]="istio-system"
+            ["platform-full"]="istio-system"
         )
         ;;
 

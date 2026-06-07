@@ -1,8 +1,6 @@
 # CI values for Kubeflow Istio resources parity.
 crds:
   enabled: false
-namespace:
-  enabled: false
 networkPolicies:
   enabled: false
 install:

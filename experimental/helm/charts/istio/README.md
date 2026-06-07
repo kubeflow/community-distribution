@@ -16,12 +16,12 @@ helm install kubeflow-namespaces ./experimental/helm/charts/kubeflow-namespaces 
 helm install kubeflow-platform ./experimental/helm/charts/kubeflow-platform --namespace kubeflow-system
 
 helm install istio ./experimental/helm/charts/istio \
-  --namespace kubeflow-system \
+  --namespace istio-system \
   --values ./experimental/helm/charts/istio/ci/values-crds.yaml \
   --wait
 
 helm upgrade istio ./experimental/helm/charts/istio \
-  --namespace kubeflow-system \
+  --namespace istio-system \
   --values ./experimental/helm/charts/istio/ci/values-oauth2-proxy.yaml \
   --wait
 ```
@@ -31,7 +31,7 @@ oauth2-proxy values:
 
 ```bash
 helm upgrade istio ./experimental/helm/charts/istio \
-  --namespace kubeflow-system \
+  --namespace istio-system \
   --values ./experimental/helm/charts/istio/ci/values-gke.yaml \
   --wait
 ```
@@ -41,20 +41,21 @@ gateway and Kubeflow Istio resources, use:
 
 ```bash
 helm upgrade istio ./experimental/helm/charts/istio \
-  --namespace kubeflow-system \
+  --namespace istio-system \
   --values ./experimental/helm/charts/istio/ci/values-platform-full.yaml \
   --wait
 ```
 
-Helm release metadata is stored in `kubeflow-system`. Istio workloads still run
-in `istio-system`, and Istio CNI resources still run in `kube-system`.
+Helm release metadata and Istio workloads are stored in `istio-system`. The
+`kubeflow-namespaces` foundation chart creates `Namespace/istio-system` first.
+Istio CNI resources still run in `kube-system`.
 
 ## Kustomize Mapping
 
 - `ci/values-crds.yaml`: `common/istio/istio-crds/base`
-- `ci/values-base.yaml`: `common/istio/istio-crds/base`, `common/istio/istio-namespace/base`, and `common/istio/istio-install/base`
-- `ci/values-oauth2-proxy.yaml`: `common/istio/istio-crds/base`, `common/istio/istio-namespace/base`, and `common/istio/istio-install/overlays/oauth2-proxy`
-- `ci/values-gke.yaml`: `common/istio/istio-crds/base`, `common/istio/istio-namespace/base`, and `common/istio/istio-install/overlays/gke`
+- `ci/values-base.yaml`: `common/istio/istio-crds/base`, `common/istio/istio-namespace/base` NetworkPolicies, and `common/istio/istio-install/base`
+- `ci/values-oauth2-proxy.yaml`: `common/istio/istio-crds/base`, `common/istio/istio-namespace/base` NetworkPolicies, and `common/istio/istio-install/overlays/oauth2-proxy`
+- `ci/values-gke.yaml`: `common/istio/istio-crds/base`, `common/istio/istio-namespace/base` NetworkPolicies, and `common/istio/istio-install/overlays/gke`
 - `ci/values-cluster-local-gateway.yaml`: `common/istio/cluster-local-gateway/base`
 - `ci/values-kubeflow-istio-resources.yaml`: `common/istio/kubeflow-istio-resources/base`
 - `ci/values-platform-full.yaml`: the managed platform Istio slice above plus cluster-local gateway and Kubeflow Istio resources
@@ -80,8 +81,6 @@ kustomize build common/istio/cluster-local-gateway/base \
 kustomize build common/istio/kubeflow-istio-resources/base \
   > experimental/helm/charts/istio/manifests/kubeflow-istio-resources.yaml
 kustomize build common/istio/istio-namespace/base > /tmp/istio-namespace-build.yaml
-awk 'BEGIN{doc=0} /^---$/{doc++; next} doc==0{print}' /tmp/istio-namespace-build.yaml \
-  > experimental/helm/charts/istio/manifests/namespace.yaml
 awk 'BEGIN{doc=0} /^---$/{doc++; if (doc > 1) print "---"; next} doc>0{print}' /tmp/istio-namespace-build.yaml \
   > experimental/helm/charts/istio/manifests/networkpolicies.yaml
 ```

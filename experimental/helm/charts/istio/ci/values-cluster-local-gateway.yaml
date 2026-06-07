@@ -1,8 +1,6 @@
 # CI values for Istio cluster-local gateway parity.
 crds:
   enabled: false
-namespace:
-  enabled: false
 networkPolicies:
   enabled: false
 install:

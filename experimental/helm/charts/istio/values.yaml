@@ -19,10 +19,6 @@ crds:
   # -- Render Istio CustomResourceDefinition resources.
   enabled: true
 
-namespace:
-  # -- Render the Istio workload namespace.
-  enabled: false
-
 networkPolicies:
   # -- Render Istio namespace NetworkPolicy resources.
   enabled: false

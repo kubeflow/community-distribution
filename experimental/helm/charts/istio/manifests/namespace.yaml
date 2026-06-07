@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    istio-injection: disabled
-    istio-operator-managed: Reconcile
-    pod-security.kubernetes.io/enforce: restricted
-  name: istio-system
