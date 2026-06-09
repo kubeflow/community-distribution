@@ -4,7 +4,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-allow-same-namespace-kubeflow-system
-  namespace: {{ .Values.global.systemNamespace }}
+  namespace: kubeflow-system
 spec:
   ingress:
   - from:
@@ -17,7 +17,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: jobset-webhook
-  namespace: {{ .Values.global.systemNamespace }}
+  namespace: kubeflow-system
 spec:
   ingress:
   - ports:
@@ -34,7 +34,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: trainer-webhook
-  namespace: {{ .Values.global.systemNamespace }}
+  namespace: kubeflow-system
 spec:
   ingress:
   - ports:

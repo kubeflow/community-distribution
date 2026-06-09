@@ -4,7 +4,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: cache-server
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - ports:
@@ -23,7 +23,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-allow-same-namespace
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -36,7 +36,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: jupyter-web-app
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -60,7 +60,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: katib-controller
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - ports:
@@ -79,7 +79,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: katib-db-manager
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -103,7 +103,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: katib-ui
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -126,7 +126,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: kserve
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - ports:
@@ -145,7 +145,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: kserve-models-web-application
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -168,7 +168,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: metadata-grpc-server
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -192,7 +192,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: metatada-envoy
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -216,7 +216,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: ml-pipeline
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -245,7 +245,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: ml-pipeline-ui
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -268,7 +268,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: model-catalog
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -298,7 +298,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: model-registry
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -330,7 +330,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: model-registry-ui
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -354,7 +354,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: pvcviewer-webhook
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - ports:
@@ -373,7 +373,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: spark-operator-webhook
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - ports:
@@ -396,7 +396,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: tensorboards-web-app
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:
@@ -422,7 +422,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: training-operator-webhook
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - ports:
@@ -441,7 +441,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: volumes-web-app
-  namespace: {{ .Values.global.namespace }}
+  namespace: kubeflow
 spec:
   ingress:
   - from:

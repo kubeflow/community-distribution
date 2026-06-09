@@ -18,6 +18,12 @@ If one of these namespaces already exists, for example a company-managed `cert-m
 
 Namespaces created by this chart are kept when the Helm release is uninstalled, because platform namespaces can contain resources owned by later Kubeflow charts.
 
+## Namespace names
+
+All namespace names are fixed to match the Kustomize baseline. They are not configurable.
+
+To opt out of a platform dependency namespace, set `platformNamespaces.<key>.enabled: false` in your values file.
+
 Install as the bootstrap chart from `default`, because this chart creates `kubeflow-system`:
 
 ```bash

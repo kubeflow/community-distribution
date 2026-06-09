@@ -1,10 +1,28 @@
-{{- $platformNamespaces := list .Values.global.namespace .Values.global.systemNamespace "cert-manager" "istio-system" "oauth2-proxy" "auth" -}}
+{{- $platformNamespaces := list
+  (dict "name" "kubeflow" "enabled" true)
+  (dict "name" "kubeflow-system" "enabled" true)
+  (dict "name" "cert-manager" "enabled" .Values.platformNamespaces.certManager.enabled)
+  (dict "name" "istio-system" "enabled" .Values.platformNamespaces.istioSystem.enabled)
+  (dict "name" "oauth2-proxy" "enabled" .Values.platformNamespaces.oauth2Proxy.enabled)
+  (dict "name" "auth" "enabled" .Values.platformNamespaces.auth.enabled)
+-}}
 {{- $skippedNamespaces := list -}}
-{{- range $ns := $platformNamespaces -}}
-{{- if not (eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" $ "name" $ns)) "true") -}}
+Kubeflow namespace foundation status:
+{{- range $item := $platformNamespaces }}
+{{- $ns := index $item "name" -}}
+{{- $enabled := index $item "enabled" -}}
+{{- $status := "disabled" -}}
+{{- if $enabled -}}
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" $ "name" $ns)) "true" -}}
+{{- $status = "created" -}}
+{{- else -}}
+{{- $status = "skipped-unmanaged" -}}
 {{- $skippedNamespaces = append $skippedNamespaces $ns -}}
 {{- end -}}
-{{- end -}}
+{{- end }}
+  - {{ $ns }}: {{ $status }}
+{{- end }}
+
 {{- if $skippedNamespaces }}
 WARNING: The following namespaces were skipped because they already existed before this install:
 {{ range $ns := $skippedNamespaces }}  - {{ $ns }}

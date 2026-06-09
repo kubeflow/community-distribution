@@ -1,8 +1,24 @@
 # Default values for kubeflow-namespaces.
+#
+# Namespace names are fixed by design to match the Kustomize baseline
+# and all wrapper chart expectations. They are not configurable.
 
-global:
-  namespace: kubeflow
-  systemNamespace: kubeflow-system
+# Core Kubeflow namespaces. These are always created and cannot be disabled.
+# kubeflow:        control-plane:kubeflow + istio-injection:enabled + restricted PSS
+# kubeflow-system: control-plane:kubeflow + istio-injection:enabled + restricted PSS
+
+# Platform dependency namespaces created by this chart.
+# Set enabled: false only if you manage the namespace externally
+# (e.g. a company-managed cert-manager installation).
+platformNamespaces:
+  certManager:
+    enabled: true    # creates Namespace/cert-manager
+  istioSystem:
+    enabled: true    # creates Namespace/istio-system
+  oauth2Proxy:
+    enabled: true    # creates Namespace/oauth2-proxy
+  auth:
+    enabled: true    # creates Namespace/auth
 
 networkPolicies:
   enabled: true

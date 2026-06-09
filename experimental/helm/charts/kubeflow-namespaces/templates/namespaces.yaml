@@ -1,4 +1,4 @@
-{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" .Values.global.namespace)) "true" }}
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "kubeflow")) "true" }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -8,10 +8,10 @@ metadata:
     control-plane: kubeflow
     istio-injection: enabled
     pod-security.kubernetes.io/enforce: restricted
-  name: {{ .Values.global.namespace }}
+  name: kubeflow
 {{- end }}
 ---
-{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" .Values.global.systemNamespace)) "true" }}
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "kubeflow-system")) "true" }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -21,9 +21,10 @@ metadata:
     control-plane: kubeflow
     istio-injection: enabled
     pod-security.kubernetes.io/enforce: restricted
-  name: {{ .Values.global.systemNamespace }}
+  name: kubeflow-system
 {{- end }}
 ---
+{{- if .Values.platformNamespaces.certManager.enabled }}
 {{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "cert-manager")) "true" }}
 apiVersion: v1
 kind: Namespace
@@ -34,7 +35,9 @@ metadata:
     pod-security.kubernetes.io/enforce: restricted
   name: cert-manager
 {{- end }}
+{{- end }}
 ---
+{{- if .Values.platformNamespaces.istioSystem.enabled }}
 {{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "istio-system")) "true" }}
 apiVersion: v1
 kind: Namespace
@@ -47,7 +50,9 @@ metadata:
     pod-security.kubernetes.io/enforce: restricted
   name: istio-system
 {{- end }}
+{{- end }}
 ---
+{{- if .Values.platformNamespaces.oauth2Proxy.enabled }}
 {{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "oauth2-proxy")) "true" }}
 apiVersion: v1
 kind: Namespace
@@ -58,7 +63,9 @@ metadata:
     pod-security.kubernetes.io/enforce: restricted
   name: oauth2-proxy
 {{- end }}
+{{- end }}
 ---
+{{- if .Values.platformNamespaces.auth.enabled }}
 {{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "auth")) "true" }}
 apiVersion: v1
 kind: Namespace
@@ -68,6 +75,7 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: restricted
   name: auth
+{{- end }}
 {{- end }}
 
 # TODO: Add knative-serving and knative-eventing namespaces when the
