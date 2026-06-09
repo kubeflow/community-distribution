@@ -24,6 +24,22 @@ All namespace names are fixed to match the Kustomize baseline. They are not conf
 
 To opt out of a platform dependency namespace, set `platformNamespaces.<key>.enabled: false` in your values file.
 
+This chart uses Helm `lookup` to detect pre-existing unmanaged namespaces and skip them, so Helm does not try to adopt resources owned outside this release. `helm template` cannot exercise this branch because `lookup` needs a live cluster.
+
+Example smoke check:
+
+```bash
+kind create cluster
+kubectl create namespace cert-manager
+
+helm install kubeflow-namespaces ./experimental/helm/charts/kubeflow-namespaces --namespace default
+
+kubectl get namespace cert-manager
+helm get notes kubeflow-namespaces --namespace default
+```
+
+The notes should report `cert-manager` as `skipped-unmanaged`. If the skipped namespace is missing required labels, apply them manually before installing dependent charts.
+
 Install as the bootstrap chart from `default`, because this chart creates `kubeflow-system`:
 
 ```bash
