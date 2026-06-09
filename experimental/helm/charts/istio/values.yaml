@@ -7,14 +7,6 @@
 # -- Istio install profile used when install.enabled=true. Supported values: base, oauth2-proxy, gke.
 profile: oauth2-proxy
 
-global:
-  # -- Namespace for Istio control-plane workloads.
-  istioNamespace: istio-system
-  # -- Namespace for Kubeflow resources referenced by Istio Sidecar resources.
-  kubeflowNamespace: kubeflow
-  # -- Namespace for Istio CNI resources.
-  kubeSystemNamespace: kube-system
-
 crds:
   # -- Render Istio CustomResourceDefinition resources.
   enabled: true

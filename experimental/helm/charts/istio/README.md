@@ -50,6 +50,10 @@ Helm release metadata and Istio workloads are stored in `istio-system`. The
 `kubeflow-namespaces` foundation chart creates `Namespace/istio-system` first.
 Istio CNI resources still run in `kube-system`.
 
+## Namespace names
+
+Namespace names are fixed to match the Kustomize baseline and `kubeflow-namespaces` foundation chart. Istio workloads use `istio-system`, Istio CNI resources use `kube-system`, and Kubeflow gateway resources refer to `kubeflow`. These names are not configurable.
+
 ## Kustomize Mapping
 
 - `ci/values-crds.yaml`: `common/istio/istio-crds/base`
