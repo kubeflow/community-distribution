@@ -3,10 +3,10 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: dex
-  namespace: {{ include "dex.namespace" . }}
+  namespace: auth
 spec:
   gateways:
-  - {{ include "dex.kubeflowNamespace" . }}/kubeflow-gateway
+  - kubeflow/kubeflow-gateway
   hosts:
   - '*'
   http:
@@ -15,7 +15,7 @@ spec:
         prefix: /dex/
     route:
     - destination:
-        host: dex.{{ include "dex.namespace" . }}.svc.cluster.local
+        host: dex.auth.svc.cluster.local
         port:
           number: 5556
 {{- end }}

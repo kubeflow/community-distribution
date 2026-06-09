@@ -28,5 +28,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: dex
-  namespace: {{ include "dex.namespace" . }}
+  namespace: auth
 {{- end }}

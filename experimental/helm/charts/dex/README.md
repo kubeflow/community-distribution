@@ -10,6 +10,10 @@ Install foundation, cert-manager, Istio, and oauth2-proxy first. The
 `kubeflow-namespaces` foundation chart creates `Namespace/auth`; this chart
 stores Helm release metadata in that same workload namespace.
 
+## Namespace names
+
+Namespace names are fixed to match the Kustomize baseline and `kubeflow-namespaces` foundation chart. Dex workloads use `auth`, Istio gateway references use `kubeflow` and `istio-system`, and oauth2-proxy references use `oauth2-proxy`. These names are not configurable.
+
 ```bash
 helm install dex ./experimental/helm/charts/dex \
   --namespace auth \

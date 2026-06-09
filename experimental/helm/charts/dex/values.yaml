@@ -1,15 +1,5 @@
 # Default values for the Kubeflow Dex chart.
 
-global:
-  # -- Namespace for Dex workloads.
-  authNamespace: auth
-  # -- Namespace containing the Kubeflow gateway.
-  kubeflowNamespace: kubeflow
-  # -- Namespace for Istio ingress gateway and control-plane resources.
-  istioNamespace: istio-system
-  # -- Namespace for oauth2-proxy workloads.
-  oauth2ProxyNamespace: oauth2-proxy
-
 rbac:
   # -- Render Dex RBAC resources.
   enabled: true

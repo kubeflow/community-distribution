@@ -3,25 +3,25 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-istio-and-oauth2-proxy
-  namespace: {{ include "dex.namespace" . }}
+  namespace: auth
 spec:
   ingress:
   - from:
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: {{ include "dex.istioNamespace" . }}
+          kubernetes.io/metadata.name: istio-system
       podSelector:
         matchLabels:
           app: istio-ingressgateway
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: {{ include "dex.istioNamespace" . }}
+          kubernetes.io/metadata.name: istio-system
       podSelector:
         matchLabels:
           app: istiod
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: {{ include "dex.oauth2ProxyNamespace" . }}
+          kubernetes.io/metadata.name: oauth2-proxy
       podSelector:
         matchLabels:
           app.kubernetes.io/name: oauth2-proxy
@@ -35,7 +35,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-allow-same-namespace-auth
-  namespace: {{ include "dex.namespace" . }}
+  namespace: auth
 spec:
   ingress:
   - from:
