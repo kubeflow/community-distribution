@@ -3,7 +3,7 @@ apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
   name: m2m-token-issuer
-  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+  namespace: istio-system
 spec:
   jwtRules:
 {{ include "oauth2-proxy.m2mJwtRule" (dict "issuer" .Values.m2m.issuer "jwksUri" .Values.m2m.jwksUri) | nindent 2 }}

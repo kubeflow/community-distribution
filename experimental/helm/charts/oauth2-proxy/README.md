@@ -10,6 +10,10 @@ Install foundation, cert-manager, and Istio first. The `kubeflow-namespaces`
 foundation chart creates `Namespace/oauth2-proxy`; this chart stores Helm
 release metadata in that same workload namespace.
 
+## Namespace names
+
+Namespace names are fixed to match the Kustomize baseline and `kubeflow-namespaces` foundation chart. oauth2-proxy workloads use `oauth2-proxy`, Istio auth resources use `istio-system`, and gateway references use `kubeflow`. These names are not configurable.
+
 ```bash
 helm install oauth2-proxy ./experimental/helm/charts/oauth2-proxy \
   --namespace oauth2-proxy \

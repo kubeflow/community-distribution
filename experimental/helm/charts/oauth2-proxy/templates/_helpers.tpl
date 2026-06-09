@@ -1,25 +1,4 @@
 {{/*
-oauth2-proxy workload namespace.
-*/}}
-{{- define "oauth2-proxy.namespace" -}}
-{{- .Values.global.oauth2ProxyNamespace -}}
-{{- end -}}
-
-{{/*
-Istio namespace.
-*/}}
-{{- define "oauth2-proxy.istioNamespace" -}}
-{{- .Values.global.istioNamespace -}}
-{{- end -}}
-
-{{/*
-Kubeflow namespace.
-*/}}
-{{- define "oauth2-proxy.kubeflowNamespace" -}}
-{{- .Values.global.kubeflowNamespace -}}
-{{- end -}}
-
-{{/*
 Render a JWT rule for Istio RequestAuthentication.
 */}}
 {{- define "oauth2-proxy.m2mJwtRule" -}}

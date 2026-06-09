@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: oauth2-proxy
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 ---
 apiVersion: v1
 data:
@@ -12,7 +12,7 @@ data:
 kind: ConfigMap
 metadata:
   name: oauth2-proxy
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 ---
 apiVersion: v1
 data:
@@ -23,7 +23,7 @@ data:
 kind: ConfigMap
 metadata:
   name: oauth2-proxy-parameters
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 ---
 apiVersion: v1
 data:
@@ -32,7 +32,7 @@ data:
 kind: ConfigMap
 metadata:
   name: oauth2-proxy-theme
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 ---
 apiVersion: v1
 data:
@@ -42,14 +42,14 @@ data:
 kind: Secret
 metadata:
   name: oauth2-proxy
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 type: Opaque
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: oauth2-proxy
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 spec:
   ports:
   - name: http
@@ -66,7 +66,7 @@ metadata:
   labels:
     app: oauth2-proxy
   name: oauth2-proxy
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 spec:
   replicas: 2
   selector:
@@ -166,10 +166,10 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: oauth2-proxy
-  namespace: {{ include "oauth2-proxy.namespace" . }}
+  namespace: oauth2-proxy
 spec:
   gateways:
-  - {{ include "oauth2-proxy.kubeflowNamespace" . }}/kubeflow-gateway
+  - kubeflow/kubeflow-gateway
   hosts:
   - '*'
   http:
@@ -178,7 +178,7 @@ spec:
         prefix: /oauth2/
     route:
     - destination:
-        host: oauth2-proxy.{{ include "oauth2-proxy.namespace" . }}.svc.cluster.local
+        host: oauth2-proxy.oauth2-proxy.svc.cluster.local
         port:
           number: 80
 {{- end }}

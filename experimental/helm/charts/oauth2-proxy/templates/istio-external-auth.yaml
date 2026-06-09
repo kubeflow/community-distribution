@@ -3,7 +3,7 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: istio-ingressgateway-oauth2-proxy
-  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+  namespace: istio-system
 spec:
   action: CUSTOM
   provider:
@@ -27,7 +27,7 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: istio-ingressgateway-require-jwt
-  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+  namespace: istio-system
 spec:
   action: DENY
   rules:
@@ -49,7 +49,7 @@ apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
   name: dex-jwt
-  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+  namespace: istio-system
 spec:
   jwtRules:
   - forwardOriginalToken: true

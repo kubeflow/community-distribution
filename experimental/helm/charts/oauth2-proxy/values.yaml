@@ -1,13 +1,5 @@
 # Default values for the Kubeflow oauth2-proxy chart.
 
-global:
-  # -- Namespace for oauth2-proxy workloads.
-  oauth2ProxyNamespace: oauth2-proxy
-  # -- Namespace for Istio ingress gateway and auth resources.
-  istioNamespace: istio-system
-  # -- Namespace containing the Kubeflow gateway.
-  kubeflowNamespace: kubeflow
-
 credentials:
   # -- OAuth client ID used by oauth2-proxy.
   clientID: kubeflow-oidc-authservice

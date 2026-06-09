@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: cluster-jwks-proxy
   name: cluster-jwks-proxy
-  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+  namespace: istio-system
 ---
 apiVersion: v1
 kind: Service
@@ -13,7 +13,7 @@ metadata:
   labels:
     app.kubernetes.io/name: cluster-jwks-proxy
   name: cluster-jwks-proxy
-  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+  namespace: istio-system
 spec:
   ports:
   - name: http
@@ -28,7 +28,7 @@ metadata:
   labels:
     app.kubernetes.io/name: cluster-jwks-proxy
   name: cluster-jwks-proxy
-  namespace: {{ include "oauth2-proxy.istioNamespace" . }}
+  namespace: istio-system
 spec:
   replicas: 1
   selector:
