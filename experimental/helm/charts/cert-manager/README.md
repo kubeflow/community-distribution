@@ -18,6 +18,10 @@ In the Kubeflow platform install, apply the foundation charts first:
 
 This wrapper stores its Helm release metadata in the `cert-manager` workload namespace.
 
+## Namespace names
+
+The cert-manager workload namespace is fixed to `cert-manager` to match the Kustomize baseline and `kubeflow-namespaces` foundation chart. It is not configurable.
+
 ```bash
 helm install kubeflow-namespaces ./experimental/helm/charts/kubeflow-namespaces --namespace default
 helm install kubeflow-platform ./experimental/helm/charts/kubeflow-platform --namespace kubeflow-system

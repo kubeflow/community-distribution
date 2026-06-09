@@ -1,7 +1,6 @@
 # CI values for Kubeflow cert-manager resources with an externally managed cert-manager.
 cert-manager:
   enabled: false
-  namespace: cert-manager
 
 kubeflow:
   enabled: true

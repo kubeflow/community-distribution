@@ -4,7 +4,6 @@ cert-manager:
   enabled: true
   crds:
     enabled: true
-  namespace: cert-manager
   startupapicheck:
     enabled: false
 

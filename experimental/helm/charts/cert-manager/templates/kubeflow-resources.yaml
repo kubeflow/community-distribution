@@ -1,4 +1,3 @@
-{{- $certManagerNamespace := (index .Values "cert-manager" "namespace") | default "cert-manager" -}}
 {{ if .Values.kubeflow.enabled }}
 {{ if .Values.kubeflow.clusterIssuer.enabled }}
 apiVersion: cert-manager.io/v1
@@ -16,7 +15,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: cert-manager-webhook
-  namespace: {{ $certManagerNamespace | quote }}
+  namespace: cert-manager
   labels:
     {{- toYaml .Values.kubeflow.labels | nindent 4 }}
 spec:
@@ -41,7 +40,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-allow-same-namespace-cert-manager
-  namespace: {{ $certManagerNamespace | quote }}
+  namespace: cert-manager
   labels:
     {{- toYaml .Values.kubeflow.labels | nindent 4 }}
 spec:
