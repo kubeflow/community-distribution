@@ -17,5 +17,7 @@ kubectl get deployment kubeflow-trainer-controller-manager -n kubeflow-system
 kubectl get pods -n kubeflow-system -l app.kubernetes.io/name=trainer
 kubectl get clustertrainingruntimes torch-distributed
 
+kubectl get clustertrainingruntime torch-distributed -o yaml
+
 pip install kubeflow
 python3 tests/trainer_test.py "$KF_PROFILE"

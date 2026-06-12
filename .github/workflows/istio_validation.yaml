@@ -8,6 +8,8 @@ on:
     - tests/ambient*
     - tests/multi_tenancy_install.sh
     - tests/profile_controller_install.sh
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
     - applications/dashboard/upstream/profile-controller/**
     - .github/workflows/istio_validation.yaml
     - common/istio/**
@@ -252,8 +254,44 @@ jobs:
     - name: Test basic connectivity
       run: |
         kubectl expose deployment test-application --port=80 --target-port=8080 -n $KF_PROFILE
-        kubectl run test-client --image=busybox --rm -i --restart=Never -n $KF_PROFILE -- \
-          wget -qO- --timeout=10 test-application.$KF_PROFILE.svc.cluster.local
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: test-client
+          namespace: ${KF_PROFILE}
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+          - name: test-client
+            image: busybox:1.36.1
+            command:
+            - wget
+            - -qO-
+            - --timeout=10
+            - test-application.${KF_PROFILE}.svc.cluster.local
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 1000
+              seccompProfile:
+                type: RuntimeDefault
+        EOF
+        kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod/test-client -n $KF_PROFILE --timeout=120s || (
+          kubectl logs pod/test-client -n $KF_PROFILE
+          kubectl describe pod/test-client -n $KF_PROFILE
+          exit 1
+        )
+        kubectl logs pod/test-client -n $KF_PROFILE
+        kubectl delete pod/test-client -n $KF_PROFILE --ignore-not-found
 
     - name: Apply Pod Security Standards Restricted levels
       if: matrix.istio-mode == 'cni'

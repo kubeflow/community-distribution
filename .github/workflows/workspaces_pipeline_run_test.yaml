@@ -16,6 +16,8 @@ on:
     - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
     - tests/pipelines_install.sh
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
     - tests/workspaces_install.sh
     - tests/workspaces_pipeline_run_test.sh
 
@@ -71,3 +73,25 @@ jobs:
 
     - name: Apply Pod Security Standards restricted levels
       run: ./tests/PSS_enable.sh
+
+    - name: Collect Logs on Failure
+      if: failure()
+      run: |
+        mkdir -p logs
+        kubectl get all --all-namespaces > logs/resources.txt
+        kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
+        kubectl get workspace test -n kubeflow-user-example-com -o yaml > logs/workspace-test.yaml 2>&1 || true
+        kubectl get workspacekind jupyterlab -o yaml > logs/workspacekind-jupyterlab.yaml 2>&1 || true
+        for namespace in kubeflow kubeflow-workspaces kubeflow-user-example-com istio-system cert-manager auth; do
+            kubectl describe pods -n $namespace > logs/$namespace-pods.txt 2>&1 || true
+            for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || true); do
+                kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true
+            done
+        done
+
+    - name: Upload Diagnostic Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: kubeflow-test-logs
+        path: logs/

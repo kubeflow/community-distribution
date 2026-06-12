@@ -1,0 +1,21 @@
+- op: add
+  path: /spec/template/spec/replicatedJobs/0/template/spec/template/spec/securityContext
+  value:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+- op: add
+  path: /spec/template/spec/replicatedJobs/0/template/spec/template/spec/containers/0/workingDir
+  value: /tmp
+- op: add
+  path: /spec/template/spec/replicatedJobs/0/template/spec/template/spec/containers/0/securityContext
+  value:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault

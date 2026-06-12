@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: training-operator
+spec:
+  template:
+    spec:
+      containers:
+      - name: training-operator
+        args:
+        - --pytorch-init-container-template-file=/etc/restricted-pytorch-init-container/initContainer.yaml
+        volumeMounts:
+        - name: restricted-pytorch-init-container
+          mountPath: /etc/restricted-pytorch-init-container
+          readOnly: true
+      volumes:
+      - name: restricted-pytorch-init-container
+        configMap:
+          name: restricted-pytorch-init-container
