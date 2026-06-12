@@ -1,4 +1,4 @@
-# Kubeflow AI reference platform deployment manifests
+# Kubeflow Community Distribution
 
 ![build checks status](https://github.com/kubeflow/community-distribution/actions/workflows/full_kubeflow_integration_test.yaml/badge.svg?branch=master)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9940/badge)](https://www.bestpractices.dev/projects/9940)
