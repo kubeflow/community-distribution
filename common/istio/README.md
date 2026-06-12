@@ -50,16 +50,16 @@ kubectl apply -k istio-install/overlays/insecure
 
 ## Istio Sidecar Egress
 
-We limit egress route creation in istio sidecars to reduce the memory overhead in every sidecar as described in this [pull request](https://github.com/kubeflow/manifests/pull/3206).
+We limit egress route creation in istio sidecars to reduce the memory overhead in every sidecar as described in this [pull request](https://github.com/kubeflow/community-distribution/pull/3206).
 
-This may cause issues for users extending or modifying the kubeflow deployment since it can cause egress traffic not listed in the hosts section of the [default sidecar implementation](./istio-install/base/sidecar-prune-egress.yaml) to not use MTLS. 
+This may cause issues for users extending or modifying the kubeflow deployment since it can cause egress traffic not listed in the hosts section of the [default sidecar implementation](./istio-install/base/sidecar-prune-egress.yaml) to not use MTLS.
 
 This can cause the following kinds of errors:
 1. Error ```RBAC: Access Denied``` returned from the destination
 2. Error ```rbac_access_denied_matched_policy[none]``` in the destination sidecar if [authorizationpolicies](https://istio.io/latest/docs/reference/config/security/authorization-policy/#Source-principals) use MTLS required rules
 3. Error ```upstream connect error or disconnect/reset before headers``` if MTLS is set to strict for the destination sidecar
 
-You may add additional [sidecar configurations](https://istio.io/latest/docs/reference/config/networking/sidecar) to override the default configuration for affected traffic. 
+You may add additional [sidecar configurations](https://istio.io/latest/docs/reference/config/networking/sidecar) to override the default configuration for affected traffic.
 
 ## Troubleshooting
 
@@ -119,7 +119,7 @@ spec:
     mutate:
       patchStrategicMerge:
         spec:
-          hosts: 
+          hosts:
           - "*"
 ```
 

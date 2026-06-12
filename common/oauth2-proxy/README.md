@@ -75,14 +75,14 @@ The authentication in Kubeflow evolved over time and we dropped envoyfilters and
 You can adjust OAuth2 Proxy to directly connect to your own IDP(Identity Provider) suchg as GCP, [AWS](https://docs.aws.amazon.com/cognito/latest/developerguide/federation-endpoints-oauth-grants.html), Azure etc:
 
 1. Create an application on your IdP (purple line)
-2. Change your [OAuth2 Proxy issuer](https://github.com/kubeflow/manifests/blob/35539f162ea7fafc8c5035d8df0d8d8cf5a9d327/common/oauth2-proxy/base/oauth2-proxy-config.yaml#L10) to your IdP. Of course never ever directly, but with kustomize overlays and components.
+2. Change your [OAuth2 Proxy issuer](https://github.com/kubeflow/community-distribution/blob/35539f162ea7fafc8c5035d8df0d8d8cf5a9d327/common/oauth2-proxy/base/oauth2-proxy-config.yaml#L10) to your IdP. Of course never ever directly, but with kustomize overlays and components.
 
 Here is an example of patching oauth2-proxy to connect directly to Azure IDP and skip Dex.
 This is enterprise integration so feel free to hire consultants or pay for commercial distributions if you need more help.
 For example Azure returns rather large headers compared to other IDPs, so maybe you need to annotate the nginx-ingress to support that.
 
 ```
-# based on https://github.com/kubeflow/manifests/blob/master/common/oauth2-proxy/base/oauth2_proxy.cfg
+# based on https://github.com/kubeflow/community-distribution/blob/master/common/oauth2-proxy/base/oauth2_proxy.cfg
 # and https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/azure/
 apiVersion: v1
 kind: ConfigMap
@@ -207,7 +207,7 @@ TOKEN = response.json()['access_token']
 ```
 import kfp
 kubeflow_host="https://your_host"
-pipeline_host = kubeflow_host + "/pipeline" 
+pipeline_host = kubeflow_host + "/pipeline"
 client = kfp.Client(host=pipeline_host, existing_token=TOKEN)
 print(client.list_runs(namespace="your-profile-name"))
 ```

@@ -26,12 +26,12 @@ The release team will go over the provided feedback, provide a summary and sort 
 ## What could have gone better ⚠️
 
 * [Julius] Release more often with smaller changes, maybe even rolling rolling releases
-  * [Julius] Release only when ready and not strictly by timeline 
+  * [Julius] Release only when ready and not strictly by timeline
   * [Andrey] Should we stick to releasing the whole Kubeflow stack?
   * [Andrew] Although user can use individual components, Kubeflow distribution is the proof of compatibility between components
 * [Julius] More automated testing, that is the most reliable way to do it
 * [Diego Lovison] Have a Helm Chart. I know we have the distributions but we announced the release and people weren’t able to just test the release in a simple way.
-  * [Julius] Tracked in https://github.com/kubeflow/manifests/issues/2730 
+  * [Julius] Tracked in https://github.com/kubeflow/community-distribution/issues/2730
   * [Andrey] Remove unused components in KF
   * [Ricardo] Maybe use platform components optional?
     * [Julius] This is already possible
@@ -49,7 +49,7 @@ The release team will go over the provided feedback, provide a summary and sort 
 * [Helber] Reviews on documentation out of the scope of the PRs
   * Slowed down the merges
   * Duplicated effort creating issues from code reviews
-* [Andrey V] Should the release team think about this user feedback: https://github.com/kubeflow/manifests/issues/2451 ?
+* [Andrey V] Should the release team think about this user feedback: https://github.com/kubeflow/community-distribution/issues/2451 ?
 
 ## What we learned
 
@@ -66,4 +66,3 @@ The release team will go over the provided feedback, provide a summary and sort 
 * Promote more reviewers across Working Groups
   * Review: https://github.com/kubeflow/community/pull/737
 * Improve Kubeflow documentation to make it easier to find topics like how to contribute
-

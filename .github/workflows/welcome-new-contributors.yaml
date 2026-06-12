@@ -44,9 +44,9 @@ jobs:
           Thanks for opening your first PR. Your contribution means a lot to the Kubeflow community.
 
           **Before making more PRs:**
-          Please ensure your PR follows our [Contributing Guide](https://github.com/kubeflow/manifests/blob/master/CONTRIBUTING.md).
+          Please ensure your PR follows our [Contributing Guide](https://github.com/kubeflow/community-distribution/blob/master/CONTRIBUTING.md).
           Please also be aware that many components are synchronizes from upstream via the scripts in /scripts.
-          So in some cases you have to fix the problem in the upstream repositories first, but you can use a PR against kubeflow/manifests to test the platform integration.
+          So in some cases you have to fix the problem in the upstream repositories first, but you can use a PR against kubeflow/community-distribution to test the platform integration.
 
           **Community Resources:**
           - CNCF Slack channels: https://www.kubeflow.org/docs/about/community/#kubeflow-slack-channels

@@ -105,7 +105,7 @@ patches:
 
 # Delete ALL insecure LLMInferenceServiceConfig resources
 # IPC_LOCK, SYS_RAWIO, NET_RAW capabilities, runAsNonRoot: false
-# Ref: https://github.com/kubeflow/manifests/issues/3290
+# Ref: https://github.com/kubeflow/community-distribution/issues/3290
 - patch: |
     apiVersion: serving.kserve.io/v1alpha2
     kind: LLMInferenceServiceConfig

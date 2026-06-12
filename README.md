@@ -1,12 +1,12 @@
 # Kubeflow AI reference platform deployment manifests
 
-![build checks status](https://github.com/kubeflow/manifests/actions/workflows/full_kubeflow_integration_test.yaml/badge.svg?branch=master)
+![build checks status](https://github.com/kubeflow/community-distribution/actions/workflows/full_kubeflow_integration_test.yaml/badge.svg?branch=master)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9940/badge)](https://www.bestpractices.dev/projects/9940)
 
 This repository helps you to install Kubeflow Platform in popular Kubernetes clusters such as Kind, Minikube, Rancher, EKS, AKS, and GKE. The manifests include all Kubeflow components (Pipelines, KServe, etc.), the **Kubeflow Central Dashboard**, and other applications that comprise the **Kubeflow Platform**. It is used and adapted around the world by small and large enterprises alike that have strict legal, security and multi-tenancy requirements for their machine learning platforms. Nevertheless it is also beneficial for academic users wanting to explore the end-to-end capabilities of the Kubeflow Platform and contribute to it.
 
-For a stable and conservative experience, we recommend using the [latest stable release](https://github.com/kubeflow/manifests/releases). However, please consult the more up-to-date documentation in the master branch.
-You can also install the master branch of [`kubeflow/manifests`](https://github.com/kubeflow/manifests) by following the instructions [here](https://github.com/kubeflow/manifests?tab=readme-ov-file#installation) and providing us with feedback. Our continuous integration workflow runs end-to-end installation and tests on pull requests and pushes to the `master` branch in the upstream `kubeflow/manifests` repository; see the [full Kubeflow integration test workflow](https://github.com/kubeflow/manifests/actions/workflows/full_kubeflow_integration_test.yaml) for details.
+For a stable and conservative experience, we recommend using the [latest stable release](https://github.com/kubeflow/community-distribution/releases). However, please consult the more up-to-date documentation in the master branch.
+You can also install the master branch of [`kubeflow/community-distribution`](https://github.com/kubeflow/community-distribution) by following the instructions [here](https://github.com/kubeflow/community-distribution?tab=readme-ov-file#installation) and providing us with feedback. Our continuous integration workflow runs end-to-end installation and tests on pull requests and pushes to the `master` branch in the upstream `kubeflow/community-distribution` repository; see the [full Kubeflow integration test workflow](https://github.com/kubeflow/community-distribution/actions/workflows/full_kubeflow_integration_test.yaml) for details.
 
 We are planning to cut 2 releases per year, for example 26.03 and 26.10 before each KubeCon EU and NA.
 We ask each working group/component to provide non-breaking patch releases for 6 months based on the version in each date release.
@@ -84,7 +84,7 @@ This repository periodically synchronizes all official Kubeflow components from 
 
 This section covers the installation from scratch. For the in-place upgrade guide, please jump to the [Upgrading and Extending](#upgrading-and-extending) section.
 
-Although our master branch has extended automated tests and is very stable with trunk-based development, please consider using a stable [release tag/branch](https://github.com/kubeflow/manifests/releases) for a more conservative experience.
+Although our master branch has extended automated tests and is very stable with trunk-based development, please consider using a stable [release tag/branch](https://github.com/kubeflow/community-distribution/releases) for a more conservative experience.
 
 We provide two options for installing the official Kubeflow components and common services with Kustomize. The aim is to help users install easily and building distributions of Kubeflow by deriving / deviating from the Kubeflow manifests:
 
@@ -96,14 +96,14 @@ The `example` directory contains an example kustomization for the single command
 :warning: In both options, we use a default email (`user@example.com`) and password (`12341234`). For any production Kubeflow deployment, you should change the default password by following [the relevant section](#change-default-user-password).
 
 ### Prerequisites
-- For the specific Kubernetes version per release, consult the [release notes](https://github.com/kubeflow/manifests/releases).
+- For the specific Kubernetes version per release, consult the [release notes](https://github.com/kubeflow/community-distribution/releases).
 - Our Kind script below will take care of installing continuously tested Kubernetes, Kustomize and Kubectl versions for you.
 - We use Kind as default but also support Minikube, Rancher, EKS, AKS, and GKE. GKE might need tiny adjustments documented here in this file and OpenShift is also possible.
 
 ### ARM64 / aarch64 note
 
 Kubeflow on ARM64/aarch64 may not be fully supported yet because some OCI images might not be available for `linux/arm64`.
-If you hit image pull errors such as “no matching manifest for linux/arm64”, please track/report details in kubeflow/manifests#2745 and take a look at the [Google Summer of Code project for Kubeflow on ARM64](https://www.kubeflow.org/events/upcoming-events/gsoc-2026/#project--end-to-end-arm64-support--validation-on-kubeflow).
+If you hit image pull errors such as “no matching manifest for linux/arm64”, please track/report details in kubeflow/community-distribution#2745 and take a look at the [Google Summer of Code project for Kubeflow on ARM64](https://www.kubeflow.org/events/upcoming-events/gsoc-2026/#project--end-to-end-arm64-support--validation-on-kubeflow).
 
 ---
 **NOTE**
@@ -162,7 +162,7 @@ If all the following commands are executed, the result is the same as in the abo
 - Provide a description of each component and insight on how it gets installed.
 - Enable the user or distribution owner to pick and choose only the components he needs.
 
-> **Note:** Many component installation steps below reference scripts from the [`tests/`](tests/) directory. These scripts are the same ones used by our [CI/CD integration test workflow](https://github.com/kubeflow/manifests/blob/master/.github/workflows/full_kubeflow_integration_test.yaml), which ensures the documentation is continuously verified. The scripts also provide better error messages and include sanity checks.
+> **Note:** Many component installation steps below reference scripts from the [`tests/`](tests/) directory. These scripts are the same ones used by our [CI/CD integration test workflow](https://github.com/kubeflow/community-distribution/blob/master/.github/workflows/full_kubeflow_integration_test.yaml), which ensures the documentation is continuously verified. The scripts also provide better error messages and include sanity checks.
 
 #### Kubeflow Namespace
 
@@ -269,7 +269,7 @@ Install Dex:
 ./tests/dex_install.sh
 ```
 
-To connect to your desired identity providers (LDAP, GitHub, Google, Microsoft, OIDC, SAML, GitLab), please take a look at <https://dexidp.io/docs/connectors/oidc/>. We recommend using OIDC in general since it is compatible with most providers. For example, Azure in the following example. You need to modify <https://github.com/kubeflow/manifests/blob/master/common/dex/overlays/oauth2-proxy/config-map.yaml> and add some environment variables in <https://github.com/kubeflow/manifests/blob/master/common/dex/base/deployment.yaml> by adding a patch section in your main Kustomization file. For guidance, please check out [Upgrading and Extending](#upgrading-and-extending).
+To connect to your desired identity providers (LDAP, GitHub, Google, Microsoft, OIDC, SAML, GitLab), please take a look at <https://dexidp.io/docs/connectors/oidc/>. We recommend using OIDC in general since it is compatible with most providers. For example, Azure in the following example. You need to modify <https://github.com/kubeflow/community-distribution/blob/master/common/dex/overlays/oauth2-proxy/config-map.yaml> and add some environment variables in <https://github.com/kubeflow/community-distribution/blob/master/common/dex/base/deployment.yaml> by adding a patch section in your main Kustomization file. For guidance, please check out [Upgrading and Extending](#upgrading-and-extending).
 
 ```yaml
 apiVersion: v1
@@ -323,7 +323,7 @@ data:
         #- groups # groups might be used in the future
 ```
 
-For Keycloak, we have rough guidelines in <https://github.com/kubeflow/manifests/blob/master/common/dex/README.md>.
+For Keycloak, we have rough guidelines in <https://github.com/kubeflow/community-distribution/blob/master/common/dex/README.md>.
 
 
 #### Dashboard
@@ -537,7 +537,7 @@ For example, running the above command locally with required packages like _pass
 
 For modifications and in-place upgrades of the Kubeflow platform, we provide a rough description for advanced users:
 
-- Never edit the manifests directly; use Kustomize overlays and [components](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/components.md) on top of the [example.yaml](https://github.com/kubeflow/manifests/blob/master/example/kustomization.yaml).
+- Never edit the manifests directly; use Kustomize overlays and [components](https://github.com/kubernetes-sigs/kustomize/blob/master/examples/components.md) on top of the [example.yaml](https://github.com/kubeflow/community-distribution/blob/master/example/kustomization.yaml).
 - This allows you to upgrade by just referencing the new manifests, building with Kustomize, and running `kubectl apply` again.
 - You might have to adjust your overlays and components if needed.
 - You might need to prune old resources. For that, you would add [labels](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/labels/) to all your resources from the start.
@@ -578,7 +578,7 @@ kubectl delete clusterrolebinding meta-controller-cluster-role-binding
 
 The following manual steps are required when upgrading from `release-26.03` to the next release:
 
-1. **JobSet Controller Manager** ([#3428](https://github.com/kubeflow/manifests/issues/3428), introduced by [#3413](https://github.com/kubeflow/manifests/pull/3413)): The upstream JobSet upgrade from v0.10.1 to v0.11.0 changed `spec.selector.matchLabels` from 1 label to 4 labels, which is an immutable field. Delete the Deployment before applying:
+1. **JobSet Controller Manager** ([#3428](https://github.com/kubeflow/community-distribution/issues/3428), introduced by [#3413](https://github.com/kubeflow/community-distribution/pull/3413)): The upstream JobSet upgrade from v0.10.1 to v0.11.0 changed `spec.selector.matchLabels` from 1 label to 4 labels, which is an immutable field. Delete the Deployment before applying:
    ```sh
    kubectl delete deployment jobset-controller-manager -n kubeflow-system --ignore-not-found
    ```
@@ -588,7 +588,7 @@ The following manual steps are required when upgrading from `release-26.03` to t
    kubectl delete clusterrolebinding llmisvc-manager-rolebinding --ignore-not-found
    ```
 
-3. **Kubeflow Dashboard 2.0.0** ([#3469](https://github.com/kubeflow/manifests/issues/3469)): The Central Dashboard, Profile Controller + KFAM, and PodDefaults webhook moved to [`kubeflow/dashboard`](https://github.com/kubeflow/dashboard/releases/tag/v2.0.0) and must be cleaned up first before the new manifests can be applied. Delete the old `26.03` resources once before `kubectl apply`. Do NOT delete any `CustomResourceDefinition` or `Namespace`, so that existing `Profile` objects and therefore their namespaces survive:
+3. **Kubeflow Dashboard 2.0.0** ([#3469](https://github.com/kubeflow/community-distribution/issues/3469)): The Central Dashboard, Profile Controller + KFAM, and PodDefaults webhook moved to [`kubeflow/dashboard`](https://github.com/kubeflow/dashboard/releases/tag/v2.0.0) and must be cleaned up first before the new manifests can be applied. Delete the old `26.03` resources once before `kubectl apply`. Do NOT delete any `CustomResourceDefinition` or `Namespace`, so that existing `Profile` objects and therefore their namespaces survive:
    ```sh
    # Admission webhook (PodDefaults)
    kubectl delete -n kubeflow --ignore-not-found \
@@ -637,11 +637,11 @@ The following manual steps are required when upgrading from `release-26.03` to t
 
 ## Release Process
 
-[Kubeflow release handbook](https://github.com/kubeflow/manifests/blob/master/releases/kubeflow-ai-reference-platform-release-handbook.md).
+[Kubeflow release handbook](https://github.com/kubeflow/community-distribution/blob/master/releases/kubeflow-ai-reference-platform-release-handbook.md).
 
 ### Security
 
-To view all past security scans, head to the [Image Extracting and Security Scanning GitHub Action workflow](https://github.com/kubeflow/manifests/actions/workflows/trivy.yaml). In the logs of the workflow, you can expand the `Run image extracting and security scanning script` step to view the CVE logs. You will find a per-image CVE scan and a JSON dump of per-WorkingGroup aggregated metrics. You can run the Python script from the workflow file locally on your machine to obtain the detailed JSON files for any git commit.
+To view all past security scans, head to the [Image Extracting and Security Scanning GitHub Action workflow](https://github.com/kubeflow/community-distribution/actions/workflows/trivy.yaml). In the logs of the workflow, you can expand the `Run image extracting and security scanning script` step to view the CVE logs. You will find a per-image CVE scan and a JSON dump of per-WorkingGroup aggregated metrics. You can run the Python script from the workflow file locally on your machine to obtain the detailed JSON files for any git commit.
 
 For more information please consult the [SECURITY.md](./SECURITY.md).
 
@@ -683,7 +683,7 @@ pre-commit run
 - **Q:** What versions of Istio, Knative, Cert-Manager, Argo, ... are compatible with Kubeflow?
   **A:** Please refer to each individual component's documentation for a dependency compatibility range. For Istio, Knative, Dex, Cert-Manager, and OAuth2 Proxy, the versions in `common` are the ones we have validated.
 - **Q:** Can I use Kubeflow in an air-gapped environment?
-  **A:** Yes you can. You just need to get the list of images from our [trivy CVE scanning script](https://github.com/kubeflow/manifests/blob/master/tests/trivy_scan.py), mirror them and replace the references in the manifests with kustomize components and overlays, see [Upgrading and Extending](#upgrading-and-extending). You could also use a simple kyverno policy to replace the images at runtime, which could be easier to maintain.
+  **A:** Yes you can. You just need to get the list of images from our [trivy CVE scanning script](https://github.com/kubeflow/community-distribution/blob/master/tests/trivy_scan.py), mirror them and replace the references in the manifests with kustomize components and overlays, see [Upgrading and Extending](#upgrading-and-extending). You could also use a simple kyverno policy to replace the images at runtime, which could be easier to maintain.
 - **Q:** Why does Kubeflow use Istio CNI instead of standard Istio?
   **A:** Istio CNI provides better security by eliminating the need for privileged init containers, making it more compatible with Pod Security Standards (PSS). It also enables native sidecars support introduced in Kubernetes 1.28, which helps address issues with init containers and application lifecycle management.
 - **Q:** Why does Istio CNI fail on Google Kubernetes Engine (GKE) with "read-only file system" errors?

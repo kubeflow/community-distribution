@@ -6,9 +6,9 @@ Now that we’ve released 1.4 we would like to follow up with a retrospective to
 The release team will go over the provided feedback on Monday, November 8th, provide a summary and sort the items. Then the team will expose the summary in the next Community Meeting on Tuesday, November 9th.
 
 ### Links
-- [Handbook](https://github.com/kubeflow/manifests/blob/v1.4.0/docs/releases/handbook.md)
-- [Release Team](https://github.com/kubeflow/manifests/blob/v1.4.0/docs/releases/release-1.4/release-team.md)
-- [Timeline](https://github.com/kubeflow/manifests/tree/v1.4.0/docs/releases/release-1.4)
+- [Handbook](https://github.com/kubeflow/community-distribution/blob/v1.4.0/docs/releases/handbook.md)
+- [Release Team](https://github.com/kubeflow/community-distribution/blob/v1.4.0/docs/releases/release-1.4/release-team.md)
+- [Timeline](https://github.com/kubeflow/community-distribution/tree/v1.4.0/docs/releases/release-1.4)
 - Recordings
   - [Part 1](https://drive.google.com/file/d/1MxOzR4wgvETfhLv_74wEkAdkElGSPeTm/view)
   - [Part 2](https://drive.google.com/file/d/1wz-jIAOSw3N7V9XHxPoDIEfv5hOdFFn1/view)
@@ -83,7 +83,7 @@ The release team will go over the provided feedback on Monday, November 8th, pro
   - [Anna] Let’s also ensure we ask new members if they would like to lead following releases
   - [Kimonas] Let’s think about removing one of the Release Team member or Shadow roles
 - [Anna Jung] Add release candidates to the timeline
-  - Lets add this information in the tables in the [timeline](https://github.com/kubeflow/manifests/tree/master/docs/releases/release-1.4#timeline) and [handbook](https://github.com/kubeflow/manifests/blob/master/docs/releases/handbook.md#timeline)
+  - Lets add this information in the tables in the [timeline](https://github.com/kubeflow/community-distribution/tree/master/docs/releases/release-1.4#timeline) and [handbook](https://github.com/kubeflow/community-distribution/blob/master/docs/releases/handbook.md#timeline)
 - Move release docs to community rep? [Anna Jung]
-  - **[Action Item]** Create an issue to move the kubeflow/manifests/docs/releases folder under kubeflow/community
+  - **[Action Item]** Create an issue to move the kubeflow/community-distribution/docs/releases folder under kubeflow/community
   - [Kimonas] Let’s ensure that the OWNERS file will include the release team to allow us to keep on iterating fast

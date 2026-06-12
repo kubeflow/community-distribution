@@ -20,7 +20,7 @@ As of Kubeflow 1.8 the user information has been injected into requests as the `
 2. The AuthService adds the `kubeflow-userid` header to all authenticated requests.
 3. Only requests from the Istio IngressGateway are trusted to have the `kubeflow-userid` header
     1. Backends that are not exposed to user namespaces (i.e. jupyter-web-app) are only reachable via the Istio IngressGateway.
-    2. The KFP backend [explicitly drops requests](https://github.com/kubeflow/manifests/blob/96ce068e16b2a707464471bddc0d2a58e403d1fc/apps/pipeline/upstream/base/installs/multi-user/istio-authorization-config.yaml#L37) from user namespaces if they have this header
+    2. The KFP backend [explicitly drops requests](https://github.com/kubeflow/community-distribution/blob/96ce068e16b2a707464471bddc0d2a58e403d1fc/apps/pipeline/upstream/base/installs/multi-user/istio-authorization-config.yaml#L37) from user namespaces if they have this header
     3. In-cluster Pods that want to talk to `kubeflow` workloads, which understands identity, are [using a K8s ServiceAccount Token](https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/#full-kubeflow-subfrom-inside-clustersub)
 ### Limitations
 - Not able to express `AuthorizationPolicies` for group header in Istio
@@ -62,7 +62,7 @@ With the above implementation we move all the logic of handling the JWTs to the 
 This proposal aims to put more focus on keeping and validating `id_tokens` but also bridging to the existing functionality of the backends, to avoid extensive changes.
 ### Implementation
 The technical details for the above proposal translate to the following
-1. Common Kubeflow manifests, for all components, for configuring Istio for supporting multiple issuers ([Dex](https://github.com/kubeflow/manifests/blob/v1.9-branch/common/oauth2-proxy/components/istio-external-auth/requestauthentication.dex-jwt.yaml) and [K8s-m2m](https://github.com/kubeflow/manifests/blob/v1.9-branch/common/oauth2-proxy/components/istio-m2m/requestauthentication.yaml)), via `RequestAuthentication` objects
+1. Common Kubeflow manifests, for all components, for configuring Istio for supporting multiple issuers ([Dex](https://github.com/kubeflow/community-distribution/blob/v1.9-branch/common/oauth2-proxy/components/istio-external-auth/requestauthentication.dex-jwt.yaml) and [K8s-m2m](https://github.com/kubeflow/community-distribution/blob/v1.9-branch/common/oauth2-proxy/components/istio-m2m/requestauthentication.yaml)), via `RequestAuthentication` objects
 2. `AuthorizationPolicy` objects of components, for allowing access from Istio IngressGateway, will need to be extended for also requiring a JWT
 3. Backends that need to be accessible from other user-namespaces will need to have an `AuthorizationPolicy` that allows any request, only if it has a JWT
 4. Backends don't need any logic for validating the JWTs and their existence

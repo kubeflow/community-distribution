@@ -9,8 +9,8 @@ Most enterprise environments will require this as well.
 
 ### Implementation details
 The main steps are adding an additional profile for istio-cni and later ambient mesh, updating the documentation and manifest generation process.
-Only istio-cni or istio ambient mesh can run rootless as explained here https://istio.io/latest/docs/setup/additional-setup/cni/. 
-Istio-cni will still need a deamonset in kube-system, but that is completly isolated from user workloads. 
+Only istio-cni or istio ambient mesh can run rootless as explained here https://istio.io/latest/docs/setup/additional-setup/cni/.
+Istio-cni will still need a deamonset in kube-system, but that is completly isolated from user workloads.
 The ambient mesh should get rid of this as well and also has the benefit of removing the istio initcontainers and sidecars altogether.
 Then adding the baseline and restricted PSS as kustomize component to `/contrib` and extending the profile controller to annotate user namespaces with configurable PSS labels.
 
@@ -41,10 +41,10 @@ This does not cover Application level CVEs, only cluster level security.
 ### Does this break any existing functionality?
 So far not. Only PSS restricted may block the security-wise dangerous Docker in Docker.
 This is a rarely used feature from the KFP SDK.
-With PSS baseline you can still build OCI images with Podman for example. 
+With PSS baseline you can still build OCI images with Podman for example.
 We should replace Docker with the cli compatible podman in the KFP SDK https://kubeflow-pipelines.readthedocs.io/en/1.8.22/source/kfp.containers.html?highlight=kfp.containers.build_image_from_working_dir#kfp.containers.build_image_from_working_dir.
 
 
 ### Does this fix/solve any outstanding issues?
 This proposal enables Kubeflow to implement parts of Kubernetes best practices and improve the usage in enterprise and regulated environments.
-The progress is tracked in https://github.com/kubeflow/manifests/issues/2528
+The progress is tracked in https://github.com/kubeflow/community-distribution/issues/2528

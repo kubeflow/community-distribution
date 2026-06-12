@@ -15,7 +15,7 @@
 
 Kubeflow uses [Calendar Versioning](https://calver.org/) with format `YY.MM[.PATCH]`. Two base releases are targeted per year.
 
-All releases are cut from `kubeflow/manifests`.
+All releases are cut from `kubeflow/community-distribution`.
 
 ### Release Types
 
@@ -70,8 +70,8 @@ Release Manager Shadows are community members interested in becoming a Release M
 - [ ] [Propose a release timeline](https://github.com/kubeflow/community/pull/558), announce the schedule to [kubeflow-discuss mailing list](https://groups.google.com/g/kubeflow-discuss), and get lazy consensus on the release schedule from the WG leads
   - Review the criteria for the timeline below
 - [ ] Ensure schedule also accounts for the patch releases after the base release
-- [ ] Create one [release tracking issue](https://github.com/kubeflow/manifests/issues/2194) for all WGs, distributions representatives, and the community to track
-- [ ] Start a discussion on [Kubeflow dependency versions](https://github.com/kubeflow/manifests/issues/2207) to support for the release
+- [ ] Create one [release tracking issue](https://github.com/kubeflow/community-distribution/issues/2194) for all WGs, distributions representatives, and the community to track
+- [ ] Start a discussion on [Kubeflow dependency versions](https://github.com/kubeflow/community-distribution/issues/2207) to support for the release
 
 Criteria for timeline that the team needs to consider
 - Holidays around the world that coincide with members of the release team, WG representatives, and distro representatives.

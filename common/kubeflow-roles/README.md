@@ -3,10 +3,10 @@
 This manifest package contains the default ClusterRoles Kubeflow uses for defining roles for Kubeflow user Profiles.
 These roles are currently assigned to users by Profiles (profile-controller and kfam) Service with the help of Manage Users page in Central Dashboard.
 
-*Note*: `kfctl` assigns the default Kubernetes role `cluster-admin` to the user who deploys Kubeflow for the [GCP IAP configuration](https://github.com/kubeflow/manifests/blob/master/kfdef/kfctl_gcp_iap.yaml).
+*Note*: `kfctl` assigns the default Kubernetes role `cluster-admin` to the user who deploys Kubeflow for the [GCP IAP configuration](https://github.com/kubeflow/community-distribution/blob/master/kfdef/kfctl_gcp_iap.yaml).
 
 ## How to define role privileges for your Kubeflow application?
-Each application defines its own ClusterRole for each role here in kubeflow-roles. We use [ClusterRole Aggregation](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles) for these application ClusterRoles to be aggregated to their corresponding Kubeflow roles. An example implementation showing the same can be found here:  
+Each application defines its own ClusterRole for each role here in kubeflow-roles. We use [ClusterRole Aggregation](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles) for these application ClusterRoles to be aggregated to their corresponding Kubeflow roles. An example implementation showing the same can be found here:
 
 The example is taken from [istio manifests](../istio/istio/base/cluster-roles.yaml).
 ```

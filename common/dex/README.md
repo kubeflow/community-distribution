@@ -1,10 +1,10 @@
 # Kubeflow Dex & Keycloak Integration Guide
 
-In addition to the guidelines for GitHub, Google, Microsoft and other OIDC providers in https://github.com/kubeflow/manifests#dex and direct oauth2-proxy connection without DEX to typical OIDC IDP providers such as Azure in https://github.com/kubeflow/manifests/blob/master/common/oauth2-proxy/README.md#change-the-default-authentication-from-dex--oauth2-proxy-to-oauth2-proxy-only we try to roughly explain here how to configure Dex to use Keycloak as an external OpenID Connect provider for Kubeflow. 
+In addition to the guidelines for GitHub, Google, Microsoft and other OIDC providers in https://github.com/kubeflow/community-distribution#dex and direct oauth2-proxy connection without DEX to typical OIDC IDP providers such as Azure in https://github.com/kubeflow/community-distribution/blob/master/common/oauth2-proxy/README.md#change-the-default-authentication-from-dex--oauth2-proxy-to-oauth2-proxy-only we try to roughly explain here how to configure Dex to use Keycloak as an external OpenID Connect provider for Kubeflow.
 
-> [Note]  
-> ✅ Replace the domains of Keycloak and Kubeflow containing `example.com` with ones that are appropriately tailored to the actual situation.   
-> ✅ If a realm already exists, there's no need to create one.  
+> [Note]
+> ✅ Replace the domains of Keycloak and Kubeflow containing `example.com` with ones that are appropriately tailored to the actual situation.
+> ✅ If a realm already exists, there's no need to create one.
 > ✅ As you know, If the first attempt fails, you can just run it again.
 
 ## Configure Keycloak
@@ -87,7 +87,7 @@ data:
         clientID: $CLIENT_ID
         clientSecret: $CLIENT_SECRET
         redirectURI: $REDIRECT_URI
-        insecureSkipVerify: true 
+        insecureSkipVerify: true
         # Disable TLS certificate verification when connecting to the issuer.
         # This is required for test or on-premises installations using self-signed
         # certificates.
@@ -95,7 +95,7 @@ data:
         # via `insecureSkipVerify`, which is implemented in the Dex OIDC connector.
         # Source: https://github.com/dexidp/dex/blob/master/connector/oidc/oidc.go
         insecureSkipEmailVerified: true
-        userNameKey: email       
+        userNameKey: email
         scopes:
           - openid
           - profile
@@ -227,10 +227,9 @@ Dex configMap example:
       "emailToLowercase"     = true (optional but should be always used)
       "groups"               = "<AD groups>"
       "onlySecurityGroups"   = true (optional, AD groups may have different assignments)
-      "useGroupsAsWhitelist" = true 
+      "useGroupsAsWhitelist" = true
     }
   }
 ]
 ```
 ---
-

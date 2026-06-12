@@ -35,7 +35,7 @@ Kubeflow 1.3 Release Retrospective
 
 # Current Processes
 
-- \[yanniszark] Most of the process is documented in issue:<https://github.com/kubeflow/manifests/issues/1777>
+- \[yanniszark] Most of the process is documented in issue:<https://github.com/kubeflow/community-distribution/issues/1777>
 - \[yanniszark] This old doc from kubeflow/kubeflow is mostly obsolete, but provides some good info on docs:<https://github.com/kubeflow/kubeflow/blob/2d845ee97da9650171701126ad56b34fddd51a7c/docs_dev/releasing.md>
 
 
@@ -88,7 +88,7 @@ Kubeflow 1.3 Release Retrospective
 
   - \[david van der spek] more automation would help here.
   - \[juana] can add a tag now. Yannis has a PR out today to do just that.
-  - \[Rui] The latest release in[Kubeflow/Kubeflow](https://github.com/kubeflow/kubeflow) and in [Kubeflow/Manifests](https://github.com/kubeflow/manifests) is still v1.2, this is confusing.
+  - \[Rui] The latest release in[Kubeflow/Kubeflow](https://github.com/kubeflow/kubeflow) and in [Kubeflow/community-distribution](https://github.com/kubeflow/community-distribution) is still v1.2, this is confusing.
   - \[andrew scribner] People in Statistic Canada were not sure if 1.2 was released. Not clear what the authoritative source was. people keep abreast of change by setting notifications on tags, so such tags help..
   - \[James Liu] Agree to create GitHub release, Google distribution and KFP are currently doing this.**Pinned issues**.<https://docs.google.com/document/d/1KRF4IE48Ueb61DPBKK6fryRWSaNz_urXQOxWf4G_qD8/edit?pli=1#>
   - \[Jeff Fogarty] why did we not make a github release. -
@@ -133,7 +133,7 @@ This also helps with aspirational goals of items they want fixed and what actual
 - \[jbottum] we should consider defining terms for distributions to report their release process
 
   - \[jorge castro] Collect and update for each downstream distribution - GCP, AWS, Azure, OpenShift ..a running tally/status of progress. “Distribution readiness” single page was used in the past. Have distributions to assigning a person, contact person, to contact and get updates when necessary. Create issues and set up notifications for the same.
-  - \[yanniszark] Previous issue for tracking distribution progress:<https://github.com/kubeflow/manifests/issues/1798>
+  - \[yanniszark] Previous issue for tracking distribution progress:<https://github.com/kubeflow/community-distribution/issues/1798>
   - Something that makes this view to be more granular -- like testing has started, expected completion etc.
 
 - \[jbottum] we should request the Working Groups to provide a status to the Release Manager, potentially in writing if they are not going to attend the weekly status call, even if the update is “no change”. Also having a WG just send an update to the kubeflow-discuss list can be a good way for WGs whoo can’t attend a status call to just send an update asynchronously. +1 Malini
@@ -248,6 +248,3 @@ in a Tuesday Community Meeting.
 
 - For 1.4, one of the core deliverables will be to contribute upstream a detailed release document from all the learning so far, so after 1.4, everyone can follow it and the release process can really scale.
 - The KFP and KFServing SDKs had conflicting dependencies making them incompatible with each other. All SDKs should have the same dependency requirements so they are compatible with each other.
-
-
-

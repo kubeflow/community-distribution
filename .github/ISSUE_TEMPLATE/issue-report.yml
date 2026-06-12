@@ -8,7 +8,7 @@ body:
 - type: markdown
   attributes:
     value: |
-      Follow the [Kubeflow installation guidelines](https://github.com/kubeflow/manifests/blob/master/README.md) before submitting the report.
+      Follow the [Kubeflow installation guidelines](https://github.com/kubeflow/community-distribution/blob/master/README.md) before submitting the report.
 - type: checkboxes
   id: Vaildation
   attributes:
@@ -18,7 +18,7 @@ body:
       required: true
     - label: I am reporting this in the appropriate repository.
       required: true
-    - label: I have followed the [Kubeflow installation guidelines](https://github.com/kubeflow/manifests/blob/master/README.md).
+    - label: I have followed the [Kubeflow installation guidelines](https://github.com/kubeflow/community-distribution/blob/master/README.md).
       required: true
     - label: The issue report is detailed and includes version numbers where applicable.
       required: true

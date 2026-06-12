@@ -11,7 +11,7 @@ permissions:
 jobs:
   manifests_example_test:
     name: Test
-    if: ${{ github.repository == 'kubeflow/manifests' }}
+    if: ${{ github.repository == 'kubeflow/community-distribution' }}
     runs-on: ubuntu-latest
 
     steps:

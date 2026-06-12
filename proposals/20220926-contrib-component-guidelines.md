@@ -18,7 +18,7 @@ it tries to solve as well as dependency versions.
     * The assumption until now is that components under the Kubeflow GitHub Org live
       under the `/apps` dir, and all others under `/contrib`
 * Provide a migration plan for components to move out from `/contrib`
-* Modify the [`example/kustomization.yaml`](https://github.com/kubeflow/manifests/blob/master/example/kustomization.yaml) with new components
+* Modify the [`example/kustomization.yaml`](https://github.com/kubeflow/community-distribution/blob/master/example/kustomization.yaml) with new components
 
 ## Proposal
 
@@ -47,7 +47,7 @@ These are the requirements for all components under `/contrib`:
     * The maintainers will need to work with the leads of Manifests WG to ensure
       there's some basic automation in place that will be running the above script(s)
 6. All pods must run with the [baseline PSS set](https://kubernetes.io/docs/concepts/security/pod-security-standards/#baseline)
-7. [stretch goal] All pods must run according to the offical Kubernetes 
+7. [stretch goal] All pods must run according to the offical Kubernetes
    [podsecuritystandards restricted set](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).
    This means explicitly no root containers and dropping all capabilities in your pods securitycontexts.
 8. [stretch goal] Running with Istio sidecars

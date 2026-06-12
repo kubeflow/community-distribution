@@ -20,7 +20,7 @@ Kubeflow Open Source Community. All reports are thoroughly investigated by Kubef
 
 You can use the following ways to report security vulnerabilities privately:
 
-- Using the Kubeflow Platform repository [GitHub Security Advisory](https://github.com/kubeflow/manifests/security/advisories/new).
+- Using the Kubeflow Platform repository [GitHub Security Advisory](https://github.com/kubeflow/community-distribution/security/advisories/new).
 - Using our private Kubeflow Steering Committee mailing list: ksc@kubeflow.org.
 
 Please provide detailed information to help us understand and address the issue promptly.

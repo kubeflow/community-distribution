@@ -32,8 +32,8 @@
 
 ## Step 1: Install Kubeflow
 * This example installs Kubeflow with the master branch
-* Install all Kubeflow official components and all common services using [one command](https://github.com/kubeflow/manifests/tree/master#install-with-a-single-command).
-* If you do not want to install all components, you can comment out **KNative**, **Katib**, **Tensorboards Controller**, **Tensorboard Web App**, **Training Operator**, and **KServe** from [example/kustomization.yaml](https://github.com/kubeflow/manifests/blob/master/example/kustomization.yaml).
+* Install all Kubeflow official components and all common services using [one command](https://github.com/kubeflow/community-distribution/tree/master#install-with-a-single-command).
+* If you do not want to install all components, you can comment out **KNative**, **Katib**, **Tensorboards Controller**, **Tensorboard Web App**, **Training Operator**, and **KServe** from [example/kustomization.yaml](https://github.com/kubeflow/community-distribution/blob/master/example/kustomization.yaml).
 
 ## Step 2: Install KubeRay operator
 
@@ -57,9 +57,9 @@ kubectl create ns development
 # Enable istio-injection for the namespace
 kubectl label namespace development istio-injection=enabled
 
-# After creating the namespace, You have to do below mentioned changes in raycluster_example.yaml file(Required changes are also mentioned as comments in yaml file itself) 
+# After creating the namespace, You have to do below mentioned changes in raycluster_example.yaml file(Required changes are also mentioned as comments in yaml file itself)
 
-# 01. Replace the namesapce of AuthorizationPolicy principal  
+# 01. Replace the namesapce of AuthorizationPolicy principal
 
     principals:
     - "cluster.local/ns/development/sa/default-editor"
@@ -91,7 +91,7 @@ kubectl get svc -n $MY_KUBEFLOW_USER_NAMESPACE
     * Ray 2.23.0
 
 ## Step 5: Forward the port of Istio's Ingress-Gateway
-* Follow the [instructions](https://github.com/kubeflow/manifests/tree/master#port-forward) to forward the port of Istio's Ingress-Gateway and log in to Kubeflow Central Dashboard.
+* Follow the [instructions](https://github.com/kubeflow/community-distribution/tree/master#port-forward) to forward the port of Istio's Ingress-Gateway and log in to Kubeflow Central Dashboard.
 
 ## Step 6: Create a JupyterLab via Kubeflow Central Dashboard
 * Click "Notebooks" icon in the left panel.
@@ -104,7 +104,7 @@ kubectl get svc -n $MY_KUBEFLOW_USER_NAMESPACE
 * As I mentioned in Step 3, Ray is very sensitive to the Python versions and Ray versions between the server (RayCluster) and client (JupyterLab) sides.
     ```sh
     # Check Python version. The version's MAJOR and MINOR should match with RayCluster (i.e. Python 3.11.9)
-    python --version 
+    python --version
     # Python 3.11.9
     pip install -U ray[default]==2.23.0
     ```
@@ -124,22 +124,22 @@ kubectl get svc -n $MY_KUBEFLOW_USER_NAMESPACE
     @ray.remote
     def f(x):
         return x * x
-    
+
     futures = [f.remote(i) for i in range(4)]
     print(ray.get(futures)) # [0, 1, 4, 9]
-    
+
     # Try Ray actor
     @ray.remote
     class Counter(object):
         def __init__(self):
             self.n = 0
-    
+
         def increment(self):
             self.n += 1
-    
+
         def read(self):
             return self.n
-    
+
     counters = [Counter.remote() for i in range(4)]
     [c.increment.remote() for c in counters]
     futures = [c.read.remote() for c in counters]

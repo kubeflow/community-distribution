@@ -5,9 +5,8 @@ resources:
 - ../../base
 
 # We want to Knative to use Istio's local Gateway and not the Ingress Gateway
-# See: https://github.com/kubeflow/manifests/issues/1966
+# See: https://github.com/kubeflow/community-distribution/issues/1966
 patches:
 - path: patches/gateway-selector-in-knative-serving.yaml
 - path: patches/gateway-selector-in-istio-system.yaml
 - path: patches/config-domain.yaml
-

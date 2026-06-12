@@ -18,7 +18,7 @@ env:
 jobs:
   full_kubeflow_integration_test:
     name: Kubeflow Installation and Testing
-    if: ${{ github.repository == 'kubeflow/manifests' }}
+    if: ${{ github.repository == 'kubeflow/community-distribution' }}
     runs-on:
       labels: oracle-vm-16cpu-64gb-x86-64
       # labels: ubuntu-latest-16-cores

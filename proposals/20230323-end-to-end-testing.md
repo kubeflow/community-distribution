@@ -145,7 +145,7 @@ Execute integration tests to verify the correct functioning of different feature
 notebooks.
 
 As the first iteration, test the Kubeflow integration using the
-existing [e2e mnist python script](https://github.com/kubeflow/manifests/tree/master/tests/e2e)
+existing [e2e mnist python script](https://github.com/kubeflow/community-distribution/tree/master/tests/e2e)
 and [e2e mnist notebook](https://github.com/kubeflow/pipelines/blob/master/samples/experimental/kubeflow-e2e-mnist/kubeflow-e2e-mnist.ipynb)
 .
 
@@ -168,9 +168,9 @@ tests should be added to cover various Kubeflow components and features.
 Step to run e2e python script from the workflow:
 
 1. Convert e2e mnist notebook to a python script (
-   reuse [mnist.py](https://github.com/kubeflow/manifests/blob/master/tests/e2e/mnist.py))
+   reuse [mnist.py](https://github.com/kubeflow/community-distribution/blob/master/tests/e2e/mnist.py))
 2. Run mnist python script outside of the cluster (
-   reuse [runner.sh](https://github.com/kubeflow/manifests/blob/master/tests/e2e/runner.sh))
+   reuse [runner.sh](https://github.com/kubeflow/community-distribution/blob/master/tests/e2e/runner.sh))
 
 #### Jupyter notebook
 
@@ -186,36 +186,36 @@ Step to run e2e notebook from the workflow:
     import time
     from PIL import Image
     import requests
-    
+
     # Pipeline Run should be succeeded.
     run_status = kfp_client.get_run(run_id=run_id).run.status
-    
+
     if run_status == None:
         print("Waiting for the Run {} to start".format(run_id))
         time.sleep(60)
         run_status = kfp_client.get_run(run_id=run_id).run.status
-    
+
     while run_status == "Running":
         print("Run {} is in progress".format(run_id))
         time.sleep(60)
         run_status = kfp_client.get_run(run_id=run_id).run.status
-    
+
     if run_status == "Succeeded":
         print("Run {} has Succeeded\n".format(run_id))
-    
+
         # Specify the image URL here.
         image_url = "https://raw.githubusercontent.com/kubeflow/katib/master/examples/v1beta1/kubeflow-pipelines/images/9.bmp"
         image = Image.open(requests.get(image_url, stream=True).raw)
         data = np.array(image.convert('L').resize((28, 28))).astype(float).reshape(-1, 28, 28, 1)
         data_formatted = np.array2string(data, separator=",", formatter={"float": lambda x: "%.1f" % x})
         json_request = '{{ "instances" : {} }}'.format(data_formatted)
-    
+
         # Specify the prediction URL. If you are runing this notebook outside of Kubernetes cluster, you should set the Cluster IP.
         url = "http://{}-predictor-default.{}.svc.cluster.local/v1/models/{}:predict".format(name, namespace, name)
-    
+
         time.sleep(60)
         response = requests.post(url, data=json_request)
-    
+
         print("Prediction for the image")
         display(image)
         print(response.json())
@@ -335,7 +335,7 @@ an AWS EC2 instance.
 - GitHub secrets are limited to the Manifest repo and do not cascade to forked repositories. To debug, users must set up
   their own AWS secrets.
 - To debug the AWS EC2 instance without ssh into the GitHub system, you must have access to AWS credentials. Access to
-  AWS credentials is limited to [Manifest WG approvers](https://github.com/kubeflow/manifests/blob/master/OWNERS).
+  AWS credentials is limited to [Manifest WG approvers](https://github.com/kubeflow/community-distribution/blob/master/OWNERS).
 
 ## Proof of Concept Workflow
 
@@ -346,7 +346,7 @@ and [failed](https://github.com/DomFleischmann/manifests/actions/runs/4119052861
 
 The proposed end-to-end workflow has been tested with the following Kubernetes and Kubeflow versions
 
-- 1.22 Kubernetes and [1.6.1 Kubeflow release](https://github.com/kubeflow/manifests/releases/tag/v1.6.1) (microk8s)
+- 1.22 Kubernetes and [1.6.1 Kubeflow release](https://github.com/kubeflow/community-distribution/releases/tag/v1.6.1) (microk8s)
 - 1.24 Kubernetes and main branch of the manifest
   repo ([last commit](https://github.com/DomFleischmann/manifests/commit/8e5714171f1fd5b00f59f436e9ab8cb45a0f30e3)) (
   microk8s)
