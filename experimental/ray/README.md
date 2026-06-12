@@ -33,7 +33,7 @@
 ## Step 1: Install Kubeflow
 * This example installs Kubeflow with the master branch
 * Install all Kubeflow official components and all common services using [one command](https://github.com/kubeflow/community-distribution/tree/master#install-with-a-single-command).
-* If you do not want to install all components, you can comment out **KNative**, **Katib**, **Tensorboards Controller**, **Tensorboard Web App**, **Training Operator**, and **KServe** from [example/kustomization.yaml](https://github.com/kubeflow/community-distribution/blob/master/example/kustomization.yaml).
+* If you do not want to install all components, you can comment out **Knative**, **Katib**, **Tensorboards Controller**, **Tensorboard Web App**, **Training Operator**, and **KServe** from [example/kustomization.yaml](https://github.com/kubeflow/community-distribution/blob/master/example/kustomization.yaml).
 
 ## Step 2: Install KubeRay operator
 
