@@ -20,7 +20,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         issue_message: |
-          **Welcome to the Kubeflow Manifests Repository**
+          **Welcome to the Kubeflow Community Distribution Repository**
 
           Thanks for opening your first issue. We are trying to deal with your issue on a best-effort basis. without guarantees.
           If you need [commercial support](https://www.kubeflow.org/docs/started/support/#support-from-commercial-providers-in-the-kubeflow-ecosystem) instead please reach out to us.
@@ -39,13 +39,13 @@ jobs:
           Feel free to ask questions — we are here to help.
 
         pr_message: |
-          **Welcome to the Kubeflow Manifests Repository**
+          **Welcome to the Kubeflow Community Distribution Repository**
 
           Thanks for opening your first PR. Your contribution means a lot to the Kubeflow community.
 
           **Before making more PRs:**
           Please ensure your PR follows our [Contributing Guide](https://github.com/kubeflow/community-distribution/blob/master/CONTRIBUTING.md).
-          Please also be aware that many components are synchronizes from upstream via the scripts in /scripts.
+          Please also be aware that many components are synchronized from upstream via the scripts in `/scripts`.
           So in some cases you have to fix the problem in the upstream repositories first, but you can use a PR against kubeflow/community-distribution to test the platform integration.
 
           **Community Resources:**

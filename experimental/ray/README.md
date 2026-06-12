@@ -57,7 +57,7 @@ kubectl create ns development
 # Enable istio-injection for the namespace
 kubectl label namespace development istio-injection=enabled
 
-# After creating the namespace, You have to do below mentioned changes in raycluster_example.yaml file(Required changes are also mentioned as comments in yaml file itself)
+# After creating the namespace, apply the changes below in `experimental/ray/raycluster_example.yaml` (required changes are also mentioned as comments in the YAML file itself)
 
 # 01. Replace the namespace of AuthorizationPolicy principal
 

@@ -10,7 +10,7 @@ body:
     value: |
       Follow the [Kubeflow installation guidelines](https://github.com/kubeflow/community-distribution/blob/master/README.md) before submitting the report.
 - type: checkboxes
-  id: Vaildation
+  id: Validation
   attributes:
     label: Validation Checklist
     options:

@@ -83,7 +83,7 @@ The release team will go over the provided feedback on Monday, November 8th, pro
   - [Anna] Let’s also ensure we ask new members if they would like to lead following releases
   - [Kimonas] Let’s think about removing one of the Release Team member or Shadow roles
 - [Anna Jung] Add release candidates to the timeline
-  - Lets add this information in the tables in the [timeline](https://github.com/kubeflow/community-distribution/tree/master/docs/releases/release-1.4#timeline) and [handbook](https://github.com/kubeflow/community-distribution/blob/master/docs/releases/handbook.md#timeline)
+  - Let's add this information in the tables in the [timeline](https://github.com/kubeflow/community-distribution/tree/master/docs/releases/release-1.4#timeline) and [handbook](https://github.com/kubeflow/community-distribution/blob/master/docs/releases/handbook.md#timeline)
 - Move release docs to community rep? [Anna Jung]
   - **[Action Item]** Create an issue to move the kubeflow/community-distribution/docs/releases folder under kubeflow/community
   - [Kimonas] Let’s ensure that the OWNERS file will include the release team to allow us to keep on iterating fast
