@@ -10,7 +10,7 @@ Most enterprise environments will require this as well.
 ### Implementation details
 The main steps are adding an additional profile for istio-cni and later ambient mesh, updating the documentation and manifest generation process.
 Only istio-cni or istio ambient mesh can run rootless as explained here https://istio.io/latest/docs/setup/additional-setup/cni/.
-Istio-cni will still need a deamonset in kube-system, but that is completly isolated from user workloads.
+Istio-cni will still need a daemonset in kube-system, but that is completely isolated from user workloads.
 The ambient mesh should get rid of this as well and also has the benefit of removing the istio initcontainers and sidecars altogether.
 Then adding the baseline and restricted PSS as kustomize component to `/contrib` and extending the profile controller to annotate user namespaces with configurable PSS labels.
 

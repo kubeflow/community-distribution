@@ -59,7 +59,7 @@ kubectl label namespace development istio-injection=enabled
 
 # After creating the namespace, You have to do below mentioned changes in raycluster_example.yaml file(Required changes are also mentioned as comments in yaml file itself)
 
-# 01. Replace the namesapce of AuthorizationPolicy principal
+# 01. Replace the namespace of AuthorizationPolicy principal
 
     principals:
     - "cluster.local/ns/development/sa/default-editor"
