@@ -1,0 +1,23 @@
+apiVersion: v2
+
+name: kubeflow-namespaces
+
+description: A Helm chart for Kubeflow platform namespaces and namespace network policies
+
+version: 0.1.0
+
+appVersion: 1.11.0
+
+keywords:
+- kubeflow
+- namespaces
+- network-policy
+
+home: https://github.com/kubeflow/manifests
+
+sources:
+- https://github.com/kubeflow/manifests
+
+annotations:
+  category: Machine Learning
+  licenses: Apache-2.0

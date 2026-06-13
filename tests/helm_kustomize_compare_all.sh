@@ -12,6 +12,8 @@ declare -A COMPONENT_SCENARIOS=(
     ["katib"]="standalone cert-manager external-db leader-election openshift standalone-postgres with-kubeflow"
     ["hub"]="base overlay-postgres overlay-db controller-manager controller-rbac controller-default controller-prometheus controller-network-policy ui-base ui-standalone ui-integrated ui-istio istio csi"
     ["kserve-models-web-app"]="base kubeflow"
+    ["kubeflow-namespaces"]="base platform-namespaces"
+    ["kubeflow-platform"]="base"
 )
 
 test_component() {
@@ -49,7 +51,7 @@ if [[ "$COMPONENT" == "all" ]]; then
     declare -a passed_components=()
     declare -a failed_components=()
     
-    for comp in katib hub kserve-models-web-app; do
+    for comp in katib hub kserve-models-web-app kubeflow-namespaces kubeflow-platform; do
         if test_component "$comp"; then
             passed_components+=("$comp")
         else
@@ -77,6 +79,8 @@ elif [[ "$COMPONENT" == "help" ]] || [[ "$COMPONENT" == "--help" ]] || [[ "$COMP
     echo "  katib                  Test Katib scenarios"
     echo "  hub                    Test Hub / Model Registry scenarios"
     echo "  kserve-models-web-app  Test KServe Models Web App scenarios"
+    echo "  kubeflow-namespaces    Test Kubeflow namespace foundation chart"
+    echo "  kubeflow-platform      Test Kubeflow platform foundation chart"
     echo ""
     echo "Examples:"
     echo "  $0                     # Test all components"

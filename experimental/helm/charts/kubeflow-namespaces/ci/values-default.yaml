@@ -1,0 +1,13 @@
+# CI values for default Kustomize parity.
+platformNamespaces:
+  certManager:
+    enabled: true
+  istioSystem:
+    enabled: true
+  oauth2Proxy:
+    enabled: true
+  auth:
+    enabled: true
+
+networkPolicies:
+  enabled: true

@@ -1,0 +1,23 @@
+apiVersion: v2
+
+name: kubeflow-platform
+
+description: A Helm chart for shared Kubeflow platform RBAC resources
+
+version: 0.1.0
+
+appVersion: 1.11.0
+
+keywords:
+- kubeflow
+- platform
+- rbac
+
+home: https://github.com/kubeflow/manifests
+
+sources:
+- https://github.com/kubeflow/manifests
+
+annotations:
+  category: Machine Learning
+  licenses: Apache-2.0

@@ -1,0 +1,48 @@
+{{ if .Values.networkPolicies.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-allow-same-namespace-kubeflow-system
+  namespace: kubeflow-system
+spec:
+  ingress:
+  - from:
+    - podSelector: {}
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jobset-webhook
+  namespace: kubeflow-system
+spec:
+  ingress:
+  - ports:
+    - port: 9443
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: jobset
+      control-plane: controller-manager
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: trainer-webhook
+  namespace: kubeflow-system
+spec:
+  ingress:
+  - ports:
+    - port: 9443
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      service.istio.io/canonical-name: trainer
+  policyTypes:
+  - Ingress
+{{ end }}

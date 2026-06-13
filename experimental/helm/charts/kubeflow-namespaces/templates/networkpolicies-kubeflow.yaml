@@ -1,0 +1,463 @@
+{{ if .Values.networkPolicies.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cache-server
+  namespace: kubeflow
+spec:
+  ingress:
+  - ports:
+    - port: 8443
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - cache-server
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-allow-same-namespace
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - podSelector: {}
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jupyter-web-app
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+    - podSelector: {}
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - jupyter-web-app
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: katib-controller
+  namespace: kubeflow
+spec:
+  ingress:
+  - ports:
+    - port: 8443
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: katib.kubeflow.org/component
+      operator: In
+      values:
+      - controller
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: katib-db-manager
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/part-of
+          operator: In
+          values:
+          - kubeflow-profile
+    - podSelector: {}
+  podSelector:
+    matchExpressions:
+    - key: katib.kubeflow.org/component
+      operator: In
+      values:
+      - db-manager
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: katib-ui
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+  podSelector:
+    matchExpressions:
+    - key: katib.kubeflow.org/component
+      operator: In
+      values:
+      - ui
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kserve
+  namespace: kubeflow
+spec:
+  ingress:
+  - ports:
+    - port: 9443
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: control-plane
+      operator: In
+      values:
+      - kserve-controller-manager
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kserve-models-web-application
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+  podSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/component
+      operator: In
+      values:
+      - kserve-models-web-application
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: metadata-grpc-server
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/part-of
+          operator: In
+          values:
+          - kubeflow-profile
+    - podSelector: {}
+  podSelector:
+    matchExpressions:
+    - key: component
+      operator: In
+      values:
+      - metadata-grpc-server
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: metatada-envoy
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+    - podSelector: {}
+  podSelector:
+    matchExpressions:
+    - key: component
+      operator: In
+      values:
+      - metadata-envoy
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ml-pipeline
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/part-of
+          operator: In
+          values:
+          - kubeflow-profile
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - ml-pipeline
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ml-pipeline-ui
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - ml-pipeline-ui
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: model-catalog
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/part-of
+          operator: In
+          values:
+          - kubeflow-profile
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+    ports:
+    - port: 8080
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: model-catalog
+      app.kubernetes.io/component: server
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: model-registry
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/part-of
+          operator: In
+          values:
+          - kubeflow-profile
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+    ports:
+    - port: 8080
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: component
+      operator: In
+      values:
+      - model-registry-server
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: model-registry-ui
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+    - podSelector: {}
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - model-registry-ui
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pvcviewer-webhook
+  namespace: kubeflow
+spec:
+  ingress:
+  - ports:
+    - port: 9443
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - pvcviewer
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: spark-operator-webhook
+  namespace: kubeflow
+spec:
+  ingress:
+  - ports:
+    - port: 9443
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: In
+      values:
+      - spark-operator
+    - key: app.kubernetes.io/component
+      operator: In
+      values:
+      - webhook
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tensorboards-web-app
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+    ports:
+    - port: 5000
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - tensorboards-web-app
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: training-operator-webhook
+  namespace: kubeflow
+spec:
+  ingress:
+  - ports:
+    - port: 9443
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: control-plane
+      operator: In
+      values:
+      - kubeflow-training-operator
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: volumes-web-app
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+          - istio-system
+    - podSelector: {}
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - volumes-web-app
+  policyTypes:
+  - Ingress
+{{ end }}

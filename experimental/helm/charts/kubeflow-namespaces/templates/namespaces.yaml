@@ -1,0 +1,82 @@
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "kubeflow")) "true" }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    control-plane: kubeflow
+    istio-injection: enabled
+    pod-security.kubernetes.io/enforce: restricted
+  name: kubeflow
+{{- end }}
+---
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "kubeflow-system")) "true" }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    control-plane: kubeflow
+    istio-injection: enabled
+    pod-security.kubernetes.io/enforce: restricted
+  name: kubeflow-system
+{{- end }}
+---
+{{- if .Values.platformNamespaces.certManager.enabled }}
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "cert-manager")) "true" }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+  name: cert-manager
+{{- end }}
+{{- end }}
+---
+{{- if .Values.platformNamespaces.istioSystem.enabled }}
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "istio-system")) "true" }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    istio-injection: disabled
+    istio-operator-managed: Reconcile
+    pod-security.kubernetes.io/enforce: restricted
+  name: istio-system
+{{- end }}
+{{- end }}
+---
+{{- if .Values.platformNamespaces.oauth2Proxy.enabled }}
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "oauth2-proxy")) "true" }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+  name: oauth2-proxy
+{{- end }}
+{{- end }}
+---
+{{- if .Values.platformNamespaces.auth.enabled }}
+{{- if eq (include "kubeflow-namespaces.shouldRenderNamespace" (dict "root" . "name" "auth")) "true" }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+  name: auth
+{{- end }}
+{{- end }}
+
+# TODO: Add knative-serving and knative-eventing namespaces when the
+# knative wrapper chart PR is opened.
