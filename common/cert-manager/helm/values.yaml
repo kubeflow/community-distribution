@@ -1,0 +1,26 @@
+# Default values for the Kubeflow cert-manager wrapper chart.
+
+cert-manager:
+  enabled: true
+  crds:
+    enabled: true
+  startupapicheck:
+    enabled: false
+
+kubeflow:
+  # -- Enable Kubeflow-specific cert-manager resources.
+  enabled: false
+
+  clusterIssuer:
+    # -- Create the Kubeflow self-signed ClusterIssuer.
+    enabled: true
+    name: kubeflow-self-signing-issuer
+
+  networkPolicies:
+    # -- Create Kubeflow cert-manager NetworkPolicies.
+    enabled: true
+
+  labels:
+    app.kubernetes.io/component: cert-manager
+    app.kubernetes.io/name: cert-manager
+    kustomize.component: cert-manager

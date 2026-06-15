@@ -1,0 +1,11 @@
+# CI values for Kubeflow cert-manager resources with an externally managed cert-manager.
+cert-manager:
+  enabled: false
+
+kubeflow:
+  enabled: true
+  clusterIssuer:
+    enabled: true
+    name: kubeflow-self-signing-issuer
+  networkPolicies:
+    enabled: true

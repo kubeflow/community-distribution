@@ -1,0 +1,14 @@
+# CI values for upstream cert-manager base parity.
+cert-manager:
+  enabled: true
+  crds:
+    enabled: true
+  startupapicheck:
+    enabled: false
+
+kubeflow:
+  enabled: false
+  clusterIssuer:
+    enabled: false
+  networkPolicies:
+    enabled: false

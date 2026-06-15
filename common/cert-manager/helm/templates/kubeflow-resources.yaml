@@ -1,0 +1,54 @@
+{{ if .Values.kubeflow.enabled }}
+{{ if .Values.kubeflow.clusterIssuer.enabled }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.kubeflow.clusterIssuer.name | quote }}
+  labels:
+    {{- toYaml .Values.kubeflow.labels | nindent 4 }}
+spec:
+  selfSigned: {}
+{{ end }}
+{{ if .Values.kubeflow.networkPolicies.enabled }}
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: cert-manager-webhook
+  namespace: cert-manager
+  labels:
+    {{- toYaml .Values.kubeflow.labels | nindent 4 }}
+spec:
+  podSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: In
+      values:
+      - webhook
+    - key: app.kubernetes.io/component
+      operator: In
+      values:
+      - "webhook"
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 10250
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-allow-same-namespace-cert-manager
+  namespace: cert-manager
+  labels:
+    {{- toYaml .Values.kubeflow.labels | nindent 4 }}
+spec:
+  podSelector: {}
+  ingress:
+  - from:
+    - podSelector: {}
+  policyTypes:
+  - Ingress
+{{ end }}
+{{ end }}
