@@ -17,7 +17,7 @@ catalogs:
       - Red Hat AI validated
 labels:
   - name: Red Hat AI validated
-    description: Third-party models with performance and compatibility verified by Red Hat.
+    description: Third-party models with performance and compatibility verified by Red Hat. Some of these include validated runtime arguments for enabling additional capabilities.
   - name: Red Hat AI
     description: Red Hat models with full support and legal indemnification.
   - name: null

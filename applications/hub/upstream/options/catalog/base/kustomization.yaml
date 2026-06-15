@@ -30,4 +30,4 @@ secretGenerator:
 images:
 - name: ghcr.io/kubeflow/hub/server
   newName: ghcr.io/kubeflow/hub/server
-  newTag: v0.3.9
+  newTag: v0.3.10
