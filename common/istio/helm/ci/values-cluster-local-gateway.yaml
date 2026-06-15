@@ -1,0 +1,11 @@
+# CI values for Istio cluster-local gateway parity.
+crds:
+  enabled: false
+networkPolicies:
+  enabled: false
+install:
+  enabled: false
+clusterLocalGateway:
+  enabled: true
+kubeflowIstioResources:
+  enabled: false

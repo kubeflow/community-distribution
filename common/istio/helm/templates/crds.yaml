@@ -1,0 +1,3 @@
+{{- if .Values.crds.enabled }}
+{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/crds.yaml") }}
+{{- end }}

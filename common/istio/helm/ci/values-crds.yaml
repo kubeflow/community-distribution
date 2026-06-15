@@ -1,0 +1,7 @@
+# CI values for the first Istio CRD lifecycle step.
+crds:
+  enabled: true
+networkPolicies:
+  enabled: false
+install:
+  enabled: false

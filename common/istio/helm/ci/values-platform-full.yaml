@@ -1,0 +1,12 @@
+# CI values for the managed Kubeflow Istio platform slice.
+profile: oauth2-proxy
+crds:
+  enabled: true
+networkPolicies:
+  enabled: true
+install:
+  enabled: true
+clusterLocalGateway:
+  enabled: true
+kubeflowIstioResources:
+  enabled: true

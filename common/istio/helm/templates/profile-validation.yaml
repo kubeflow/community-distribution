@@ -1,0 +1,4 @@
+{{- $validProfiles := list "base" "oauth2-proxy" "gke" -}}
+{{- if not (has .Values.profile $validProfiles) -}}
+{{- fail (printf "unsupported istio profile %q; supported values are: base, oauth2-proxy, gke" .Values.profile) -}}
+{{- end -}}

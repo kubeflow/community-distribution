@@ -1,0 +1,34 @@
+# Default values for the Kubeflow Istio wrapper chart.
+#
+# The safe default renders only Istio CRDs. Install the chart first with the
+# CRD-only values, then upgrade with a supported profile after the CRDs are
+# available to the API server.
+
+# -- Istio install profile used when install.enabled=true. Supported values: base, oauth2-proxy, gke.
+profile: oauth2-proxy
+
+crds:
+  # -- Render Istio CustomResourceDefinition resources.
+  enabled: true
+
+networkPolicies:
+  # -- Render Istio namespace NetworkPolicy resources.
+  enabled: false
+
+install:
+  # -- Render Istio control-plane, gateway, CNI, and Istio custom resources.
+  enabled: false
+
+oauth2Proxy:
+  # -- oauth2-proxy extension provider service host.
+  service: oauth2-proxy.oauth2-proxy.svc.cluster.local
+  # -- oauth2-proxy extension provider service port.
+  port: 80
+
+clusterLocalGateway:
+  # -- Render the Kubeflow cluster-local gateway resources.
+  enabled: false
+
+kubeflowIstioResources:
+  # -- Render Kubeflow-specific Istio gateway and RBAC resources.
+  enabled: false

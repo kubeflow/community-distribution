@@ -1,0 +1,3 @@
+{{- if and .Values.install.enabled (eq .Values.profile "base") }}
+{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/install-base.yaml") }}
+{{- end }}

@@ -1,0 +1,8 @@
+# CI values for Istio GKE parity.
+profile: gke
+crds:
+  enabled: true
+networkPolicies:
+  enabled: true
+install:
+  enabled: true

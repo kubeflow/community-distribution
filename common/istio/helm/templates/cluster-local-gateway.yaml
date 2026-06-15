@@ -1,0 +1,3 @@
+{{- if .Values.clusterLocalGateway.enabled }}
+{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/cluster-local-gateway.yaml") }}
+{{- end }}

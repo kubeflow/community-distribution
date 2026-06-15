@@ -11,7 +11,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, hub, kserve-models-web-app"
+    echo "Components: katib, hub, kserve-models-web-app, istio"
     exit 1
 fi
 
@@ -132,9 +132,44 @@ case "$COMPONENT" in
         )
         ;;
 
+    "istio")
+        CHART_DIR="$ROOT_DIR/common/istio/helm"
+        MANIFESTS_DIR="$ROOT_DIR/common/istio"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["crds"]="$MANIFESTS_DIR/istio-crds/base"
+            ["base"]="$MANIFESTS_DIR/istio-crds/base"$'\n'"$MANIFESTS_DIR/istio-namespace/base"$'\n'"$MANIFESTS_DIR/istio-install/base"
+            ["oauth2-proxy"]="$MANIFESTS_DIR/istio-crds/base"$'\n'"$MANIFESTS_DIR/istio-namespace/base"$'\n'"$MANIFESTS_DIR/istio-install/overlays/oauth2-proxy"
+            ["gke"]="$MANIFESTS_DIR/istio-crds/base"$'\n'"$MANIFESTS_DIR/istio-namespace/base"$'\n'"$MANIFESTS_DIR/istio-install/overlays/gke"
+            ["cluster-local-gateway"]="$MANIFESTS_DIR/cluster-local-gateway/base"
+            ["kubeflow-istio-resources"]="$MANIFESTS_DIR/kubeflow-istio-resources/base"
+            ["platform-full"]="$MANIFESTS_DIR/istio-crds/base"$'\n'"$MANIFESTS_DIR/istio-namespace/base"$'\n'"$MANIFESTS_DIR/istio-install/overlays/oauth2-proxy"$'\n'"$MANIFESTS_DIR/cluster-local-gateway/base"$'\n'"$MANIFESTS_DIR/kubeflow-istio-resources/base"
+        )
+
+        declare -A HELM_VALUES=(
+            ["crds"]="$CHART_DIR/ci/values-crds.yaml"
+            ["base"]="$CHART_DIR/ci/values-base.yaml"
+            ["oauth2-proxy"]="$CHART_DIR/ci/values-oauth2-proxy.yaml"
+            ["gke"]="$CHART_DIR/ci/values-gke.yaml"
+            ["cluster-local-gateway"]="$CHART_DIR/ci/values-cluster-local-gateway.yaml"
+            ["kubeflow-istio-resources"]="$CHART_DIR/ci/values-kubeflow-istio-resources.yaml"
+            ["platform-full"]="$CHART_DIR/ci/values-platform-full.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["crds"]="istio-system"
+            ["base"]="istio-system"
+            ["oauth2-proxy"]="istio-system"
+            ["gke"]="istio-system"
+            ["cluster-local-gateway"]="istio-system"
+            ["kubeflow-istio-resources"]="istio-system"
+            ["platform-full"]="istio-system"
+        )
+        ;;
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-app"
+        echo "Supported components: katib, hub, kserve-models-web-app, istio"
         exit 1
         ;;
 esac
@@ -151,13 +186,16 @@ fi
 KUSTOMIZE_PATH="${KUSTOMIZE_PATHS[$SCENARIO]}"
 HELM_VALUES_ARG="${HELM_VALUES[$SCENARIO]}"
 NAMESPACE="${NAMESPACES[$SCENARIO]}"
+mapfile -t KUSTOMIZE_ROOTS <<< "$KUSTOMIZE_PATH"
 
 echo "Comparing $COMPONENT manifests for scenario: $SCENARIO"
 
-if [ ! -d "$KUSTOMIZE_PATH" ]; then
-    echo "ERROR: Kustomize path does not exist: $KUSTOMIZE_PATH"
-    exit 1
-fi
+for path in "${KUSTOMIZE_ROOTS[@]}"; do
+    if [ ! -d "$path" ]; then
+        echo "ERROR: Kustomize path does not exist: $path"
+        exit 1
+    fi
+done
 
 if [ ! -d "$CHART_DIR" ]; then
     echo "ERROR: Helm chart directory does not exist: $CHART_DIR"
@@ -173,7 +211,14 @@ KUSTOMIZE_OUTPUT="/tmp/kustomize-${COMPONENT}-${SCENARIO}.yaml"
 HELM_OUTPUT="/tmp/helm-${COMPONENT}-${SCENARIO}.yaml"
 
 cd "$ROOT_DIR"
-kustomize build "$KUSTOMIZE_PATH" > "$KUSTOMIZE_OUTPUT"
+: > "$KUSTOMIZE_OUTPUT"
+for i in "${!KUSTOMIZE_ROOTS[@]}"; do
+    path="${KUSTOMIZE_ROOTS[$i]}"
+    if [ "$i" -gt 0 ]; then
+        printf "\n---\n" >> "$KUSTOMIZE_OUTPUT"
+    fi
+    kustomize build "$path" >> "$KUSTOMIZE_OUTPUT"
+done
 
 # Generate Helm manifests (different approach for KServe Models Web App)
 cd "$ROOT_DIR"
@@ -191,6 +236,11 @@ else
     cd "$CHART_DIR"
     if [[ "$COMPONENT" == "katib" ]]; then
         helm template katib . \
+            --namespace "$NAMESPACE" \
+            --include-crds \
+            --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
+    elif [[ "$COMPONENT" == "istio" ]]; then
+        helm template istio . \
             --namespace "$NAMESPACE" \
             --include-crds \
             --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
