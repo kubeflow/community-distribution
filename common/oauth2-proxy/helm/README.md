@@ -15,18 +15,18 @@ release metadata in that same workload namespace.
 Namespace names are fixed to match the Kustomize baseline and `kubeflow-namespaces` foundation chart. oauth2-proxy workloads use `oauth2-proxy`, Istio auth resources use `istio-system`, and gateway references use `kubeflow`. These names are not configurable.
 
 ```bash
-helm install oauth2-proxy ./experimental/helm/charts/oauth2-proxy \
+helm install oauth2-proxy ./common/oauth2-proxy/helm \
   --namespace oauth2-proxy \
-  --values ./experimental/helm/charts/oauth2-proxy/ci/values-m2m-dex-only.yaml
+  --values ./common/oauth2-proxy/helm/ci/values-m2m-dex-only.yaml
 ```
 
 For kind-like clusters that use Kubernetes service account JWTs for gateway
 machine-to-machine auth, use:
 
 ```bash
-helm install oauth2-proxy ./experimental/helm/charts/oauth2-proxy \
+helm install oauth2-proxy ./common/oauth2-proxy/helm \
   --namespace oauth2-proxy \
-  --values ./experimental/helm/charts/oauth2-proxy/ci/values-m2m-dex-and-kind.yaml
+  --values ./common/oauth2-proxy/helm/ci/values-m2m-dex-and-kind.yaml
 ```
 
 ## Kustomize Mapping
@@ -43,7 +43,7 @@ stable.
 ## Comparison
 
 ```bash
-helm lint experimental/helm/charts/oauth2-proxy
+helm lint common/oauth2-proxy/helm
 ./tests/helm_kustomize_compare.sh oauth2-proxy base
 ./tests/helm_kustomize_compare.sh oauth2-proxy m2m-dex-only
 ./tests/helm_kustomize_compare.sh oauth2-proxy m2m-dex-and-kind

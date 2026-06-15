@@ -133,7 +133,7 @@ case "$COMPONENT" in
         ;;
 
     "oauth2-proxy")
-        CHART_DIR="$ROOT_DIR/experimental/helm/charts/oauth2-proxy"
+        CHART_DIR="$ROOT_DIR/common/oauth2-proxy/helm"
         MANIFESTS_DIR="$ROOT_DIR/common/oauth2-proxy"
 
         declare -A KUSTOMIZE_PATHS=(
