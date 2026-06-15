@@ -1,0 +1,22 @@
+apiVersion: v2
+name: dex
+description: A Helm chart for Kubeflow Dex authentication resources
+version: 0.1.0
+appVersion: 2.45.1
+
+keywords:
+- authentication
+- oidc
+- oauth2
+- kubeflow
+- dex
+
+home: https://github.com/kubeflow/manifests
+
+sources:
+- https://github.com/kubeflow/manifests/tree/master/common/dex
+- https://github.com/dexidp/dex
+
+annotations:
+  category: Authentication
+  licenses: Apache-2.0

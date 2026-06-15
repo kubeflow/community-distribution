@@ -11,7 +11,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, hub, kserve-models-web-app"
+    echo "Components: katib, hub, kserve-models-web-app, dex"
     exit 1
 fi
 
@@ -132,9 +132,32 @@ case "$COMPONENT" in
         )
         ;;
 
+    "dex")
+        CHART_DIR="$ROOT_DIR/common/dex/helm"
+        MANIFESTS_DIR="$ROOT_DIR/common/dex"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["base"]="$MANIFESTS_DIR/base"
+            ["istio"]="$MANIFESTS_DIR/overlays/istio"
+            ["oauth2-proxy"]="$MANIFESTS_DIR/overlays/oauth2-proxy"
+        )
+
+        declare -A HELM_VALUES=(
+            ["base"]="$CHART_DIR/ci/values-base.yaml"
+            ["istio"]="$CHART_DIR/ci/values-istio.yaml"
+            ["oauth2-proxy"]="$CHART_DIR/ci/values-oauth2-proxy.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["base"]="auth"
+            ["istio"]="auth"
+            ["oauth2-proxy"]="auth"
+        )
+        ;;
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-app"
+        echo "Supported components: katib, hub, kserve-models-web-app, dex"
         exit 1
         ;;
 esac
@@ -187,6 +210,12 @@ if [[ "$COMPONENT" == "kserve-models-web-app" ]]; then
         helm template kserve-models-web-application "$CHART_DIR" \
             --namespace "$NAMESPACE" > "$HELM_OUTPUT"
     fi
+elif [[ "$COMPONENT" == "dex" ]]; then
+    cd "$CHART_DIR"
+    helm template dex . \
+        --namespace "$NAMESPACE" \
+        --include-crds \
+        --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
 else
     cd "$CHART_DIR"
     if [[ "$COMPONENT" == "katib" ]]; then
