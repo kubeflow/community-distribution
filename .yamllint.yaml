@@ -5,6 +5,7 @@ ignore: |
   common/istio/cluster-local-gateway/base/cluster-local-gateway.yaml
   common/istio/istio-crds/base/crd.yaml
   common/istio/istio-install/base/install.yaml
+  common/*/helm/templates/**
   **/upstream/**
 
 rules:
