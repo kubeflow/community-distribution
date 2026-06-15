@@ -1,0 +1,46 @@
+# Default values for the Kubeflow oauth2-proxy chart.
+
+credentials:
+  # -- OAuth client ID used by oauth2-proxy.
+  clientID: kubeflow-oidc-authservice
+  # -- OAuth client secret used by oauth2-proxy.
+  clientSecret: REPLACE_ME_CLIENT_SECRET
+  # -- Cookie secret used by oauth2-proxy.
+  cookieSecret: REPLACE_ME_COOKIE_SECRET
+
+parameters:
+  # -- Configure oauth2-proxy cookie secure behavior.
+  forceHttps: "false"
+  # -- Allow self-signed issuer certificates.
+  allowSelfSignedIssuer: "true"
+  # -- Allow machine-to-machine bearer tokens.
+  enableM2MTokens: "true"
+  # -- Extra JWT issuers in oauth2-proxy --extra-jwt-issuers format.
+  extraJwtIssuers: ""
+
+oauth2Proxy:
+  # -- Render oauth2-proxy workload resources.
+  enabled: true
+
+networkPolicies:
+  # -- Render oauth2-proxy namespace NetworkPolicies.
+  enabled: true
+
+istioExternalAuth:
+  # -- Render Istio external auth resources for oauth2-proxy.
+  enabled: false
+
+m2m:
+  # -- Render machine-to-machine RequestAuthentication.
+  enabled: false
+  # -- Primary JWT issuer.
+  issuer: PATCH_ME
+  # -- Optional JWKS URI for the primary JWT issuer.
+  jwksUri: ""
+  # -- Additional JWT rules.
+  additionalJwtRules: []
+
+clusterJwksProxy:
+  # -- Render the cluster JWKS proxy used by kind-like clusters.
+  enabled: false
+  image: ""

@@ -11,7 +11,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, hub, kserve-models-web-app"
+    echo "Components: katib, hub, kserve-models-web-app, oauth2-proxy"
     exit 1
 fi
 
@@ -132,9 +132,35 @@ case "$COMPONENT" in
         )
         ;;
 
+    "oauth2-proxy")
+        CHART_DIR="$ROOT_DIR/common/oauth2-proxy/helm"
+        MANIFESTS_DIR="$ROOT_DIR/common/oauth2-proxy"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["base"]="$MANIFESTS_DIR/base"
+            ["m2m-dex-only"]="$MANIFESTS_DIR/overlays/m2m-dex-only"
+            ["m2m-dex-and-kind"]="$MANIFESTS_DIR/overlays/m2m-dex-and-kind"
+            ["m2m-dex-and-eks"]="$MANIFESTS_DIR/overlays/m2m-dex-and-eks"
+        )
+
+        declare -A HELM_VALUES=(
+            ["base"]="$CHART_DIR/ci/values-base.yaml"
+            ["m2m-dex-only"]="$CHART_DIR/ci/values-m2m-dex-only.yaml"
+            ["m2m-dex-and-kind"]="$CHART_DIR/ci/values-m2m-dex-and-kind.yaml"
+            ["m2m-dex-and-eks"]="$CHART_DIR/ci/values-m2m-dex-and-eks.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["base"]="oauth2-proxy"
+            ["m2m-dex-only"]="oauth2-proxy"
+            ["m2m-dex-and-kind"]="oauth2-proxy"
+            ["m2m-dex-and-eks"]="oauth2-proxy"
+        )
+        ;;
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-app"
+        echo "Supported components: katib, hub, kserve-models-web-app, oauth2-proxy"
         exit 1
         ;;
 esac
@@ -191,6 +217,11 @@ else
     cd "$CHART_DIR"
     if [[ "$COMPONENT" == "katib" ]]; then
         helm template katib . \
+            --namespace "$NAMESPACE" \
+            --include-crds \
+            --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"
+    elif [[ "$COMPONENT" == "oauth2-proxy" ]]; then
+        helm template oauth2-proxy . \
             --namespace "$NAMESPACE" \
             --include-crds \
             --values "$HELM_VALUES_ARG" > "$HELM_OUTPUT"

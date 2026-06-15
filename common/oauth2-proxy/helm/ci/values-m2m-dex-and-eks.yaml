@@ -1,0 +1,16 @@
+credentials:
+  clientSecret: pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok
+  cookieSecret: 7d16fee92f8d11b8940b081b3f8b8acb
+
+istioExternalAuth:
+  enabled: true
+
+m2m:
+  enabled: true
+  issuer: https://oidc.eks.AWS_REGION.amazonaws.com/id/CLUSTER_ID
+
+clusterJwksProxy:
+  enabled: false
+
+parameters:
+  forceHttps: "true"

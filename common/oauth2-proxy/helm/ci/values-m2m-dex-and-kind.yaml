@@ -1,0 +1,21 @@
+credentials:
+  clientSecret: pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok
+  cookieSecret: 7d16fee92f8d11b8940b081b3f8b8acb
+
+istioExternalAuth:
+  enabled: true
+
+m2m:
+  enabled: true
+  issuer: https://kubernetes.default.svc.cluster.local
+  jwksUri: http://cluster-jwks-proxy.istio-system.svc.cluster.local/openid/v1/jwks
+  additionalJwtRules:
+  - issuer: https://kubernetes.default.svc
+    jwksUri: http://cluster-jwks-proxy.istio-system.svc.cluster.local/openid/v1/jwks
+
+clusterJwksProxy:
+  enabled: true
+  image: docker.io/bitnamisecure/kubectl:latest
+
+parameters:
+  allowSelfSignedIssuer: "true"

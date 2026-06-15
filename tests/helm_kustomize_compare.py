@@ -6,6 +6,8 @@ import json
 from typing import Dict, List, Tuple, Any
 import re
 
+KUSTOMIZE_HASH_SUFFIX = re.compile(r'-(?=[a-z0-9]{10}$)(?=[a-z0-9]*[0-9])[a-z0-9]{10}$')
+
 def load_manifests(file_path: str) -> List[Dict]:
     """Load YAML manifests from file."""
     with open(file_path, 'r') as f:
@@ -91,11 +93,11 @@ def normalize_kustomize_refs(obj: Any, path: str = "") -> Any:
                 if any(ref_pattern in path for ref_pattern in [
                     'secretKeyRef', 'configMapKeyRef', 'configMapRef', 'secret', 'volumes'
                 ]):
-                    value = re.sub(r'-[a-z0-9]{10}$', '', value)
+                    value = KUSTOMIZE_HASH_SUFFIX.sub('', value)
                 elif 'volumes' in path and key == 'secretName':
-                    value = re.sub(r'-[a-z0-9]{10}$', '', value)
+                    value = KUSTOMIZE_HASH_SUFFIX.sub('', value)
                 elif 'volumes' in path and 'configMap' in path:
-                    value = re.sub(r'-[a-z0-9]{10}$', '', value)
+                    value = KUSTOMIZE_HASH_SUFFIX.sub('', value)
             
             normalized[key] = normalize_kustomize_refs(value, current_path)
         return normalized
@@ -134,7 +136,7 @@ def normalize_manifest(manifest: Dict, component: str = "katib") -> Dict:
         kind = normalized.get('kind', '')
         if kind in ['Secret', 'ConfigMap']:
             name = normalized['metadata']['name']
-            normalized['metadata']['name'] = re.sub(r'-[a-z0-9]{10}$', '', name)
+            normalized['metadata']['name'] = KUSTOMIZE_HASH_SUFFIX.sub('', name)
     
     if 'metadata' in normalized:
         metadata = normalized['metadata']
@@ -158,6 +160,13 @@ def normalize_manifest(manifest: Dict, component: str = "katib") -> Dict:
     
     return remove_empty_values(normalized)
 
+def should_compare_manifest(manifest: Dict, component: str, scenario: str) -> bool:
+    """Select the resource subset owned by a comparison scenario."""
+    if component == "oauth2-proxy" and manifest.get("kind") == "Namespace":
+        return False
+
+    return True
+
 def get_resource_key(manifest: Dict, component: str = "katib") -> str:
     """Generate a unique key for the resource."""
     kind = manifest.get('kind', 'Unknown')
@@ -165,10 +174,10 @@ def get_resource_key(manifest: Dict, component: str = "katib") -> str:
     namespace = manifest.get('metadata', {}).get('namespace', '')
     
     if kind in ['Secret', 'ConfigMap']:
-        name = re.sub(r'-[a-z0-9]{10}$', '', name)
+        name = KUSTOMIZE_HASH_SUFFIX.sub('', name)
     
-    # Include namespace in key only for Katib
-    if component == "katib" and namespace:
+    # Include namespace in key for components that render repeated names across namespaces.
+    if component in ["katib", "oauth2-proxy"] and namespace:
         return f"{kind}/{namespace}/{name}"
     else:
         return f"{kind}/{name}"
@@ -226,11 +235,15 @@ def compare_manifests(kustomize_file: str, helm_file: str, component: str, scena
     helm_resources = {}
     
     for manifest in kustomize_manifests:
+        if not should_compare_manifest(manifest, component, scenario):
+            continue
         normalized = normalize_manifest(manifest, component)
         key = get_resource_key(normalized, component)
         kustomize_resources[key] = normalized
     
     for manifest in helm_manifests:
+        if not should_compare_manifest(manifest, component, scenario):
+            continue
         normalized = normalize_manifest(manifest, component)
         key = get_resource_key(normalized, component)
         helm_resources[key] = normalized
@@ -279,7 +292,7 @@ def compare_manifests(kustomize_file: str, helm_file: str, component: str, scena
 if __name__ == "__main__":
     if len(sys.argv) < 5:
         print("Usage: python compare.py <kustomize_file> <helm_file> <component> <scenario> [namespace] [--verbose]")
-        print("Components: katib, hub, kserve-models-web-app")
+        print("Components: katib, hub, kserve-models-web-app, oauth2-proxy")
         sys.exit(1)
     
     kustomize_file = sys.argv[1]
@@ -288,9 +301,9 @@ if __name__ == "__main__":
     scenario = sys.argv[4]
     namespace = sys.argv[5] if len(sys.argv) > 5 and not sys.argv[5].startswith('--') else ""
 
-    if component not in ["katib", "hub", "kserve-models-web-app"]:
+    if component not in ["katib", "hub", "kserve-models-web-app", "oauth2-proxy"]:
         print(f"ERROR: Unknown component: {component}")
-        print("Supported components: katib, hub, kserve-models-web-app")
+        print("Supported components: katib, hub, kserve-models-web-app, oauth2-proxy")
         sys.exit(1)
     
     success = compare_manifests(kustomize_file, helm_file, component, scenario, namespace)
