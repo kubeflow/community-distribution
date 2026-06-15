@@ -133,7 +133,7 @@ case "$COMPONENT" in
         ;;
 
     "cert-manager")
-        CHART_DIR="$ROOT_DIR/experimental/helm/charts/cert-manager"
+        CHART_DIR="$ROOT_DIR/common/cert-manager/helm"
         MANIFESTS_DIR="$ROOT_DIR/common/cert-manager"
 
         declare -A KUSTOMIZE_PATHS=(

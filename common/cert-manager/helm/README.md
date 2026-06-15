@@ -26,10 +26,10 @@ The cert-manager workload namespace is fixed to `cert-manager` to match the Kust
 helm install kubeflow-namespaces ./experimental/helm/charts/kubeflow-namespaces --namespace default
 helm install kubeflow-platform ./experimental/helm/charts/kubeflow-platform --namespace kubeflow-system
 
-helm dep build ./experimental/helm/charts/cert-manager
-helm install cert-manager ./experimental/helm/charts/cert-manager --namespace cert-manager --wait
-helm upgrade cert-manager ./experimental/helm/charts/cert-manager --namespace cert-manager \
-  --values ./experimental/helm/charts/cert-manager/ci/values-kubeflow.yaml --wait
+helm dep build ./common/cert-manager/helm
+helm install cert-manager ./common/cert-manager/helm --namespace cert-manager --wait
+helm upgrade cert-manager ./common/cert-manager/helm --namespace cert-manager \
+  --values ./common/cert-manager/helm/ci/values-kubeflow.yaml --wait
 ```
 
 The install is split into base install plus upgrade because `ClusterIssuer` cannot be created until cert-manager CRDs are available.
@@ -37,8 +37,8 @@ The install is split into base install plus upgrade because `ClusterIssuer` cann
 If the cluster already has a company-managed cert-manager installation, disable the upstream dependency, then install only the Kubeflow-specific resources. If `Namespace/cert-manager` already exists, the foundation chart does not recreate or adopt it; apply any required labels separately if they are missing.
 
 ```bash
-helm install cert-manager ./experimental/helm/charts/cert-manager --namespace cert-manager \
-  --values ./experimental/helm/charts/cert-manager/ci/values-existing-cert-manager.yaml --wait
+helm install cert-manager ./common/cert-manager/helm --namespace cert-manager \
+  --values ./common/cert-manager/helm/ci/values-existing-cert-manager.yaml --wait
 ```
 
 In this mode, cert-manager CRDs, webhook, and controllers must already exist.
