@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
     - experimental/helm/charts/**
+    - common/istio/helm/**
     - tests/kustomize_install.sh
     - tests/helm_kustomize_compare.py
     - tests/helm_kustomize_compare.sh

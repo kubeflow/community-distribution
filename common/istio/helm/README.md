@@ -15,14 +15,14 @@ checkout or has already merged.
 helm install kubeflow-namespaces ./experimental/helm/charts/kubeflow-namespaces --namespace default
 helm install kubeflow-platform ./experimental/helm/charts/kubeflow-platform --namespace kubeflow-system
 
-helm install istio ./experimental/helm/charts/istio \
+helm install istio ./common/istio/helm \
   --namespace istio-system \
-  --values ./experimental/helm/charts/istio/ci/values-crds.yaml \
+  --values ./common/istio/helm/ci/values-crds.yaml \
   --wait
 
-helm upgrade istio ./experimental/helm/charts/istio \
+helm upgrade istio ./common/istio/helm \
   --namespace istio-system \
-  --values ./experimental/helm/charts/istio/ci/values-oauth2-proxy.yaml \
+  --values ./common/istio/helm/ci/values-oauth2-proxy.yaml \
   --wait
 ```
 
@@ -30,9 +30,9 @@ For GKE, use the tested GKE profile values instead of the default
 oauth2-proxy values:
 
 ```bash
-helm upgrade istio ./experimental/helm/charts/istio \
+helm upgrade istio ./common/istio/helm \
   --namespace istio-system \
-  --values ./experimental/helm/charts/istio/ci/values-gke.yaml \
+  --values ./common/istio/helm/ci/values-gke.yaml \
   --wait
 ```
 
@@ -40,9 +40,9 @@ To install the full managed platform Istio slice, including the cluster-local
 gateway and Kubeflow Istio resources, use:
 
 ```bash
-helm upgrade istio ./experimental/helm/charts/istio \
+helm upgrade istio ./common/istio/helm \
   --namespace istio-system \
-  --values ./experimental/helm/charts/istio/ci/values-platform-full.yaml \
+  --values ./common/istio/helm/ci/values-platform-full.yaml \
   --wait
 ```
 
@@ -73,26 +73,26 @@ Run from the repository root:
 
 ```bash
 kustomize build common/istio/istio-crds/base \
-  > experimental/helm/charts/istio/manifests/crds.yaml
+  > common/istio/helm/manifests/crds.yaml
 kustomize build common/istio/istio-install/base \
-  > experimental/helm/charts/istio/manifests/install-base.yaml
+  > common/istio/helm/manifests/install-base.yaml
 kustomize build common/istio/istio-install/overlays/oauth2-proxy \
-  > experimental/helm/charts/istio/manifests/install-oauth2-proxy.yaml
+  > common/istio/helm/manifests/install-oauth2-proxy.yaml
 kustomize build common/istio/istio-install/overlays/gke \
-  > experimental/helm/charts/istio/manifests/install-gke.yaml
+  > common/istio/helm/manifests/install-gke.yaml
 kustomize build common/istio/cluster-local-gateway/base \
-  > experimental/helm/charts/istio/manifests/cluster-local-gateway.yaml
+  > common/istio/helm/manifests/cluster-local-gateway.yaml
 kustomize build common/istio/kubeflow-istio-resources/base \
-  > experimental/helm/charts/istio/manifests/kubeflow-istio-resources.yaml
+  > common/istio/helm/manifests/kubeflow-istio-resources.yaml
 kustomize build common/istio/istio-namespace/base > /tmp/istio-namespace-build.yaml
 awk 'BEGIN{doc=0} /^---$/{doc++; if (doc > 1) print "---"; next} doc>0{print}' /tmp/istio-namespace-build.yaml \
-  > experimental/helm/charts/istio/manifests/networkpolicies.yaml
+  > common/istio/helm/manifests/networkpolicies.yaml
 ```
 
 ## Comparison
 
 ```bash
-helm lint experimental/helm/charts/istio
+helm lint common/istio/helm
 ./tests/helm_kustomize_compare.sh istio crds
 ./tests/helm_kustomize_compare.sh istio base
 ./tests/helm_kustomize_compare.sh istio oauth2-proxy
