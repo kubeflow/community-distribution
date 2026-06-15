@@ -29912,6 +29912,18 @@ spec:
                       properties:
                         adapters:
                           x-kubernetes-preserve-unknown-fields: true
+                        maxAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxCpuAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxRank:
+                          format: int32
+                          minimum: 1
+                          type: integer
                       type: object
                     name:
                       type: string
@@ -38872,7 +38884,6 @@ spec:
                                                   name:
                                                     maxLength: 256
                                                     minLength: 1
-                                                    pattern: ^[A-Za-z0-9!#$%&'*+\-.^_\x60|~]+$
                                                     type: string
                                                   type:
                                                     default: Exact
@@ -50749,6 +50760,18 @@ spec:
                       properties:
                         adapters:
                           x-kubernetes-preserve-unknown-fields: true
+                        maxAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxCpuAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxRank:
+                          format: int32
+                          minimum: 1
+                          type: integer
                       type: object
                     name:
                       type: string
@@ -59699,7 +59722,6 @@ spec:
                                                   name:
                                                     maxLength: 256
                                                     minLength: 1
-                                                    pattern: ^[A-Za-z0-9!#$%&'*+\-.^_\x60|~]+$
                                                     type: string
                                                   type:
                                                     default: Exact
@@ -71631,6 +71653,18 @@ spec:
                       properties:
                         adapters:
                           x-kubernetes-preserve-unknown-fields: true
+                        maxAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxCpuAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxRank:
+                          format: int32
+                          minimum: 1
+                          type: integer
                       type: object
                     name:
                       type: string
@@ -92483,6 +92517,126 @@ spec:
                 observedGeneration:
                   format: int64
                   type: integer
+                router:
+                  properties:
+                    gateways:
+                      items:
+                        properties:
+                          group:
+                            maxLength: 253
+                            pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                            type: string
+                          httpRoutes:
+                            items:
+                              properties:
+                                group:
+                                  maxLength: 253
+                                  pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                  type: string
+                                kind:
+                                  maxLength: 63
+                                  minLength: 1
+                                  pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                                  type: string
+                                name:
+                                  maxLength: 253
+                                  minLength: 1
+                                  type: string
+                                namespace:
+                                  maxLength: 63
+                                  minLength: 1
+                                  pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                                  type: string
+                              required:
+                                - group
+                                - kind
+                                - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          kind:
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                            type: string
+                          listeners:
+                            items:
+                              maxLength: 253
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          name:
+                            maxLength: 253
+                            minLength: 1
+                            type: string
+                          namespace:
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                            type: string
+                        required:
+                          - group
+                          - kind
+                          - name
+                        type: object
+                      type: array
+                      x-kubernetes-list-type: atomic
+                    scheduler:
+                      properties:
+                        inferencePool:
+                          properties:
+                            group:
+                              maxLength: 253
+                              pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            kind:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                              type: string
+                            name:
+                              maxLength: 253
+                              minLength: 1
+                              type: string
+                            namespace:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                              type: string
+                          required:
+                            - group
+                            - kind
+                            - name
+                          type: object
+                        service:
+                          properties:
+                            group:
+                              maxLength: 253
+                              pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            kind:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                              type: string
+                            name:
+                              maxLength: 253
+                              minLength: 1
+                              type: string
+                            namespace:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                              type: string
+                          required:
+                            - group
+                            - kind
+                            - name
+                          type: object
+                      type: object
+                  type: object
                 url:
                   type: string
               type: object
@@ -92543,6 +92697,18 @@ spec:
                       properties:
                         adapters:
                           x-kubernetes-preserve-unknown-fields: true
+                        maxAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxCpuAdapters:
+                          format: int32
+                          minimum: 1
+                          type: integer
+                        maxRank:
+                          format: int32
+                          minimum: 1
+                          type: integer
                       type: object
                     name:
                       type: string
@@ -113391,16 +113557,75 @@ spec:
                         type: string
                       audience:
                         type: string
+                      models:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                          required:
+                            - name
+                          type: object
+                        type: array
                       name:
                         type: string
+                      origin:
+                        properties:
+                          group:
+                            maxLength: 253
+                            pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                            type: string
+                          kind:
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                            type: string
+                          name:
+                            maxLength: 253
+                            minLength: 1
+                            type: string
+                          namespace:
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                            type: string
+                        required:
+                          - group
+                          - kind
+                          - name
+                        type: object
                       url:
                         type: string
                     type: object
                   type: array
+                  x-kubernetes-list-type: atomic
                 annotations:
                   additionalProperties:
                     type: string
                   type: object
+                appliedConfigs:
+                  items:
+                    properties:
+                      name:
+                        maxLength: 253
+                        minLength: 1
+                        type: string
+                      namespace:
+                        maxLength: 63
+                        minLength: 1
+                        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                        type: string
+                      source:
+                        enum:
+                          - Preset
+                          - UserRef
+                        type: string
+                    required:
+                      - name
+                      - namespace
+                      - source
+                    type: object
+                  type: array
+                  x-kubernetes-list-type: atomic
                 conditions:
                   items:
                     properties:
@@ -113424,8 +113649,183 @@ spec:
                 observedGeneration:
                   format: int64
                   type: integer
+                router:
+                  properties:
+                    gateways:
+                      items:
+                        properties:
+                          group:
+                            maxLength: 253
+                            pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                            type: string
+                          httpRoutes:
+                            items:
+                              properties:
+                                group:
+                                  maxLength: 253
+                                  pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                  type: string
+                                kind:
+                                  maxLength: 63
+                                  minLength: 1
+                                  pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                                  type: string
+                                name:
+                                  maxLength: 253
+                                  minLength: 1
+                                  type: string
+                                namespace:
+                                  maxLength: 63
+                                  minLength: 1
+                                  pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                                  type: string
+                              required:
+                                - group
+                                - kind
+                                - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          kind:
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                            type: string
+                          listeners:
+                            items:
+                              maxLength: 253
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: atomic
+                          name:
+                            maxLength: 253
+                            minLength: 1
+                            type: string
+                          namespace:
+                            maxLength: 63
+                            minLength: 1
+                            pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                            type: string
+                        required:
+                          - group
+                          - kind
+                          - name
+                        type: object
+                      type: array
+                      x-kubernetes-list-type: atomic
+                    scheduler:
+                      properties:
+                        inferencePool:
+                          properties:
+                            group:
+                              maxLength: 253
+                              pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            kind:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                              type: string
+                            name:
+                              maxLength: 253
+                              minLength: 1
+                              type: string
+                            namespace:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                              type: string
+                          required:
+                            - group
+                            - kind
+                            - name
+                          type: object
+                        service:
+                          properties:
+                            group:
+                              maxLength: 253
+                              pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            kind:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                              type: string
+                            name:
+                              maxLength: 253
+                              minLength: 1
+                              type: string
+                            namespace:
+                              maxLength: 63
+                              minLength: 1
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                              type: string
+                          required:
+                            - group
+                            - kind
+                            - name
+                          type: object
+                      type: object
+                  type: object
                 url:
                   type: string
+                workloads:
+                  properties:
+                    prefill:
+                      properties:
+                        apiGroup:
+                          type: string
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                        - kind
+                        - name
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    primary:
+                      properties:
+                        apiGroup:
+                          type: string
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                        - kind
+                        - name
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    scheduler:
+                      properties:
+                        apiGroup:
+                          type: string
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                        - kind
+                        - name
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    service:
+                      properties:
+                        apiGroup:
+                          type: string
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                        - kind
+                        - name
+                      type: object
+                      x-kubernetes-map-type: atomic
+                  type: object
               type: object
           type: object
       served: true
@@ -113507,6 +113907,15 @@ spec:
                       type: integer
                   type: object
                 inferenceServices:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                  type: array
+                llmInferenceServices:
                   items:
                     properties:
                       name:
@@ -113607,6 +114016,15 @@ spec:
                       type: integer
                   type: object
                 inferenceServices:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                    type: object
+                  type: array
+                llmInferenceServices:
                   items:
                     properties:
                       name:
@@ -119075,6 +119493,15 @@ rules:
       - get
       - patch
       - update
+  - apiGroups:
+      - serving.kserve.io
+    resources:
+      - localmodelcaches
+      - localmodelnamespacecaches
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -119121,6 +119548,7 @@ rules:
       - serving.kserve.io
     resources:
       - inferenceservices
+      - llminferenceservices
       - localmodelnodegroups
     verbs:
       - get
@@ -119745,7 +120173,7 @@ data:
      # Example
      storageInitializer: |-
        {
-           "image" : "kserve/storage-initializer:v0.18.0",
+           "image" : "kserve/storage-initializer:v0.19.0",
            "memoryRequest": "100Mi",
            "memoryLimit": "1Gi",
            "cpuRequest": "100m",
@@ -119759,7 +120187,7 @@ data:
      storageInitializer: |-
        {
            # image contains the default storage initializer image uri.
-           "image" : "kserve/storage-initializer:v0.18.0",
+           "image" : "kserve/storage-initializer:v0.19.0",
 
            # memoryRequest is the requests.memory to set for the storage initializer init container.
            "memoryRequest": "100Mi",
@@ -119994,7 +120422,7 @@ data:
      # Example
      logger: |-
        {
-           "image" : "kserve/agent:v0.18.0",
+           "image" : "kserve/agent:v0.19.0",
            "memoryRequest": "100Mi",
            "memoryLimit": "1Gi",
            "cpuRequest": "100m",
@@ -120004,7 +120432,7 @@ data:
      logger: |-
        {
            # image contains the default logger image uri.
-           "image" : "kserve/agent:v0.18.0",
+           "image" : "kserve/agent:v0.19.0",
 
            # memoryRequest is the requests.memory to set for the logger container.
            "memoryRequest": "100Mi",
@@ -120026,7 +120454,7 @@ data:
      # Example
      batcher: |-
        {
-           "image" : "kserve/agent:v0.18.0",
+           "image" : "kserve/agent:v0.19.0",
            "memoryRequest": "1Gi",
            "memoryLimit": "1Gi",
            "cpuRequest": "1",
@@ -120037,7 +120465,7 @@ data:
      batcher: |-
        {
            # image contains the default batcher image uri.
-           "image" : "kserve/agent:v0.18.0",
+           "image" : "kserve/agent:v0.19.0",
 
            # memoryRequest is the requests.memory to set for the batcher container.
            "memoryRequest": "1Gi",
@@ -120062,7 +120490,7 @@ data:
      # Example
      agent: |-
        {
-           "image" : "kserve/agent:v0.18.0",
+           "image" : "kserve/agent:v0.19.0",
            "memoryRequest": "100Mi",
            "memoryLimit": "1Gi",
            "cpuRequest": "100m",
@@ -120071,7 +120499,7 @@ data:
      agent: |-
        {
            # image contains the default agent image uri.
-           "image" : "kserve/agent:v0.18.0",
+           "image" : "kserve/agent:v0.19.0",
 
            # memoryRequest is the requests.memory to set for the agent container.
            "memoryRequest": "100Mi",
@@ -120090,7 +120518,7 @@ data:
      # Example
      router: |-
        {
-           "image" : "kserve/router:v0.18.0",
+           "image" : "kserve/router:v0.19.0",
            "memoryRequest": "100Mi",
            "memoryLimit": "1Gi",
            "cpuRequest": "100m",
@@ -120105,7 +120533,7 @@ data:
      router: |-
        {
            # image contains the default router image uri.
-           "image" : "kserve/router:v0.18.0",
+           "image" : "kserve/router:v0.19.0",
 
            # memoryRequest is the requests.memory to set for the router container.
            "memoryRequest": "100Mi",
@@ -120213,7 +120641,7 @@ data:
          # jobNamespace specifies the namespace where the download job will be created.
          "jobNamespace": "kserve-localmodel-jobs",
          # defaultJobImage specifies the default image used for the download job.
-         "defaultJobImage" : "kserve/storage-initializer:v0.18.0",
+         "defaultJobImage" : "kserve/storage-initializer:v0.19.0",
          # Kubernetes modifies the filesystem group ID on the attached volume.
          "fsGroup": 1000,
          # TTL for the download job after it is finished.
@@ -120226,7 +120654,7 @@ data:
        }
   agent: |-
     {
-        "image" : "kserve/agent:v0.18.0",
+        "image" : "kserve/agent:v0.19.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -120239,7 +120667,7 @@ data:
     }
   batcher: |-
     {
-        "image" : "kserve/agent:v0.18.0",
+        "image" : "kserve/agent:v0.19.0",
         "memoryRequest": "1Gi",
         "memoryLimit": "1Gi",
         "cpuRequest": "1",
@@ -120307,7 +120735,7 @@ data:
     {
       "enabled": false,
       "jobNamespace": "kserve-localmodel-jobs",
-      "defaultJobImage" : "kserve/storage-initializer:v0.18.0",
+      "defaultJobImage" : "kserve/storage-initializer:v0.19.0",
       "fsGroup": 1000,
       "jobTTLSecondsAfterFinished": 3600,
       "reconcilationFrequencyInSecs": 60,
@@ -120315,7 +120743,7 @@ data:
     }
   logger: |-
     {
-        "image" : "kserve/agent:v0.18.0",
+        "image" : "kserve/agent:v0.19.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -120341,7 +120769,7 @@ data:
     }
   router: |-
     {
-        "image" : "kserve/router:v0.18.0",
+        "image" : "kserve/router:v0.19.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -120354,7 +120782,7 @@ data:
     }
   storageInitializer: |-
     {
-        "image" : "kserve/storage-initializer:v0.18.0",
+        "image" : "kserve/storage-initializer:v0.19.0",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",
@@ -120521,7 +120949,7 @@ spec:
                   fieldPath: metadata.namespace
             - name: SECRET_NAME
               value: kserve-webhook-server-cert
-          image: kserve/kserve-controller:v0.18.0
+          image: kserve/kserve-controller:v0.19.0
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 5
@@ -120625,7 +121053,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: kserve/kserve-localmodel-controller:v0.18.0
+          image: kserve/kserve-localmodel-controller:v0.19.0
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 5
@@ -120714,7 +121142,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: kserve/llmisvc-controller:v0.18.0
+          image: kserve/llmisvc-controller:v0.19.0
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 5
@@ -120810,7 +121238,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-          image: kserve/kserve-localmodelnode-agent:v0.18.0
+          image: kserve/kserve-localmodelnode-agent:v0.19.0
           imagePullPolicy: Always
           name: manager
           resources:
@@ -120909,7 +121337,7 @@ metadata:
   namespace: kserve
 spec:
   container:
-    image: kserve/storage-initializer:v0.18.0
+    image: kserve/storage-initializer:v0.19.0
     imagePullPolicy: IfNotPresent
     name: storage-initializer
     resources:
@@ -120989,6 +121417,59 @@ webhooks:
           - CREATE
         resources:
           - pods
+    sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: kserve/llmisvc-serving-cert
+  creationTimestamp: null
+  name: llminferenceservice.serving.kserve.io
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: llmisvc-webhook-server-service
+        namespace: kserve
+        path: /mutate-serving-kserve-io-v1alpha1-llminferenceservice
+    failurePolicy: Fail
+    matchPolicy: Exact
+    name: llminferenceservice.kserve-webhook-server.v1alpha1.defaulter
+    rules:
+      - apiGroups:
+          - serving.kserve.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - llminferenceservices
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: llmisvc-webhook-server-service
+        namespace: kserve
+        path: /mutate-serving-kserve-io-v1alpha2-llminferenceservice
+    failurePolicy: Fail
+    matchPolicy: Exact
+    name: llminferenceservice.kserve-webhook-server.v1alpha2.defaulter
+    rules:
+      - apiGroups:
+          - serving.kserve.io
+        apiVersions:
+          - v1alpha2
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - llminferenceservices
     sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1

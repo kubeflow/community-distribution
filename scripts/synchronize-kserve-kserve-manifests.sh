@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="kserve"
 REPOSITORY_NAME="kserve/kserve"
 REPOSITORY_URL="https://github.com/kserve/kserve.git"
-COMMIT="v0.18.0"
+COMMIT="v0.19.0"
 REPOSITORY_DIRECTORY="kserve"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
@@ -27,5 +27,8 @@ cp "$SOURCE_DIRECTORY/$REPOSITORY_DIRECTORY/$SOURCE_MANIFESTS_PATH/"* "$DESTINAT
 find "$DESTINATION_DIRECTORY" -maxdepth 1 -name '*.sh' -delete
 
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
-commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" "$MANIFESTS_DIRECTORY"
+commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests to version ${COMMIT}" \
+    "${MANIFESTS_DIRECTORY}/applications/kserve/kserve" \
+    "${SCRIPT_DIRECTORY}/synchronize-kserve-kserve-manifests.sh" \
+    "${MANIFESTS_DIRECTORY}/README.md"
 echo "Synchronization completed successfully."
