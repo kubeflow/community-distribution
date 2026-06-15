@@ -15,9 +15,9 @@ stores Helm release metadata in that same workload namespace.
 Namespace names are fixed to match the Kustomize baseline and `kubeflow-namespaces` foundation chart. Dex workloads use `auth`, Istio gateway references use `kubeflow` and `istio-system`, and oauth2-proxy references use `oauth2-proxy`. These names are not configurable.
 
 ```bash
-helm install dex ./experimental/helm/charts/dex \
+helm install dex ./common/dex/helm \
   --namespace auth \
-  --values ./experimental/helm/charts/dex/ci/values-oauth2-proxy.yaml \
+  --values ./common/dex/helm/ci/values-oauth2-proxy.yaml \
   --wait
 ```
 
@@ -43,7 +43,7 @@ until the default Dex + oauth2-proxy path is stable.
 ## Comparison
 
 ```bash
-helm lint experimental/helm/charts/dex
+helm lint common/dex/helm
 ./tests/helm_kustomize_compare.sh dex base
 ./tests/helm_kustomize_compare.sh dex istio
 ./tests/helm_kustomize_compare.sh dex oauth2-proxy

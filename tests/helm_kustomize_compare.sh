@@ -133,7 +133,7 @@ case "$COMPONENT" in
         ;;
 
     "dex")
-        CHART_DIR="$ROOT_DIR/experimental/helm/charts/dex"
+        CHART_DIR="$ROOT_DIR/common/dex/helm"
         MANIFESTS_DIR="$ROOT_DIR/common/dex"
 
         declare -A KUSTOMIZE_PATHS=(
