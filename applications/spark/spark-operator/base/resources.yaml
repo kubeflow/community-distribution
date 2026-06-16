@@ -25710,10 +25710,10 @@ metadata:
   name: spark-operator-controller
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
 ---
@@ -25725,10 +25725,10 @@ metadata:
   name: spark-operator-webhook
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 ---
@@ -25739,19 +25739,13 @@ metadata:
   name: spark-operator-controller
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - get
 # Include cluster-wide permissions when:
 # 1. jobNamespaces is not set (watch all)
 # 2. jobNamespaces contains "" (watch all)
@@ -25766,9 +25760,7 @@ rules:
   - watch
   - create
   - update
-  - patch
   - delete
-  - deletecollection
 - apiGroups:
   - ""
   resources:
@@ -25780,19 +25772,6 @@ rules:
   - create
   - update
   - patch
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumeclaims
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
 - apiGroups:
   - ""
   resources:
@@ -25820,8 +25799,6 @@ rules:
   - ingresses
   verbs:
   - get
-  - list
-  - watch
   - create
   - update
   - delete
@@ -25829,29 +25806,47 @@ rules:
   - sparkoperator.k8s.io
   resources:
   - sparkapplications
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+- apiGroups:
+  - sparkoperator.k8s.io
+  resources:
   - scheduledsparkapplications
   - sparkconnects
   verbs:
   - get
   - list
   - watch
-  - create
-  - update
-  - patch
-  - delete
 - apiGroups:
   - sparkoperator.k8s.io
   resources:
   - sparkapplications/status
-  - sparkapplications/finalizers
-  - scheduledsparkapplications/status
-  - scheduledsparkapplications/finalizers
   - sparkconnects/status
+  - scheduledsparkapplications/status
+  verbs:
+  - update
+- apiGroups:
+  - sparkoperator.k8s.io
+  resources:
+  - sparkapplications/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - sparkoperator.k8s.io
+  resources:
+  - scheduledsparkapplications/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - sparkoperator.k8s.io
+  resources:
   - sparkconnects/finalizers
   verbs:
-  - get
   - update
-  - patch
 - apiGroups:
   - apiextensions.k8s.io
   resources:
@@ -25866,21 +25861,13 @@ metadata:
   name: spark-operator-webhook
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - update
-  - patch
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
@@ -25902,36 +25889,25 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - pods
+  - resourcequotas
   verbs:
-  - get
   - list
-  - watch
 - apiGroups:
   - ""
   resources:
-  - resourcequotas
+  - pods
   verbs:
-  - get
   - list
   - watch
 - apiGroups:
   - sparkoperator.k8s.io
   resources:
   - sparkapplications
-  - sparkapplications/status
-  - sparkapplications/finalizers
   - scheduledsparkapplications
-  - scheduledsparkapplications/status
-  - scheduledsparkapplications/finalizers
   verbs:
   - get
   - list
   - watch
-  - create
-  - update
-  - patch
-  - delete
 ---
 # Source: spark-operator/templates/controller/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -25940,10 +25916,10 @@ metadata:
   name: spark-operator-controller
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
 subjects:
@@ -25962,10 +25938,10 @@ metadata:
   name: spark-operator-webhook
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 subjects:
@@ -25984,10 +25960,10 @@ metadata:
   name: spark-operator-controller
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
 rules:
@@ -26022,10 +25998,10 @@ metadata:
   name: spark-operator-webhook
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 rules:
@@ -26067,10 +26043,10 @@ metadata:
   name: spark-operator-controller
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
 subjects:
@@ -26089,10 +26065,10 @@ metadata:
   name: spark-operator-webhook
   namespace: kubeflow
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 subjects:
@@ -26110,10 +26086,10 @@ kind: Service
 metadata:
   name: spark-operator-webhook-svc
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 spec:
@@ -26132,10 +26108,10 @@ kind: Deployment
 metadata:
   name: spark-operator-controller
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
 spec:
@@ -26159,7 +26135,7 @@ spec:
     spec:
       containers:
       - name: spark-operator-controller
-        image: ghcr.io/kubeflow/spark-operator/controller:2.5.0
+        image: ghcr.io/kubeflow/spark-operator/controller:2.5.1
         imagePullPolicy: IfNotPresent
         args:
         - controller
@@ -26174,8 +26150,9 @@ spec:
         - --metrics-endpoint=/metrics
         - --metrics-prefix=
         - --metrics-labels=app_type
+        - --metrics-job-submit-latency-buckets=0.5,1,2,4,8,16,32,64,128,256
         - --metrics-job-start-latency-buckets=30,60,90,120,150,180,210,240,270,300
-        
+
         - --leader-election=true
         - --leader-election-lock-name=spark-operator-controller-lock
         - --leader-election-lock-namespace=kubeflow
@@ -26187,6 +26164,8 @@ spec:
         - --workqueue-ratelimiter-max-delay=6h
         - --driver-pod-creation-grace-period=10s
         - --max-tracked-executor-per-app=1000
+        - --kube-api-qps=20
+        - --kube-api-burst=30
         - --scheduled-spark-application-timestamp-precision=nanos
         - --feature-gates=PartialRestart=false,LoadSparkDefaults=false
         ports:
@@ -26231,10 +26210,10 @@ kind: Deployment
 metadata:
   name: spark-operator-webhook
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 spec:
@@ -26254,7 +26233,7 @@ spec:
     spec:
       containers:
       - name: spark-operator-webhook
-        image: ghcr.io/kubeflow/spark-operator/controller:2.5.0
+        image: ghcr.io/kubeflow/spark-operator/controller:2.5.1
         imagePullPolicy: IfNotPresent
         args:
         - webhook
@@ -26274,7 +26253,9 @@ spec:
         - --metrics-endpoint=/metrics
         - --metrics-prefix=
         - --metrics-labels=app_type
-        
+        - --kube-api-qps=20
+        - --kube-api-burst=30
+
         - --leader-election=true
         - --leader-election-lock-name=spark-operator-webhook-lock
         - --leader-election-lock-namespace=kubeflow
@@ -26323,10 +26304,10 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: spark-operator-webhook
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 webhooks:
@@ -26338,7 +26319,7 @@ webhooks:
       namespace: kubeflow
       port: 9443
       path: /mutate--v1-pod
-  sideEffects: NoneOnDryRun
+  sideEffects: None
   failurePolicy: Fail
   objectSelector:
     matchLabels:
@@ -26357,7 +26338,7 @@ webhooks:
       namespace: kubeflow
       port: 9443
       path: /mutate-sparkoperator-k8s-io-v1beta2-sparkapplication
-  sideEffects: NoneOnDryRun
+  sideEffects: None
   failurePolicy: Fail
   rules:
   - apiGroups: ["sparkoperator.k8s.io"]
@@ -26373,7 +26354,7 @@ webhooks:
       namespace: kubeflow
       port: 9443
       path: /mutate-sparkoperator-k8s-io-v1beta2-scheduledsparkapplication
-  sideEffects: NoneOnDryRun
+  sideEffects: None
   failurePolicy: Fail
   rules:
   - apiGroups: ["sparkoperator.k8s.io"]
@@ -26389,7 +26370,7 @@ webhooks:
       namespace: kubeflow
       port: 9443
       path: /mutate-sparkoperator-k8s-io-v1alpha1-sparkconnect
-  sideEffects: NoneOnDryRun
+  sideEffects: None
   failurePolicy: Fail
   rules:
   - apiGroups: ["sparkoperator.k8s.io"]
@@ -26404,10 +26385,10 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: spark-operator-webhook
   labels:
-    helm.sh/chart: spark-operator-2.5.0
+    helm.sh/chart: spark-operator-2.5.1
     app.kubernetes.io/name: spark-operator
     app.kubernetes.io/instance: spark-operator
-    app.kubernetes.io/version: "2.5.0"
+    app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
 webhooks:
@@ -26419,7 +26400,7 @@ webhooks:
       namespace: kubeflow
       port: 9443
       path: /validate-sparkoperator-k8s-io-v1beta2-sparkapplication
-  sideEffects: NoneOnDryRun
+  sideEffects: None
   failurePolicy: Fail
   rules:
   - apiGroups: ["sparkoperator.k8s.io"]
@@ -26435,7 +26416,7 @@ webhooks:
       namespace: kubeflow
       port: 9443
       path: /validate-sparkoperator-k8s-io-v1beta2-scheduledsparkapplication
-  sideEffects: NoneOnDryRun
+  sideEffects: None
   failurePolicy: Fail
   rules:
   - apiGroups: ["sparkoperator.k8s.io"]
@@ -26451,7 +26432,7 @@ webhooks:
       namespace: kubeflow
       port: 9443
       path: /validate-sparkoperator-k8s-io-v1alpha1-sparkconnect
-  sideEffects: NoneOnDryRun
+  sideEffects: None
   failurePolicy: Fail
   rules:
   - apiGroups: ["sparkoperator.k8s.io"]
