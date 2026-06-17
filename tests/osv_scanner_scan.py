@@ -1,7 +1,7 @@
 # The script:
 # 1. Extract all the images used by the Kubeflow Working Groups
 # - The reported image lists are saved in respective files under ../image_lists directory
-# 2. Scan the reported images using Trivy for security vulnerabilities
+# 2. Scan the reported images using osv-scanner for security vulnerabilities
 # - Scanned reports will be saved in JSON format inside ../image_lists/security_scan_reports/ folder for each Working Group
 # 3. The script will also generate a summary of the security scan reports with severity counts for each Working Group with images
 # - Summary of security counts with images a JSON file inside ../image_lists/summary_of_severity_counts_for_WG folder
@@ -17,16 +17,16 @@ import json
 import glob
 from prettytable import PrettyTable
 
-def get_trivy_binary():
-    # Check both GitHub Actions and local installation directories
+def get_osv_scanner_binary():
+    """Locate the osv-scanner binary in known installation directories."""
     for directory in ["/tmp/usr/local/bin", os.path.expandvars("$HOME/.local/bin")]:
-        trivy_path = os.path.join(directory, "trivy")
-        if os.path.isfile(trivy_path):
-            return trivy_path
-    return "trivy"
+        osv_scanner_path = os.path.join(directory, "osv-scanner")
+        if os.path.isfile(osv_scanner_path):
+            return osv_scanner_path
+    return "osv-scanner"
 
 # Dictionary mapping Kubeflow workgroups to directories containing kustomization files
-wg_dirs = {
+working_group_directories = {
     "katib": [
         "../applications/katib/upstream/installs",
     ],
@@ -93,16 +93,16 @@ def log(*args, **kwargs):
     print(*args, **kwargs)
 
 
-def save_images(wg, images, version):
-    # Saves a list of container images to a text file named after the workgroup and version.
-    output_file = f"../image_lists/kf_{version}_{wg}_images.txt"
-    with open(output_file, "w") as f:
-        f.write("\n".join(images))
+def save_images(working_group, images, version):
+    """Save a list of container images to a text file named after the workgroup and version."""
+    output_file = f"../image_lists/kf_{version}_{working_group}_images.txt"
+    with open(output_file, "w") as file_handle:
+        file_handle.write("\n".join(images))
     log(f"File {output_file} successfully created")
 
 
 def validate_semantic_version(version):
-    # Validates a semantic version string (e.g., "0.1.2" or "latest").
+    """Validate a semantic version string (e.g., '0.1.2' or 'latest')."""
     regex = r"^[0-9]+\.[0-9]+\.[0-9]+$"
     if re.match(regex, version) or version == "latest":
         return version
@@ -110,23 +110,76 @@ def validate_semantic_version(version):
         raise ValueError(f"Invalid semantic version: '{version}'")
 
 
+def classify_severity_from_cvss_score(cvss_score_string):
+    """Classify a numeric CVSS score string into a categorical severity level.
+
+    CVSS v3 score ranges (NIST NVD standard):
+      9.0 - 10.0 → CRITICAL
+      7.0 -  8.9 → HIGH
+      4.0 -  6.9 → MEDIUM
+      0.1 -  3.9 → LOW
+      0.0        → NONE (treated as UNKNOWN)
+    """
+    try:
+        score = float(cvss_score_string)
+    except (ValueError, TypeError):
+        return "UNKNOWN"
+    if score >= 9.0:
+        return "CRITICAL"
+    elif score >= 7.0:
+        return "HIGH"
+    elif score >= 4.0:
+        return "MEDIUM"
+    elif score > 0.0:
+        return "LOW"
+    return "UNKNOWN"
+
+
+def extract_severity_counts_from_osv_json(scan_data):
+    """Extract severity counts from osv-scanner JSON output.
+
+    Iterates over vulnerability groups (which deduplicate aliases such as
+    CVE and GHSA entries for the same vulnerability) and classifies each
+    group by its max_severity CVSS score.
+
+    Returns a dict with keys LOW, MEDIUM, HIGH, CRITICAL and integer counts.
+    Returns None if no vulnerability data is present.
+    """
+    severity_counts = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
+    has_vulnerabilities = False
+
+    for result in scan_data.get("results", []):
+        for package_entry in result.get("packages", []):
+            for group in package_entry.get("groups", []):
+                max_severity_value = group.get("max_severity", "")
+                severity = classify_severity_from_cvss_score(max_severity_value)
+                if severity == "UNKNOWN":
+                    continue
+                severity_counts[severity] += 1
+                has_vulnerabilities = True
+
+    if not has_vulnerabilities:
+        return None
+    return severity_counts
+
+
 def extract_images(version):
+    """Extract container images from kustomize manifests for all working groups."""
     version = validate_semantic_version(version)
     log(f"Running the script using Kubeflow version: {version}")
 
     all_images = set()  # Collect all unique images across workgroups
 
-    for wg, dirs in wg_dirs.items():
-        wg_images = set()  # Collect unique images for this workgroup
-        for dir_path in dirs:
-            for root, _, files in os.walk(dir_path):
+    for working_group, directories in working_group_directories.items():
+        working_group_images = set()  # Collect unique images for this workgroup
+        for directory_path in directories:
+            for root, _, files in os.walk(directory_path):
                 for file in files:
                     if file in [
                         "kustomization.yaml",
                         "kustomization.yml",
                         "Kustomization",
                     ]:
-                        full_path = os.path.join(root, file)
                         try:
                             # Execute `kustomize build` to render the kustomization file
                             result = subprocess.run(
@@ -136,7 +189,7 @@ def extract_images(version):
                                 stderr=subprocess.PIPE,
                                 text=True,
                             )
-                        except subprocess.CalledProcessError as e:
+                        except subprocess.CalledProcessError:
                             log(
                                 f'ERROR:\t Failed "kustomize build" command for directory: {root}. See error above'
                             )
@@ -149,16 +202,16 @@ def extract_images(version):
                             result.stdout,
                             re.MULTILINE,
                         )
-                        wg_images.update(kustomize_images)
+                        working_group_images.update(kustomize_images)
 
         # Ensure uniqueness within workgroup images
-        uniq_wg_images = sorted(wg_images)
-        all_images.update(uniq_wg_images)
-        save_images(wg, uniq_wg_images, version)
+        unique_working_group_images = sorted(working_group_images)
+        all_images.update(unique_working_group_images)
+        save_images(working_group, unique_working_group_images, version)
 
     # Ensure uniqueness across all workgroups
-    uniq_images = sorted(all_images)
-    save_images("all", uniq_images, version)
+    unique_images = sorted(all_images)
+    save_images("all", unique_images, version)
 
 
 parser = argparse.ArgumentParser(
@@ -199,8 +252,8 @@ for file in files:
     severity_count = os.path.join(file_reports_dir, "severity_counts")
     os.makedirs(severity_count, exist_ok=True)
 
-    with open(file, "r") as f:
-        lines = f.readlines()
+    with open(file, "r") as file_handle:
+        lines = file_handle.readlines()
 
     for line in lines:
         line = line.strip()
@@ -219,71 +272,64 @@ for file in files:
         log(f"Scanning ", line)
 
         try:
+            # osv-scanner exits with code 1 when vulnerabilities are found,
+            # code 0 when clean, and code > 1 on error. Do not use check=True
+            # because exit code 1 is a normal "vulnerabilities found" result.
             result = subprocess.run(
                 [
-                    get_trivy_binary(),
+                    get_osv_scanner_binary(),
+                    "scan",
                     "image",
+                    line,
                     "--format",
                     "json",
                     "--output",
                     scan_output_file,
-                    line,
                 ],
-                check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
 
+            if result.returncode > 1:
+                log(f"Error scanning {image_name}:{image_tag}")
+                log(result.stderr)
+                continue
+
+            if not os.path.isfile(scan_output_file):
+                log(f"No scan output file generated for {image_name}:{image_tag}")
+                continue
+
             with open(scan_output_file, "r") as json_file:
                 scan_data = json.load(json_file)
 
-            if not scan_data.get("Results"):
+            severity_counts = extract_severity_counts_from_osv_json(scan_data)
+
+            if severity_counts is None:
                 log(f"No vulnerabilities found in {image_name}:{image_tag}")
             else:
-                vulnerabilities_list = [
-                    result["Vulnerabilities"]
-                    for result in scan_data["Results"]
-                    if "Vulnerabilities" in result and result["Vulnerabilities"]
-                ]
+                report = {"image": line, "severity_counts": severity_counts}
 
-                if not vulnerabilities_list:
-                    log(
-                        f"The vulnerabilities detection may be insufficient because security updates are not provided for {image_name}:{image_tag}\n"
-                    )
-                else:
-                    severity_counts = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
-                    for vulnerabilities in vulnerabilities_list:
-                        for vulnerability in vulnerabilities:
-                            severity = vulnerability.get("Severity", "UNKNOWN")
-                            if severity == "UNKNOWN":
-                                continue
-                            elif severity in severity_counts:
-                                severity_counts[severity] += 1
+                image_table = PrettyTable()
+                image_table.field_names = ["Critical", "High", "Medium", "Low"]
+                image_table.add_row(
+                    [
+                        severity_counts["CRITICAL"],
+                        severity_counts["HIGH"],
+                        severity_counts["MEDIUM"],
+                        severity_counts["LOW"],
+                    ]
+                )
+                log(f"{image_table}\n")
 
-                    report = {"image": line, "severity_counts": severity_counts}
+                severity_report_file = os.path.join(
+                    severity_count, f"{image_name_scan}_severity_report.json"
+                )
+                with open(severity_report_file, "w") as report_file:
+                    json.dump(report, report_file, indent=4)
 
-                    image_table = PrettyTable()
-                    image_table.field_names = ["Critical", "High", "Medium", "Low"]
-                    image_table.add_row(
-                        [
-                            severity_counts["CRITICAL"],
-                            severity_counts["HIGH"],
-                            severity_counts["MEDIUM"],
-                            severity_counts["LOW"],
-                        ]
-                    )
-                    log(f"{image_table}\n")
-
-                    severity_report_file = os.path.join(
-                        severity_count, f"{image_name_scan}_severity_report.json"
-                    )
-                    with open(severity_report_file, "w") as report_file:
-                        json.dump(report, report_file, indent=4)
-
-        except subprocess.CalledProcessError as e:
-            log(f"Error scanning {image_name}:{image_tag}")
-            log(e.stderr)
+        except Exception as scan_error:
+            log(f"Error scanning {image_name}:{image_tag}: {scan_error}")
 
     # Combine all the JSON files into a single file with severity counts for all images
     json_files = glob.glob(os.path.join(severity_count, "*.json"))
@@ -295,11 +341,11 @@ for file in files:
     else:
         combined_data = []
         for json_file in json_files:
-            with open(json_file, "r") as jf:
-                combined_data.append(json.load(jf))
+            with open(json_file, "r") as json_file_handle:
+                combined_data.append(json.load(json_file_handle))
 
-        with open(output_file, "w") as of:
-            json.dump({"data": combined_data}, of, indent=4)
+        with open(output_file, "w") as output_file_handle:
+            json.dump({"data": combined_data}, output_file_handle, indent=4)
 
         log(f"JSON files successfully combined into '{output_file}'")
 
@@ -334,8 +380,8 @@ for file_path in glob.glob(os.path.join(ALL_SEVERITY_COUNTS, "*.json")):
         log(f"Skipping invalid filename format: {file_path}")
         continue
 
-    with open(file_path, "r") as f:
-        data = json.load(f)["data"]
+    with open(file_path, "r") as file_handle:
+        data = json.load(file_handle)["data"]
 
     # Initialize counts for this file
     image_count = len(data)
@@ -383,14 +429,14 @@ log(json.dumps(merged_data, indent=4))
 
 
 # Write the final output to a file
-with open(summary_file, "w") as summary_f:
-    json.dump(merged_data, summary_f, indent=4)
+with open(summary_file, "w") as summary_file_handle:
+    json.dump(merged_data, summary_file_handle, indent=4)
 
 log(f"Summary written to: {summary_file} as JSON format")
 
 # Load JSON content from the file
-with open(summary_file, "r") as file:
-    data = json.load(file)
+with open(summary_file, "r") as file_handle:
+    data = json.load(file_handle)
 
 # Define a mapping for working group names
 working_group_name_mapping = {
@@ -438,8 +484,8 @@ log(summary_table)
 summary_table_output_file = (
     SUMMARY_OF_SEVERITY_COUNTS + "/summary_of_severity_counts_for_WGs_in_table.txt"
 )
-with open(summary_table_output_file, "w") as file:
-    file.write(str(summary_table))
+with open(summary_table_output_file, "w") as file_handle:
+    file_handle.write(str(summary_table))
 
 log("Output saved to:", summary_table_output_file)
 log("Severity counts with images respect to WGs are saved in the", ALL_SEVERITY_COUNTS)

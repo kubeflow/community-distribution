@@ -2,22 +2,22 @@ name: Image Extracting and Security Scanning
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #   - master
-  # pull_request:
-  #   paths:
-  #   - tests/kustomize_install.sh
-  #   - .github/workflows/trivy.yaml
-  #   - tests/trivy_scan.py
-  #   - tests/trivy_install.sh
+  push:
+    branches:
+    - master
+  pull_request:
+    paths:
+    - tests/kustomize_install.sh
+    - .github/workflows/osv-scanner.yaml
+    - tests/osv_scanner_scan.py
+    - tests/osv_scanner_install.sh
 
 permissions:
   contents: read
   actions: read
 
 jobs:
-  trivy:
+  osv-scanner:
     if: ${{ github.repository == 'kubeflow/community-distribution' }}
     runs-on: ubuntu-latest
     steps:
@@ -29,10 +29,10 @@ jobs:
       run: |
         bash tests/kustomize_install.sh
 
-    # Install trivy
-    - name: Install trivy
+    # Install osv-scanner
+    - name: Install osv-scanner
       run: |
-        bash tests/trivy_install.sh
+        bash tests/osv_scanner_install.sh
 
     # Install Python
     - name: Setup Python
@@ -48,10 +48,10 @@ jobs:
     - name: Run image extracting and security scanning script
       run: |
         cd tests
-        python3 trivy_scan.py
+        python3 osv_scanner_scan.py
 
-    - name: Upload trivy scanned_results
+    - name: Upload osv-scanner scanned_results
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: trivy_scanned_results
+        name: osv_scanner_scanned_results
         path: image_lists/
