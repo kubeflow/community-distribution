@@ -11,9 +11,9 @@ The Kubeflow Community plans to deliver its v1.11 release in December 2025 per t
 - Kubeflow SDK, Katib 0.19, and Spark Operator v2.4
 - Transparent switch from MinIO to Seaweedfs for S3 storage.
 - Default zero pod overhead for namespaces/profiles to save resources.
-- PodSecurityStandards restricted is enforced for all system namespaces. PodSecurityStandards baseline is enforced for user namespaces
+- PodSecurityStandards "restricted" is enforced for all system namespaces. PodSecurityStandards "baseline" is enforced for user namespaces.
 
-### Detailed features, bug fixes and enhancements are identified in the Working Group Roadmaps,Tracking Issues and releases:
+### Detailed features, bug fixes and enhancements are identified in the Working Group Roadmaps, Tracking Issues and releases:
 
 - [Trainer](https://github.com/kubeflow/trainer/issues/2859)
 - [KServe](https://github.com/kserve/kserve/releases/tag/v0.15.2)
@@ -26,7 +26,7 @@ The Kubeflow Community plans to deliver its v1.11 release in December 2025 per t
 
 ## Kubeflow Community Distribution 1.10 Release, Planned for release: Mar 2025
 
-The Kubeflow Community plans to deliver its v1.10 release in Mar 2025 per this [timeline](https://github.com/kubeflow/community/blob/master/releases/release-1.10/README.md#timeline). The high level deliverables are tracked in the [v1.10 Release](https://github.com/orgs/kubeflow/projects/73) Github project board. The v1.10 release process will be managed by the v1.10 [release team](https://github.com/kubeflow/community/blob/master/releases/release-1.10/release-team.md) using the best practices in the [Release Handbook](https://github.com/kubeflow/community/blob/master/releases/handbook.md).
+The Kubeflow Community plans to deliver its v1.10 release in Mar 2025 per this [timeline](https://github.com/kubeflow/community/blob/master/releases/release-1.10/README.md#timeline). The high level deliverables are tracked in the [v1.10 Release](https://github.com/orgs/kubeflow/projects/73) GitHub project board. The v1.10 release process will be managed by the v1.10 [release team](https://github.com/kubeflow/community/blob/master/releases/release-1.10/release-team.md) using the best practices in the [Release Handbook](https://github.com/kubeflow/community/blob/master/releases/handbook.md).
 
 ### Themes
 
@@ -50,7 +50,7 @@ The Kubeflow Community plans to deliver its v1.10 release in Mar 2025 per this [
 
 ## Kubeflow Community Distribution 1.9 Release, Delivered: July 2024
 
-The Kubeflow Community plans to deliver its v1.9 release in Jul 2024 per this [timeline](https://github.com/kubeflow/community/blob/master/releases/release-1.9/README.md#timeline). The high level deliverables are tracked in the [v1.9 Release](https://github.com/orgs/kubeflow/projects/61) Github project board. The v1.9 release process will be managed by the v1.9 [release team](https://github.com/kubeflow/community/blob/master/releases/release-1.9/release-team.md) using the best practices in the [Release Handbook](https://github.com/kubeflow/community/blob/master/releases/handbook.md).
+The Kubeflow Community plans to deliver its v1.9 release in Jul 2024 per this [timeline](https://github.com/kubeflow/community/blob/master/releases/release-1.9/README.md#timeline). The high level deliverables are tracked in the [v1.9 Release](https://github.com/orgs/kubeflow/projects/61) GitHub project board. The v1.9 release process will be managed by the v1.9 [release team](https://github.com/kubeflow/community/blob/master/releases/release-1.9/release-team.md) using the best practices in the [Release Handbook](https://github.com/kubeflow/community/blob/master/releases/handbook.md).
 
 ### Themes
 
@@ -73,7 +73,7 @@ The Kubeflow Community plans to deliver its v1.9 release in Jul 2024 per this [t
 
 ## Kubeflow Community Distribution 1.8 Release, Delivered: Nov 2023
 
-The Kubeflow Community plans to deliver its v1.8 release in Oct 2023 per this [timeline](https://github.com/kubeflow/community/tree/master/releases/release-1.8#timeline). The high level deliverables are tracked in the [v1.8 Release](https://github.com/orgs/kubeflow/projects/58/) Github project board. The v1.8 release process will be managed by the v1.8 [release team](https://github.com/kubeflow/community/blob/a956b3f6f15c49f928e37eaafec40d7f73ee1d5b/releases/release-team.md) using the best practices in the [Release Handbook](https://github.com/kubeflow/community/blob/master/releases/handbook.md).
+The Kubeflow Community plans to deliver its v1.8 release in Oct 2023 per this [timeline](https://github.com/kubeflow/community/tree/master/releases/release-1.8#timeline). The high level deliverables are tracked in the [v1.8 Release](https://github.com/orgs/kubeflow/projects/58/) GitHub project board. The v1.8 release process will be managed by the v1.8 [release team](https://github.com/kubeflow/community/blob/a956b3f6f15c49f928e37eaafec40d7f73ee1d5b/releases/release-team.md) using the best practices in the [Release Handbook](https://github.com/kubeflow/community/blob/master/releases/handbook.md).
 
 ### Themes
 
@@ -288,7 +288,7 @@ Core improvements to Kubeflow Community Distribution Installation, Management, A
   - Easy creation of Kubeflow distributions
   - Moving manifest development to upstream application repositories
     - This allows separation of responsibilities between Application Owners and Distribution Owners.
-    - These will be sync'ed on a regular basis.
+    - These will be synchronized on a regular basis.
     - This will result in a reduction of tech debt from old or duplicate manifests.
 
 ## Kubeflow Community Distribution 1.2 Features, Release Date: November 2020
