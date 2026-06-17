@@ -9,10 +9,8 @@ For a stable and conservative experience, we recommend using the [latest stable 
 You can also install the master branch of [`kubeflow/community-distribution`](https://github.com/kubeflow/community-distribution) by following the instructions [here](https://github.com/kubeflow/community-distribution?tab=readme-ov-file#installation) and providing us with feedback. Our continuous integration workflow runs end-to-end installation and tests on pull requests and pushes to the `master` branch in the upstream `kubeflow/community-distribution` repository; see the [full Kubeflow integration test workflow](https://github.com/kubeflow/community-distribution/actions/workflows/full_kubeflow_integration_test.yaml) for details.
 
 We are planning to cut 2 releases per year, for example 26.03 and 26.10 before each KubeCon EU and NA.
-We ask each working group/component to provide non-breaking patch releases for 6 months based on the version in each date release.
+
 We try to BEST-EFFORT support each release for 6 months as community. There is [commercial support](https://www.kubeflow.org/docs/started/support/#support-from-commercial-providers-in-the-kubeflow-ecosystem) available if needed.
-The working groups (KFP, Katib, Trainer, ...) are allowed to release new component versions with breaking changes, but they will only be included in the master branch or the next date release.
-This should only apply to “stable” components, as “alpha/beta” components might release breaking changes in patch releases.
 
 ## Table of Contents
 
@@ -38,10 +36,10 @@ This should only apply to “stable” components, as “alpha/beta” component
 
 ## Overview of the Kubeflow Platform
 
-- This repository is owned by the [Platform/Manifests/security Working Group](https://github.com/kubeflow/community/blob/master/wg-manifests/charter.md).
+- This repository is owned by the [Community Distribution Maintainers](https://github.com/kubeflow/community/blob/master/committee-distribution/charter.md).
 - You can join the CNCF Slack and access our meetings at the [Kubeflow Community](https://www.kubeflow.org/docs/about/community/) website.
 - Our channel on the CNCF Slack is [**#kubeflow-community-distribution**](https://cloud-native.slack.com/archives/C073W572LA2).
-- You can also find our [biweekly meetings](https://bit.ly/kf-wg-manifests-meet), including the commentable [Agenda](https://bit.ly/kf-wg-manifests-notes).
+- You can also find our [biweekly meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/92113176338?password=883a2c39-41a9-4395-b9f2-d2bd73e8c39e), including the commentable [Agenda](https://docs.google.com/document/d/1OUWifNf7hZ_QH3m1J3zjSUUk11yKUZnvom1BS2KxrUQ/edit?usp=sharing).
 - If you want to contribute, please take a look at the [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The Kubeflow Platform/Manifests repository is organized under three main directories, which include manifests for installing:
