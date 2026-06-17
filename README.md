@@ -635,19 +635,18 @@ The following manual steps are required when upgrading from `release-26.03` to t
    The hashed `ConfigMap` resources (`namespace-labels-data-*`, `profiles-config-*`) are recreated under new hashes by the new manifests and can be left untouched.
    > **WARNING:** Never delete the `Profiles` CRD; it would delete every profile namespace.
 
-4. Kserve models web application
-
-```
-# Legacy KServe Models Web Application (renamed from kserve-models-web-app to
-# kserve-models-web-application). The old wrong-named stack is no longer in the
-# manifests, keeps the unbound kserve-models-web-app service account, and still
-# claims the /kserve-endpoints route, which causes RBAC 403 on subjectaccessreviews.
-kubectl delete -n kubeflow --ignore-not-found \
-  serviceaccount/kserve-models-web-app \
-  service/kserve-models-web-app \
-  deployment/kserve-models-web-app \
-  virtualservice.networking.istio.io/kserve-models-web-app
-```
+4. **KServe Models Web Application**:
+   ```sh
+   # Legacy KServe Models Web Application (renamed from kserve-models-web-app to
+   # kserve-models-web-application). The old misnamed stack is no longer in the
+   # manifests, keeps the unbound kserve-models-web-app ServiceAccount, and still
+   # claims the /kserve-endpoints route, which causes RBAC 403s on SubjectAccessReview requests.
+   kubectl delete -n kubeflow --ignore-not-found \
+     serviceaccount/kserve-models-web-app \
+     service/kserve-models-web-app \
+     deployment/kserve-models-web-app \
+     virtualservice.networking.istio.io/kserve-models-web-app
+   ```
 
 ## Release Process
 
