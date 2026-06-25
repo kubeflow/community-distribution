@@ -39,8 +39,8 @@ sed -i "s/\"tag\": \".*\"/\"tag\": \"$COMMIT\"/" "$ISTIO_DIRECTORY/istio-install
 # Normalize all remaining Istio version references from PREVIOUS_COMMIT to COMMIT.
 # This catches any version strings that istioctl generates using the previous release
 # (e.g. image tags, helm chart labels). Update PREVIOUS_COMMIT when bumping COMMIT.
-find "$ISTIO_DIRECTORY" -name "*.yaml" | xargs sed -i \
-  -e "s/${PREVIOUS_COMMIT}/$COMMIT/g"
+find "$ISTIO_DIRECTORY" -name "*.yaml" -exec sed -i \
+  -e "s/${PREVIOUS_COMMIT}/$COMMIT/g" {} +
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/releases/tag/.*)"
 DESTINATION_TEXT="\[$COMMIT\](https://github.com/${REPOSITORY_NAME}/releases/tag/$COMMIT)"
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
