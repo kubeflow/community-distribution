@@ -6,13 +6,13 @@ setup_error_handling
 COMPONENT_NAME="istio"
 REPOSITORY_NAME="istio/istio"
 COMMIT="1.30.2"
-PREVIOUS_COMMIT=${PREVIOUS_COMMIT:-${ISTIO_PREVIOUS_VERSION:-}}
+PREVIOUS_COMMIT=${PREVIOUS_COMMIT:-}
 if [ -z "$PREVIOUS_COMMIT" ]; then
   IFS='.' read -r major minor patch <<< "$COMMIT"
   if [ "$patch" -gt 0 ]; then
     PREVIOUS_COMMIT="${major}.${minor}.$((patch - 1))"
   else
-    echo "ERROR: Unable to infer previous Istio version from ${COMMIT}. Set PREVIOUS_COMMIT explicitly."
+    echo "ERROR: Cannot infer previous version from ${COMMIT} (patch version is 0). Set PREVIOUS_COMMIT environment variable explicitly."
     exit 1
   fi
 fi
@@ -48,11 +48,11 @@ sed -i "s/\"tag\": \".*\"/\"tag\": \"$COMMIT\"/" "$ISTIO_DIRECTORY/istio-install
 # Normalize all remaining Istio version references from PREVIOUS_COMMIT to COMMIT.
 # This catches any version strings that istioctl generates using the previous release
 # (e.g. image tags, helm chart labels). Update PREVIOUS_COMMIT when needed.
-previous_commit_regular_expression=${PREVIOUS_COMMIT//./\\.}
-commit_replacement_text=${COMMIT//&/\\&}
-commit_replacement_text=${commit_replacement_text//\//\\/}
+previous_commit_pattern_for_sed=${PREVIOUS_COMMIT//./\\.}
+commit_replacement_for_sed=${COMMIT//&/\\&}
+commit_replacement_for_sed=${commit_replacement_for_sed//\//\\/}
 find "$ISTIO_DIRECTORY" -name "*.yaml" -exec sed -i \
-  -e "s/${previous_commit_regular_expression}/${commit_replacement_text}/g" {} +
+  -e "s/${previous_commit_pattern_for_sed}/${commit_replacement_for_sed}/g" {} +
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/releases/tag/.*)"
 DESTINATION_TEXT="\[$COMMIT\](https://github.com/${REPOSITORY_NAME}/releases/tag/$COMMIT)"
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
