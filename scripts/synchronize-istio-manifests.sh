@@ -6,20 +6,7 @@ setup_error_handling
 COMPONENT_NAME="istio"
 REPOSITORY_NAME="istio/istio"
 COMMIT="1.30.2"
-PREVIOUS_COMMIT=${PREVIOUS_COMMIT:-}
-if [ -z "$PREVIOUS_COMMIT" ]; then
-  if ! [[ "$COMMIT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "ERROR: COMMIT must use MAJOR.MINOR.PATCH numeric format. Set PREVIOUS_COMMIT explicitly for non-standard versions."
-    exit 1
-  fi
-  IFS='.' read -r major minor patch_version <<< "$COMMIT"
-  if [ "$patch_version" -gt 0 ]; then
-    PREVIOUS_COMMIT="${major}.${minor}.$((patch_version - 1))"
-  else
-    echo "ERROR: Cannot infer previous version from ${COMMIT} (patch version is 0). Set PREVIOUS_COMMIT environment variable explicitly."
-    exit 1
-  fi
-fi
+PREVIOUS_COMMIT=${PREVIOUS_COMMIT:?"ERROR: PREVIOUS_COMMIT must be set."}
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
 MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)
