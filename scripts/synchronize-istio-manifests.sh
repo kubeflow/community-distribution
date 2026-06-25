@@ -8,9 +8,13 @@ REPOSITORY_NAME="istio/istio"
 COMMIT="1.30.2"
 PREVIOUS_COMMIT=${PREVIOUS_COMMIT:-}
 if [ -z "$PREVIOUS_COMMIT" ]; then
-  IFS='.' read -r major minor patch <<< "$COMMIT"
-  if [ "$patch" -gt 0 ]; then
-    PREVIOUS_COMMIT="${major}.${minor}.$((patch - 1))"
+  if ! [[ "$COMMIT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "ERROR: COMMIT must use MAJOR.MINOR.PATCH numeric format. Set PREVIOUS_COMMIT explicitly for non-standard versions."
+    exit 1
+  fi
+  IFS='.' read -r major minor patch_version <<< "$COMMIT"
+  if [ "$patch_version" -gt 0 ]; then
+    PREVIOUS_COMMIT="${major}.${minor}.$((patch_version - 1))"
   else
     echo "ERROR: Cannot infer previous version from ${COMMIT} (patch version is 0). Set PREVIOUS_COMMIT environment variable explicitly."
     exit 1
