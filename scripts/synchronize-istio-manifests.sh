@@ -48,6 +48,10 @@ sed -i "s/\"tag\": \".*\"/\"tag\": \"$ISTIO_CURRENT_VERSION\"/" "$ISTIO_DIRECTOR
 # Normalize all remaining Istio version references from ISTIO_PREVIOUS_VERSION to ISTIO_CURRENT_VERSION.
 # This catches any version strings that istioctl generates using the previous release
 # (e.g. image tags, helm chart labels). Update ISTIO_PREVIOUS_VERSION when needed.
+if [ -z "$ISTIO_PREVIOUS_VERSION" ]; then
+  echo "ERROR: ISTIO_PREVIOUS_VERSION cannot be empty."
+  exit 1
+fi
 find "$ISTIO_DIRECTORY" -name "*.yaml" -exec sed -i \
   -e "s/${ISTIO_PREVIOUS_VERSION}/$ISTIO_CURRENT_VERSION/g" {} +
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/releases/tag/.*)"
