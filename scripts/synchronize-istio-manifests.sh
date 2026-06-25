@@ -48,12 +48,11 @@ sed -i "s/\"tag\": \".*\"/\"tag\": \"$COMMIT\"/" "$ISTIO_DIRECTORY/istio-install
 # Normalize all remaining Istio version references from PREVIOUS_COMMIT to COMMIT.
 # This catches any version strings that istioctl generates using the previous release
 # (e.g. image tags, helm chart labels). Update PREVIOUS_COMMIT when needed.
-if [ -z "$PREVIOUS_COMMIT" ]; then
-  echo "ERROR: PREVIOUS_COMMIT cannot be empty."
-  exit 1
-fi
+previous_commit_regular_expression=${PREVIOUS_COMMIT//./\\.}
+commit_replacement_text=${COMMIT//&/\\&}
+commit_replacement_text=${commit_replacement_text//\//\\/}
 find "$ISTIO_DIRECTORY" -name "*.yaml" -exec sed -i \
-  -e "s/${PREVIOUS_COMMIT}/$COMMIT/g" {} +
+  -e "s/${previous_commit_regular_expression}/${commit_replacement_text}/g" {} +
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/releases/tag/.*)"
 DESTINATION_TEXT="\[$COMMIT\](https://github.com/${REPOSITORY_NAME}/releases/tag/$COMMIT)"
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
