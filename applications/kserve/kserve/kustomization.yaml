@@ -2,8 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 # Install KServe in kubeflow namespace
-- kserve_kubeflow.yaml
-- kserve-cluster-resources.yaml
+- ./upstream/kserve_kubeflow.yaml
+- ./upstream/kserve-cluster-resources.yaml
 
 patches:
 # Fix cert-manager inject-ca-from annotations: kserve_kubeflow.yaml hardcodes
