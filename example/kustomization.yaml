@@ -82,7 +82,7 @@ resources:
 - ../common/user-namespace/base
 # KServe
 - ../applications/kserve/kserve
-- ../applications/kserve/models-web-app/overlays/kubeflow
+- ../applications/kserve/models-web-app/upstream/overlays/kubeflow
 # Spark Operator
 - ../applications/spark/spark-operator/overlays/kubeflow
 

@@ -12,7 +12,7 @@ SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kserve-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-kserve-${COMPONENT_NAME}-manifests-${COMMIT?}}
 MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)
 SOURCE_MANIFESTS_PATH="manifests/kustomize"
-DESTINATION_MANIFESTS_PATH="applications/kserve/${COMPONENT_NAME}"
+DESTINATION_MANIFESTS_PATH="applications/kserve/${COMPONENT_NAME}/upstream"
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/tree/.*)"
 DESTINATION_TEXT="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/tree/${COMMIT}/${SOURCE_MANIFESTS_PATH})"
 create_branch "$BRANCH_NAME"

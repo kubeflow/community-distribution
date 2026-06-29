@@ -10,7 +10,7 @@ kubectl wait --for=create secret/kserve-webhook-server-cert -n kubeflow --timeou
 kubectl wait --for condition=established --timeout=30s crd/clusterservingruntimes.serving.kserve.io
 kustomize build kserve | kubectl apply --server-side --force-conflicts -f -
 
-kustomize build models-web-app/overlays/kubeflow | kubectl apply --server-side --force-conflicts -f -
+kustomize build models-web-app/upstream/overlays/kubeflow | kubectl apply --server-side --force-conflicts -f -
 kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=600s \
   --field-selector=status.phase!=Succeeded
 kubectl wait --for=condition=Available deployment/kserve-controller-manager -n kubeflow --timeout=10s
