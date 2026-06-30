@@ -29,9 +29,7 @@ def training_function():
     model = nn.Sequential(nn.Linear(784, 256), nn.ReLU(), nn.Linear(256, 10))
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
-    training_dataset = TensorDataset(
-        torch.randn(64, 784), torch.randint(0, 10, (64,))
-    )
+    training_dataset = TensorDataset(torch.randn(64, 784), torch.randint(0, 10, (64,)))
     for inputs, targets in DataLoader(training_dataset, batch_size=32):
         loss = torch.nn.functional.cross_entropy(model(inputs), targets)
         optimizer.zero_grad()
@@ -119,21 +117,15 @@ if __name__ == "__main__":
     print(f"Created TrainJob: {job_name}")
 
     try:
-        trainer_client.wait_for_job_status(
-            job_name, timeout=300, polling_interval=5
-        )
+        trainer_client.wait_for_job_status(job_name, timeout=300, polling_interval=5)
         print("TrainJob completed successfully")
     except RuntimeError:
-        print(
-            f"\n=== ERROR: TrainJob {job_name} failed ==="
-        )
+        print(f"\n=== ERROR: TrainJob {job_name} failed ===")
         print_diagnostic_information(job_name, namespace)
         sys.stdout.flush()
         raise
     except TimeoutError:
-        print(
-            f"\n=== TIMEOUT: TrainJob {job_name} did not complete in 300s ==="
-        )
+        print(f"\n=== TIMEOUT: TrainJob {job_name} did not complete in 300s ===")
         print_diagnostic_information(job_name, namespace)
         sys.stdout.flush()
         raise

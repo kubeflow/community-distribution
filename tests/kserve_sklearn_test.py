@@ -194,7 +194,9 @@ def create_predictor_authorization_policy(namespace):
         plural="authorizationpolicies",
         body=ap_body,
     )
-    logging.info("Created AuthorizationPolicy %s in %s", AUTHORIZATION_POLICY_NAME, namespace)
+    logging.info(
+        "Created AuthorizationPolicy %s in %s", AUTHORIZATION_POLICY_NAME, namespace
+    )
 
 
 def delete_predictor_authorization_policy(namespace):
@@ -208,7 +210,9 @@ def delete_predictor_authorization_policy(namespace):
             plural="authorizationpolicies",
             name=AUTHORIZATION_POLICY_NAME,
         )
-        logging.info("Deleted AuthorizationPolicy %s in %s", AUTHORIZATION_POLICY_NAME, namespace)
+        logging.info(
+            "Deleted AuthorizationPolicy %s in %s", AUTHORIZATION_POLICY_NAME, namespace
+        )
     except client.exceptions.ApiException as e:
         if e.status != 404:
             raise
@@ -248,9 +252,7 @@ def test_sklearn_kserve():
         create_predictor_authorization_policy(KSERVE_TEST_NAMESPACE)
 
         kserve_client.create(isvc)
-        kserve_client.wait_isvc_ready(
-            SERVICE_NAME, namespace=KSERVE_TEST_NAMESPACE
-        )
+        kserve_client.wait_isvc_ready(SERVICE_NAME, namespace=KSERVE_TEST_NAMESPACE)
 
         response = predict(SERVICE_NAME, IRIS_INPUT)
         logging.info(

@@ -17,6 +17,7 @@ import json
 import glob
 from prettytable import PrettyTable
 
+
 def get_osv_scanner_binary():
     """Locate the osv-scanner binary in known installation directories."""
     for directory in ["/tmp/usr/local/bin", os.path.expandvars("$HOME/.local/bin")]:
@@ -24,6 +25,7 @@ def get_osv_scanner_binary():
         if os.path.isfile(osv_scanner_path):
             return osv_scanner_path
     return "osv-scanner"
+
 
 # Dictionary mapping Kubeflow workgroups to directories containing kustomization files
 working_group_directories = {
@@ -355,7 +357,7 @@ summary_file = os.path.join(
 )
 
 # Initialize counters
-unique_images = {} # unique set of images across all WGs
+unique_images = {}  # unique set of images across all WGs
 total_images = 0
 total_low = 0
 total_medium = 0
@@ -408,7 +410,7 @@ for file_path in glob.glob(os.path.join(ALL_SEVERITY_COUNTS, "*.json")):
 
 
 # Update the total counts
-unique_images = unique_images.values() # keep the set of values
+unique_images = unique_images.values()  # keep the set of values
 total_images += len(unique_images)
 total_low += sum(entry["severity_counts"]["LOW"] for entry in unique_images)
 total_medium += sum(entry["severity_counts"]["MEDIUM"] for entry in unique_images)
