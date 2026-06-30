@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
+
 # Common functions for Kubeflow manifest synchronization scripts
+
 setup_error_handling() {
   set -euxo pipefail
   IFS=$'\n\t'
 }
+
 # Check if the git repository has uncommitted changes
 check_uncommitted_changes() {
   if [ -n "$(git status --porcelain)" ]; then
     echo "WARNING: You have uncommitted changes"
   fi
 }
+
 # Create a new git branch if it doesn't exist
 create_branch() {
+  if [[ "${KUBEFLOW_SYNCHRONIZE_NO_COMMIT:-}" == "true" ]]; then
+    return
+  fi
   local branch="$1"
   check_uncommitted_changes
   if ! git show-ref --verify --quiet refs/heads/$branch; then
@@ -20,6 +27,7 @@ create_branch() {
     echo "Branch $branch already exists."
   fi
 }
+
 clone_and_checkout() {
   local source_directory="$1"
   local repository_url="$2"
@@ -40,6 +48,7 @@ clone_and_checkout() {
   fi
   check_uncommitted_changes
 }
+
 # Copy manifests from source to destination
 copy_manifests() {
   local source="$1"
@@ -49,6 +58,7 @@ copy_manifests() {
   fi
   cp "$source" "$destination" -r
 }
+
 # Update README with new commit reference
 update_readme() {
   local manifests_directory="$1"
@@ -60,8 +70,12 @@ update_readme() {
     sed -i "s|$source_text|$destination_text|g" "${manifests_directory}/README.md" # GNU sed of Linux
   fi
 }
+
 # Commit changes to git repository
 commit_changes() {
+  if [[ "${KUBEFLOW_SYNCHRONIZE_NO_COMMIT:-}" == "true" ]]; then
+    return
+  fi
   local manifests_directory="$1"
   local commit_message="$2"
   local paths_to_add=("${@:3}")
@@ -70,4 +84,4 @@ commit_changes() {
     git add "$path"
   done
   git commit -s -m "$commit_message"
-} 
+}

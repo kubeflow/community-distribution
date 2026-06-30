@@ -1,0 +1,36 @@
+name: Check if the upstream synchronization is idempotent
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  upstream_synchronization_idempotence_test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with:
+        fetch-depth: 0
+
+    - name: Setup python 3.13
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: "3.13"
+
+    - name: Run upstream synchronization scripts for changed files
+      run: |
+        mapfile -t changed_files < <(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+        tests/resynchronize-upstream-changes.py "${changed_files[@]}"
+
+    - name: Check that the upstream synchronization is idempotent
+      run: |
+        clean=$(git status --porcelain)
+        if [[ -z "$clean" ]]; then
+            echo "No changes detected, upstream synchronization is idempotent"
+        else
+            echo "Upstream synchronization introduced changes, sync is not idempotent:"
+            git diff
+            exit 1
+        fi
