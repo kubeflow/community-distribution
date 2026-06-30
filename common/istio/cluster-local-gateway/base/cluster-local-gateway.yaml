@@ -130,7 +130,7 @@ spec:
         - name: ISTIO_META_WORKLOAD_NAME
           value: cluster-local-gateway
         - name: ISTIO_META_OWNER
-          value:
+          value: 
             kubernetes://apis/apps/v1/namespaces/istio-system/deployments/cluster-local-gateway
         - name: ISTIO_META_MESH_ID
           value: cluster.local
