@@ -40,6 +40,7 @@ body:
     - 1.10.2
     - 1.11
     - 26.03
+    - 26.03.1
   validations:
     required: true
 - type: textarea

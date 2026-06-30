@@ -1,4 +1,4 @@
-# Kubeflow AI Reference Platform Release Handbook
+# Kubeflow Community Distribution Release Handbook
 
 ## Goals
 
@@ -8,6 +8,7 @@
 - Enable fast iteration through patch releases.
 
 ## Release Meetings and Communication
+
 - Create a new Release Management team on Slack for asynchronous communication within the team.
 - Meetings are bi-weekly during development and weekly during RC testing as needed.
 
@@ -82,6 +83,7 @@ Criteria for timeline that the team needs to consider
 **Success Criteria:** Release team selected, release schedule sent to kubeflow-discuss, all release team members have the proper permissions and are meeting regularly.
 
 ### Implementation
+
 **Actions for the Release Team:**
 - We aim to always include the latest release from each working group unless specified otherwise.
 - Make pull requests to update the manifests for the different WGs
@@ -90,6 +92,7 @@ Criteria for timeline that the team needs to consider
 - Ensure the provided component versions match the documentation
 - Work alongside the Working Groups to bring the documentation up to date
 - Create a [new version dropdown and update the website version](https://github.com/kubeflow/website/pull/3333)
+- Add the [new version to the issue template](https://github.com/kubeflow/community-distribution/blob/master/.github/ISSUE_TEMPLATE/issue-report.yml)
 - Add new [release page with component and dependency versions](https://github.com/kubeflow/website/pull/3332)
 - Work with the WGs to build the release notes and slides
 - Start creating the draft for the official blog post and collating information from the Working Groups
@@ -112,6 +115,7 @@ in the website is cut](https://github.com/kubeflow/kubeflow/blob/master/docs_dev
 ## Post Release
 
 ### Patch Release
+
 Planning for first patch release begins. The importance of bugs is left to the judgement of the Working Group leads and the Release Manager to decide.
 
 ### Release Retrospective
@@ -121,6 +125,7 @@ retrospective and capture notes with the community. The aim of this document
 is for everyone to chime in and discuss what went well and what could be improved.
 
 ### Prepare for the Next Release
+
 - Release Manager nominates the next release manager and discusses with the release team
 - Send out a [call for participation](https://groups.google.com/g/kubeflow-discuss/c/mdpnTxYv7kM/m/dO9ny3woCQAJ) for the next release
 - (if needed) Update the release handbook
