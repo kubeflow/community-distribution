@@ -25716,6 +25716,7 @@ metadata:
     app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: controller
+
 ---
 # Source: spark-operator/templates/webhook/serviceaccount.yaml
 apiVersion: v1
@@ -25731,6 +25732,7 @@ metadata:
     app.kubernetes.io/version: "2.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: webhook
+
 ---
 # Source: spark-operator/templates/controller/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -26057,6 +26059,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: spark-operator-controller
+
 ---
 # Source: spark-operator/templates/webhook/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -26079,6 +26082,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: spark-operator-webhook
+
 ---
 # Source: spark-operator/templates/webhook/service.yaml
 apiVersion: v1
@@ -26101,6 +26105,7 @@ spec:
   - port: 9443
     targetPort: "webhook"
     name: webhook
+
 ---
 # Source: spark-operator/templates/controller/deployment.yaml
 apiVersion: apps/v1
@@ -26152,7 +26157,7 @@ spec:
         - --metrics-labels=app_type
         - --metrics-job-submit-latency-buckets=0.5,1,2,4,8,16,32,64,128,256
         - --metrics-job-start-latency-buckets=30,60,90,120,150,180,210,240,270,300
-
+        
         - --leader-election=true
         - --leader-election-lock-name=spark-operator-controller-lock
         - --leader-election-lock-namespace=kubeflow
@@ -26203,6 +26208,7 @@ spec:
       automountServiceAccountToken: true
       securityContext:
         fsGroup: 185
+
 ---
 # Source: spark-operator/templates/webhook/deployment.yaml
 apiVersion: apps/v1
@@ -26255,7 +26261,7 @@ spec:
         - --metrics-labels=app_type
         - --kube-api-qps=20
         - --kube-api-burst=30
-
+        
         - --leader-election=true
         - --leader-election-lock-name=spark-operator-webhook-lock
         - --leader-election-lock-namespace=kubeflow
@@ -26297,6 +26303,7 @@ spec:
       automountServiceAccountToken: true
       securityContext:
         fsGroup: 185
+
 ---
 # Source: spark-operator/templates/webhook/mutatingwebhookconfiguration.yaml
 apiVersion: admissionregistration.k8s.io/v1
@@ -26378,6 +26385,7 @@ webhooks:
     resources: ["sparkconnects"]
     operations: ["CREATE", "UPDATE"]
   timeoutSeconds: 10
+
 ---
 # Source: spark-operator/templates/webhook/validatingwebhookconfiguration.yaml
 apiVersion: admissionregistration.k8s.io/v1
