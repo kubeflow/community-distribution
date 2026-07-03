@@ -37,8 +37,6 @@ body:
     description: Which version of the Kubeflow platform are you using?
     options:
     - master
-    - 1.10.2
-    - 1.11
     - 26.03
     - 26.03.1
   validations:
