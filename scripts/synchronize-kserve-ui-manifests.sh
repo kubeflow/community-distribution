@@ -3,7 +3,7 @@
 SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "${SCRIPT_DIRECTORY}/library.sh"
 setup_error_handling
-COMPONENT_NAME="models-web-app"
+COMPONENT_NAME="kserve-ui"
 REPOSITORY_NAME="kserve/models-web-app"
 REPOSITORY_URL="https://github.com/kserve/models-web-app.git"
 COMMIT="v1.0.0"
