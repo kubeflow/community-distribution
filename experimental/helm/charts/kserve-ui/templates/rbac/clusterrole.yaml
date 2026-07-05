@@ -22,10 +22,17 @@ rules:
   - namespaces
   - pods
   - pods/log
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
   - events
   verbs:
   - get
   - list
+  - watch
 - apiGroups:
   - serving.kserve.io
   resources:

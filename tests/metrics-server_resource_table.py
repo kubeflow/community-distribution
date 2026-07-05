@@ -36,7 +36,7 @@ COMPONENT_RULES = {
     "Volumes Web Application": {"keywords": ["volumes-web-app"]},
     "Katib": {"keywords": ["katib"]},
     "KServe": {"keywords": ["kserve", "predictor"], "exclude": ["models-web-application", "kserve-ui"]},
-    "KServe UI": {"keywords": ["models-web-application"]},
+    "KServe UI": {"keywords": ["models-web-application", "kserve-ui"]},
     "Kubeflow Pipelines": {
         "keywords": [
             "ml-pipeline",
