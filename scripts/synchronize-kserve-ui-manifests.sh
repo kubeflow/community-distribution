@@ -18,9 +18,9 @@ DESTINATION_TEXT="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/tree/${COM
 create_branch "$BRANCH_NAME"
 clone_and_checkout "$SOURCE_DIRECTORY" "$REPOSITORY_URL" "$REPOSITORY_DIRECTORY" "$COMMIT"
 copy_manifests "${SOURCE_DIRECTORY}/${REPOSITORY_DIRECTORY}/${SOURCE_MANIFESTS_PATH}" "${MANIFESTS_DIRECTORY}/${DESTINATION_MANIFESTS_PATH}"
-# Upstream pins the container image tag independently of the git tag, so align both the Kustomize base and the Helm values with COMMIT.
+# Upstream pins the container image tag independently of the Git tag, so align both the Kustomize overlay in the applications directory and the Helm values with the targeted COMMIT.
 IMAGE_TAG="${COMMIT#v}"
-sed -i "s|newTag: .*|newTag: ${IMAGE_TAG}|" "${MANIFESTS_DIRECTORY}/${DESTINATION_MANIFESTS_PATH}/base/kustomization.yaml"
+sed -i "s|newTag: .*|newTag: ${IMAGE_TAG}|" "${MANIFESTS_DIRECTORY}/applications/kserve/${COMPONENT_NAME}/kustomization.yaml"
 sed -i "s|imageTag: .*|imageTag: ${IMAGE_TAG}|" "${MANIFESTS_DIRECTORY}/experimental/helm/charts/${COMPONENT_NAME}/values.yaml"
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" "$MANIFESTS_DIRECTORY"

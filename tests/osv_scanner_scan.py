@@ -64,7 +64,7 @@ working_group_directories = {
     ],
     "kserve": [
         "../applications/kserve/kserve",
-        "../applications/kserve/kserve-ui/upstream/overlays/kubeflow",
+        "../applications/kserve/kserve-ui",
     ],
     "hub": [
         "../applications/hub/upstream/options/istio",

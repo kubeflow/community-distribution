@@ -9,7 +9,7 @@ namespace: kserve
 images:
   - name: kserve/models-web-app
     newName: ghcr.io/kserve/models-web-app
-    newTag: 1.0.0
+    newTag: latest
 configMapGenerator:
   - literals:
       - APP_DISABLE_AUTH="True"
