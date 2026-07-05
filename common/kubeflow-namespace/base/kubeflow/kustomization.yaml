@@ -10,7 +10,7 @@ resources:
 - katib-controller.yaml
 - katib-db-manager.yaml
 - katib-ui.yaml
-- kserve-models-web-application.yaml
+- kserve-ui.yaml
 - kserve.yaml
 - metadata-envoy.yaml
 - metadata-grpc-server.yaml

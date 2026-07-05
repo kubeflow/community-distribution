@@ -2,7 +2,7 @@ apiVersion: v2
 
 name: kserve-models-web-application
 
-description: A Helm chart for KServe Models Web App - Model serving management UI on Kubernetes
+description: A Helm chart for KServe UI - Model serving management UI on Kubernetes
 
 version: 0.1.1
 

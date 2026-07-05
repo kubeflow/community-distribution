@@ -63,7 +63,7 @@ You may add additional [sidecar configurations](https://istio.io/latest/docs/ref
 
 ## Troubleshooting
 
-If you still encounter probelms, even with native sidecars enabled, you might try the following:
+If you still encounter problems, even with native sidecars enabled, you might try the following:
 
 1. Use `runAsUser: 1337` in your init containers, or
 2. Add the annotation `traffic.sidecar.istio.io/excludeOutboundIPRanges: 0.0.0.0/0` to your KServe inferenceservices

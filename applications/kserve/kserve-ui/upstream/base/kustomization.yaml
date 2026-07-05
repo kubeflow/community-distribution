@@ -1,5 +1,7 @@
 resources:
-  - rbac.yaml
+  - service-account.yaml
+  - cluster-role.yaml
+  - cluster-role-binding.yaml
   - service.yaml
   - deployment.yaml
 namespace: kserve

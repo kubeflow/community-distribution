@@ -157,7 +157,7 @@ kubectl delete inferenceservice isvc-sklearn -n ${NAMESPACE}
 kubectl delete authorizationpolicy allow-isvc-sklearn -n ${NAMESPACE}
 
 # ============================================================
-# Test 3: KServe Models Web Application API
+# Test 3: KServe UI API
 # ============================================================
 kubectl wait --for=condition=Available --timeout=10s -n kubeflow deployment/kserve-models-web-application
 
@@ -208,14 +208,14 @@ READY=$(kubectl get isvc sklearn-iris -n ${NAMESPACE} -o jsonpath='{.status.cond
 
 kubectl delete inferenceservice sklearn-iris -n ${NAMESPACE}
 
-# Test unauthorized access to models web application
+# Test unauthorized access to KServe UI
 UNAUTHORIZED_TOKEN="$(kubectl -n default create token default)"
 RESPONSE=$(curl -s -w "\n%{http_code}" "${BASE_URL}/api/namespaces/${NAMESPACE}/inferenceservices" -H "Authorization: Bearer ${UNAUTHORIZED_TOKEN}")
 BODY=$(echo "$RESPONSE" | head -n -1)
 HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-echo "Test 3 models web application (unauthorized): HTTP $HTTP_CODE | ${BODY:0:200}"
+echo "Test 3 KServe UI (unauthorized): HTTP $HTTP_CODE | ${BODY:0:200}"
 [[ "$HTTP_CODE" == "403" || "$HTTP_CODE" == "401" ]] || { echo "FAILURE: Expected 401/403, got $HTTP_CODE"; exit 1; }
-echo "Models Web Application: Token from unauthorized ServiceAccount cannot list InferenceServices in $NAMESPACE namespace."
+echo "KServe UI: Token from unauthorized ServiceAccount cannot list InferenceServices in $NAMESPACE namespace."
 
 # ============================================================
 # Test 4: Knative Service authentication via cluster-local-gateway

@@ -113,8 +113,8 @@ case "$COMPONENT" in
         ;;
         
     "kserve-models-web-application")
-        CHART_DIRECTORY="$ROOT_DIRECTORY/experimental/helm/charts/kserve-models-web-app"
-        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/kserve/models-web-app/upstream"
+        CHART_DIRECTORY="$ROOT_DIRECTORY/experimental/helm/charts/kserve-ui"
+        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/kserve/kserve-ui/upstream"
         
         declare -A KUSTOMIZE_PATHS=(
             ["base"]="$MANIFESTS_DIRECTORY/base"
@@ -208,7 +208,7 @@ for i in "${!KUSTOMIZE_ROOTS[@]}"; do
     kustomize build "$path" >> "$KUSTOMIZE_OUTPUT"
 done
 
-# Generate Helm manifests (different approach for KServe Models Web Application)
+# Generate Helm manifests (different approach for KServe UI)
 cd "$ROOT_DIRECTORY"
 if [[ "$COMPONENT" == "kserve-models-web-application" ]]; then
     # KServe uses chart-local CI values files, but still templates from the repository root.

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# This script helps to create a PR to update the KServe Models Web App manifests
+# This script helps to create a PR to update the KServe UI manifests
 SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "${SCRIPT_DIRECTORY}/library.sh"
 setup_error_handling
 COMPONENT_NAME="models-web-app"
 REPOSITORY_NAME="kserve/models-web-app"
 REPOSITORY_URL="https://github.com/kserve/models-web-app.git"
-COMMIT="v0.18.0"
+COMMIT="v1.0.0"
 REPOSITORY_DIRECTORY="models-web-app"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kserve-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-kserve-${COMPONENT_NAME}-manifests-${COMMIT?}}
 MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)
 SOURCE_MANIFESTS_PATH="manifests/kustomize"
-DESTINATION_MANIFESTS_PATH="applications/kserve/${COMPONENT_NAME}/upstream"
+DESTINATION_MANIFESTS_PATH="applications/kserve/kserve-ui/upstream"
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/tree/.*)"
 DESTINATION_TEXT="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/tree/${COMMIT}/${SOURCE_MANIFESTS_PATH})"
 create_branch "$BRANCH_NAME"

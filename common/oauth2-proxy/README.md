@@ -72,7 +72,7 @@ when a client calls the API to list the KF Pipeline runs:
 The authentication in Kubeflow evolved over time and we dropped envoyfilters and oidc-authservice in favor of RequestAuthentication and Oauth2-proxy in Kubeflow 1.9.
 ![auth-flow](components/oauth2-flow.svg)
 
-You can adjust OAuth2 Proxy to directly connect to your own IDP(Identity Provider) suchg as GCP, [AWS](https://docs.aws.amazon.com/cognito/latest/developerguide/federation-endpoints-oauth-grants.html), Azure etc:
+You can adjust OAuth2 Proxy to directly connect to your own IDP(Identity Provider) such as GCP, [AWS](https://docs.aws.amazon.com/cognito/latest/developerguide/federation-endpoints-oauth-grants.html), Azure etc:
 
 1. Create an application on your IdP (purple line)
 2. Change your [OAuth2 Proxy issuer](https://github.com/kubeflow/community-distribution/blob/35539f162ea7fafc8c5035d8df0d8d8cf5a9d327/common/oauth2-proxy/base/oauth2-proxy-config.yaml#L10) to your IdP. Of course never ever directly, but with kustomize overlays and components.

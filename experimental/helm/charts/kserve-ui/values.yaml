@@ -1,4 +1,4 @@
-# Default values for kserve-models-web-application.
+# Default values for the KServe UI chart.
 
 # -- String to partially override release name.
 nameOverride: ""

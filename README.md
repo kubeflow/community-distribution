@@ -65,7 +65,7 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.0](https://github.com/kubeflow/notebooks/tree/v1.11.0/) | 43m | 806Mi | 0GB |
 | Kubeflow Dashboard | applications/dashboard/upstream/ | [v2.0.0](https://github.com/kubeflow/dashboard/tree/v2.0.0/) | 10m | 302Mi | 0GB |
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
-| KServe Models Web Application | applications/kserve/models-web-app | [v0.18.0](https://github.com/kserve/models-web-app/tree/v0.18.0/manifests/kustomize) | 6m | 259Mi | 0GB |
+| KServe UI | applications/kserve/kserve-ui | [v1.0.0](https://github.com/kserve/models-web-app/tree/v1.0.0/manifests/kustomize) | 6m | 259Mi | 0GB |
 | KServe | applications/kserve/kserve | [v0.19.0](https://github.com/kserve/kserve/tree/v0.19.0) | 600m | 1200Mi | 0GB |
 | Kubeflow Pipelines | applications/pipeline/upstream | [2.16.1](https://github.com/kubeflow/pipelines/tree/2.16.1/manifests/kustomize) | 970m | 3552Mi | 35GB |
 | Kubeflow Hub | applications/hub/upstream | [v0.3.10](https://github.com/kubeflow/hub/tree/v0.3.10/manifests/kustomize) | 510m | 2112Mi | 20GB |
@@ -346,7 +346,7 @@ Optionally, you can install Knative Eventing, which can be used for inference re
 ./tests/knative_eventing_install.sh
 ```
 
-#### KServe model serving and KServe models web application
+#### KServe model serving and KServe UI
 
 ```sh
 ./tests/kserve_install.sh
@@ -648,7 +648,7 @@ The following manual steps are required when upgrading from `release-26.03` to t
 
 ## Release Process
 
-[Kubeflow release handbook](https://github.com/kubeflow/community-distribution/blob/master/releases/kubeflow-ai-reference-platform-release-handbook.md).
+[Kubeflow release handbook](https://github.com/kubeflow/community-distribution/blob/master/releases/kubeflow-community-distribution-release-handbook.md).
 
 ### Security
 
