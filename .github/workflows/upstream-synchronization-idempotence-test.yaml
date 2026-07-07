@@ -26,11 +26,18 @@ jobs:
 
     - name: Check that the upstream synchronization is idempotent
       run: |
-        clean=$(git status --porcelain)
-        if [[ -z "$clean" ]]; then
+        # Stage every path so the line-ending normalization mandated by
+        # .gitattributes (text=auto eol=lf) is applied before comparison.
+        # Some upstream repositories ship files with CRLF line terminators;
+        # once normalized to LF they are byte-identical to the committed
+        # blobs, so comparing the staged tree against HEAD detects only
+        # genuine content, addition or removal changes and ignores the
+        # renormalization that "git status --porcelain" would flag falsely.
+        git add --all
+        if git diff --cached --quiet; then
             echo "No changes detected, upstream synchronization is idempotent"
         else
-            echo "Upstream synchronization introduced changes, sync is not idempotent:"
-            git diff
+            echo "Upstream synchronization introduced changes, synchronization is not idempotent:"
+            git diff --cached
             exit 1
         fi
