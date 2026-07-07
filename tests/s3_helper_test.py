@@ -46,7 +46,9 @@ def head_bucket(client, bucket):
         return True
     except ClientError as error:
         code = error.response["Error"]["Code"]
-        print(f"{'DENIED' if code in DENIED else 'ERROR'}: head-bucket {bucket} ({code})")
+        print(
+            f"{'DENIED' if code in DENIED else 'ERROR'}: head-bucket {bucket} ({code})"
+        )
         return False
 
 
@@ -57,7 +59,9 @@ def upload(client, bucket, key, content):
         return True
     except ClientError as error:
         code = error.response["Error"]["Code"]
-        print(f"{'DENIED' if code in DENIED else 'ERROR'}: upload {bucket}/{key} ({code})")
+        print(
+            f"{'DENIED' if code in DENIED else 'ERROR'}: upload {bucket}/{key} ({code})"
+        )
         return False
 
 
@@ -85,7 +89,9 @@ def copy(client, bucket, key, source_bucket, source_key):
     except ClientError as error:
         code = error.response["Error"]["Code"]
         denied = code in DENIED or code == "NoSuchKey"
-        print(f"{'DENIED' if denied else 'ERROR'}: copy {source_bucket}/{source_key} -> {bucket}/{key} ({code})")
+        print(
+            f"{'DENIED' if denied else 'ERROR'}: copy {source_bucket}/{source_key} -> {bucket}/{key} ({code})"
+        )
         return False
 
 
@@ -96,7 +102,9 @@ def delete(client, bucket, key):
         return True
     except ClientError as error:
         code = error.response["Error"]["Code"]
-        print(f"{'DENIED' if code in DENIED else 'ERROR'}: delete {bucket}/{key} ({code})")
+        print(
+            f"{'DENIED' if code in DENIED else 'ERROR'}: delete {bucket}/{key} ({code})"
+        )
         return False
 
 
@@ -121,22 +129,32 @@ def list_prefix(client, bucket, prefix, delimiter):
         return True
     except ClientError as error:
         code = error.response["Error"]["Code"]
-        print(f"{'DENIED' if code in DENIED else 'ERROR'}: list {bucket}/{label} ({code})")
+        print(
+            f"{'DENIED' if code in DENIED else 'ERROR'}: list {bucket}/{label} ({code})"
+        )
         return False
 
 
 def main():
     parser = argparse.ArgumentParser(description="S3 ops for SeaweedFS isolation tests")
-    parser.add_argument("operation", choices=["headbucket", "upload", "download", "list", "copy", "delete"])
+    parser.add_argument(
+        "operation",
+        choices=["headbucket", "upload", "download", "list", "copy", "delete"],
+    )
     parser.add_argument("--access-key", required=True)
     parser.add_argument("--secret-key", required=True)
     parser.add_argument("--endpoint-url", required=True)
     parser.add_argument("--bucket", required=True)
-    parser.add_argument("--key", help="object key (upload/download/copy destination/delete)")
+    parser.add_argument(
+        "--key", help="object key (upload/download/copy destination/delete)"
+    )
     parser.add_argument("--source-key", help="source object key (copy)")
     parser.add_argument("--prefix", help="key prefix for list (omit with --no-prefix)")
-    parser.add_argument("--no-prefix", action="store_true",
-                        help="send ListObjectsV2 with NO Prefix arg at all")
+    parser.add_argument(
+        "--no-prefix",
+        action="store_true",
+        help="send ListObjectsV2 with NO Prefix arg at all",
+    )
     parser.add_argument("--delimiter", help="delimiter for list (e.g. '/')")
     parser.add_argument("--content", help="content to upload (upload)")
     args = parser.parse_args()
@@ -154,7 +172,9 @@ def main():
     elif args.operation == "delete":
         allowed = delete(client, args.bucket, args.key)
     else:  # list
-        list_prefix_arg = None if args.no_prefix else (args.prefix if args.prefix is not None else "")
+        list_prefix_arg = (
+            None if args.no_prefix else (args.prefix if args.prefix is not None else "")
+        )
         allowed = list_prefix(client, args.bucket, list_prefix_arg, args.delimiter)
 
     sys.exit(0 if allowed else 1)

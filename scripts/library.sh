@@ -39,12 +39,18 @@ clone_and_checkout() {
   if [ ! -d "$repository_directory/.git" ]; then
     git clone "$repository_url" "$repository_directory"
   fi
-  # Checkout to specific commit
+  # Checkout the requested reference.
   cd "$source_directory/$repository_directory"
-  if ! git rev-parse --verify --quiet "$commit"; then
-    git checkout -b "$commit"
+  # Refresh every reference so that a cached clone never checks out a stale
+  # branch and so that freshly cloned branches resolve to their remote head.
+  git fetch --force --tags origin
+  if git rev-parse --verify --quiet "refs/remotes/origin/${commit}" >/dev/null; then
+    # The reference is a remote branch: create or reset a local branch so it
+    # always points at the fetched remote head instead of the default branch.
+    git checkout -B "$commit" "origin/${commit}"
   else
-    git checkout "$commit"
+    # The reference is a tag or a commit identifier: check it out directly.
+    git checkout --force "$commit"
   fi
   check_uncommitted_changes
 }
