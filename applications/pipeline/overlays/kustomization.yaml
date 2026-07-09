@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
 - ../upstream/env/cert-manager/platform-agnostic-multi-user
+- ../upstream/third-party/application/cluster-scoped
+- kubeflow-application.yaml
 
 patches:
 - path: pipeline-install-config-securitycontext.yaml
