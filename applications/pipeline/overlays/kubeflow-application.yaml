@@ -8,8 +8,8 @@
 # "no-tag") with this version. Without this resource the backend returns
 # "unknown" and the dashboard keeps displaying "no-tag".
 #
-# This requires the applications.app.k8s.io CustomResourceDefinition, which is
-# pulled in alongside this resource by the centraldashboard base kustomization.
+# This requires the applications.app.k8s.io CustomResourceDefinition. This overlay
+# pulls it in via ../upstream/third-party/application/cluster-scoped.
 # The dashboard Role already grants get/list/watch on applications.
 apiVersion: app.k8s.io/v1beta1
 kind: Application
@@ -17,9 +17,6 @@ metadata:
   name: kubeflow
   namespace: kubeflow
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: kubeflow
   descriptor:
     type: kubeflow
     version: "26.03.1"
