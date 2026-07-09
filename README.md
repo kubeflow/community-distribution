@@ -67,7 +67,7 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
 | KServe UI | applications/kserve/kserve-ui | [v1.0.0](https://github.com/kserve/models-web-app/tree/v1.0.0/manifests/kustomize) | 6m | 259Mi | 0GB |
 | KServe | applications/kserve/kserve | [v0.19.0](https://github.com/kserve/kserve/tree/v0.19.0) | 600m | 1200Mi | 0GB |
-| Kubeflow Pipelines | applications/pipeline/upstream | [release-2.17](https://github.com/kubeflow/pipelines/tree/release-2.17/manifests/kustomize) | 970m | 3552Mi | 35GB |
+| Kubeflow Pipelines | applications/pipeline/upstream | [2.17.0](https://github.com/kubeflow/pipelines/tree/2.17.0/manifests/kustomize) | 970m | 3552Mi | 35GB |
 | Kubeflow Hub | applications/hub/upstream | [v0.3.10](https://github.com/kubeflow/hub/tree/v0.3.10/manifests/kustomize) | 510m | 2112Mi | 20GB |
 | Spark Operator | applications/spark/spark-operator | [2.5.1](https://github.com/kubeflow/spark-operator/tree/v2.5.1) | 9m | 41Mi | 0GB |
 | Istio | common/istio | [1.30.2](https://github.com/istio/istio/releases/tag/1.30.2) | 750m | 2364Mi | 0GB |
