@@ -17,9 +17,6 @@ metadata:
   name: kubeflow
   namespace: kubeflow
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: kubeflow
   descriptor:
     type: kubeflow
     version: "26.03.1"
