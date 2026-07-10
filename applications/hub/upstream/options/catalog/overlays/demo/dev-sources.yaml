@@ -38,6 +38,22 @@ mcp_catalogs:
     properties:
       yamlCatalogPath: dev-community-mcp-servers.yaml
 
+agent_catalogs:
+  - name: "Sample Agents"
+    id: sample_agents
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: dev-sample-agents.yaml
+  - name: "Enterprise Agents"
+    id: enterprise_agents
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: dev-enterprise-agents.yaml
+    labels:
+      - Enterprise
+
 # namedQueries define reusable server-side filter presets that clients can
 # reference by name via the `namedQuery` API parameter. Multiple config files
 # can contribute queries; later files override individual fields within a query

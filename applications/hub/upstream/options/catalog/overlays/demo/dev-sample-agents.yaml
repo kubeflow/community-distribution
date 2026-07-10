@@ -1,0 +1,253 @@
+agents:
+  - name: travel-planner
+    displayName: "Travel Planner Agent"
+    description: "Multi-step travel planning agent that researches destinations, compares flights and hotels, and builds complete itineraries using tool calling."
+    framework: langgraph
+    labels:
+      - travel
+      - planning
+      - react
+      - tool-calling
+    repositoryUrl: "https://github.com/example-org/agent-starter-kits/tree/main/agents/travel-planner"
+    readme: |
+      # Travel Planner Agent
+
+      A multi-step travel planning agent built with LangGraph that uses ReAct-style
+      tool calling to research destinations, compare flights and hotels, and build
+      complete itineraries.
+
+      ## Features
+      - Destination research via web search tools
+      - Flight and hotel comparison
+      - Itinerary generation with day-by-day breakdown
+      - Budget tracking and optimization
+
+      ## Quick Start
+      ```bash
+      export MODEL_ENDPOINT=https://your-model-endpoint
+      export MODEL_NAME=granite-3.1-8b-instruct
+      podman run -e MODEL_ENDPOINT -e MODEL_NAME \
+        quay.io/example-org/travel-planner-agent:latest
+      ```
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: MODEL_NAME
+        required: true
+    artifacts:
+      - uri: "oci://quay.io/example-org/travel-planner-agent:latest"
+    templates:
+      - content: |
+          name: travel-planner
+          displayName: "Travel Planner Agent"
+          framework: langgraph
+          description: "Multi-step travel planning agent that researches destinations, compares flights and hotels, and builds complete itineraries."
+          env:
+            required:
+              - MODEL_ENDPOINT
+              - MODEL_NAME
+            optional:
+              - FLIGHTS_API_KEY
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct","mistral-7b-instruct"]'
+    createTimeSinceEpoch: "1748736000000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
+
+  - name: code-reviewer
+    displayName: "Code Review Agent"
+    description: "Automated code review agent that analyzes pull requests for bugs, security issues, and style violations using a CrewAI multi-agent pipeline."
+    framework: crewai
+    labels:
+      - code-review
+      - security
+      - developer-tools
+    repositoryUrl: "https://github.com/example-org/agent-starter-kits/tree/main/agents/code-reviewer"
+    readme: |
+      # Code Review Agent
+
+      An automated code review agent using CrewAI to orchestrate multiple specialized
+      sub-agents: a bug detector, a security scanner, and a style checker.
+
+      ## Architecture
+      The agent uses a crew of three specialists:
+      1. **Bug Hunter** — identifies logic errors and edge cases
+      2. **Security Auditor** — checks for OWASP Top 10 vulnerabilities
+      3. **Style Enforcer** — validates coding standards and conventions
+
+      ## Usage
+      Connect to your GitHub repository and the agent will automatically review
+      new pull requests.
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: GITHUB_TOKEN
+        required: true
+    artifacts:
+      - uri: "oci://quay.io/example-org/code-reviewer-agent:latest"
+    templates:
+      - content: |
+          name: code-reviewer
+          displayName: "Code Review Agent"
+          framework: crewai
+          description: "Automated code review agent using CrewAI multi-agent pipeline."
+          env:
+            required:
+              - MODEL_ENDPOINT
+              - GITHUB_TOKEN
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct"]'
+    createTimeSinceEpoch: "1747267200000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
+
+  - name: customer-support-bot
+    displayName: "Customer Support Bot"
+    description: "RAG-powered customer support agent that searches knowledge bases to provide context-aware responses to user queries."
+    framework: llamaindex
+    labels:
+      - customer-support
+      - rag
+      - knowledge-base
+    repositoryUrl: "https://github.com/example-org/agent-starter-kits/tree/main/agents/customer-support"
+    readme: |
+      # Customer Support Bot
+
+      A RAG-powered customer support agent built with LlamaIndex that searches
+      knowledge bases and documentation to provide accurate, context-aware responses.
+
+      ## Features
+      - Multi-source RAG over documentation, FAQs, and knowledge bases
+      - Conversation memory with context window management
+      - Escalation to human agents when confidence is low
+      - Citation tracking — every answer links to its source
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: VECTOR_DB_URI
+        required: true
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct","llama-3.1-8b-instruct"]'
+    createTimeSinceEpoch: "1747699200000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
+
+  - name: data-pipeline-builder
+    displayName: "Data Pipeline Builder"
+    description: "Conversational agent that designs and generates Apache Airflow DAGs from natural language descriptions of data workflows."
+    framework: langgraph
+    labels:
+      - data-engineering
+      - airflow
+      - code-generation
+    repositoryUrl: "https://github.com/example-org/agent-starter-kits/tree/main/agents/data-pipeline-builder"
+    readme: |
+      # Data Pipeline Builder
+
+      Describe your data workflow in plain English, and this agent generates
+      production-ready Apache Airflow DAGs with proper error handling,
+      retries, and monitoring.
+
+      ## Supported Sources
+      - PostgreSQL, MySQL, MongoDB
+      - S3, GCS, Azure Blob Storage
+      - REST APIs and webhooks
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: AIRFLOW_API_URL
+        required: false
+    artifacts:
+      - uri: "oci://quay.io/example-org/data-pipeline-builder:latest"
+    templates:
+      - content: |
+          name: data-pipeline-builder
+          displayName: "Data Pipeline Builder"
+          framework: langgraph
+          description: "Conversational agent that designs and generates Apache Airflow DAGs from natural language."
+          env:
+            required:
+              - MODEL_ENDPOINT
+            optional:
+              - AIRFLOW_API_URL
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct"]'
+    createTimeSinceEpoch: "1749600000000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
+
+  - name: research-assistant
+    displayName: "Research Assistant"
+    description: "Multi-tool research agent that searches academic papers, summarizes findings, and generates literature reviews with proper citations."
+    framework: autogen
+    labels:
+      - research
+      - summarization
+      - academic
+    repositoryUrl: "https://github.com/example-org/agent-starter-kits/tree/main/agents/research-assistant"
+    readme: |
+      # Research Assistant
+
+      An AutoGen-based multi-agent system for academic research. It coordinates
+      a searcher, a reader, and a writer to produce literature reviews.
+
+      ## Agents
+      - **Searcher** — queries arXiv, Semantic Scholar, and PubMed
+      - **Reader** — extracts key findings and methodology from papers
+      - **Writer** — synthesizes findings into structured literature reviews
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: SEMANTIC_SCHOLAR_API_KEY
+        required: false
+    artifacts:
+      - uri: "oci://quay.io/example-org/research-assistant:latest"
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct","mistral-7b-instruct"]'
+    createTimeSinceEpoch: "1748131200000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
+
+  - name: multi-agent-orchestrator
+    displayName: "Multi-Agent Orchestrator"
+    description: "A2A-compatible orchestrator that coordinates multiple specialized agents over the Agent-to-Agent protocol, enabling complex multi-step workflows with validated container images."
+    framework: langgraph
+    labels:
+      - orchestration
+      - a2a
+      - multi-agent
+    repositoryUrl: "https://github.com/example-org/agent-starter-kits/tree/main/agents/multi-agent-orchestrator"
+    readme: |
+      # Multi-Agent Orchestrator
+
+      An A2A protocol-based orchestrator built with LangGraph that coordinates
+      specialized sub-agents for complex workflows.
+
+      ## Features
+      - Agent-to-Agent (A2A) protocol support
+      - Dynamic agent discovery and delegation
+      - Validated container images for production deployment
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: A2A_DISCOVERY_URL
+        required: true
+    artifacts:
+      - uri: "oci://quay.io/example-org/multi-agent-orchestrator:v0.1.0-validated"
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct"]'
+      protocol:
+        metadataType: MetadataStringValue
+        string_value: A2A
+      imageVersion:
+        metadataType: MetadataStringValue
+        string_value: v0.1.0-validated
+    createTimeSinceEpoch: "1750032000000"
+    lastUpdateTimeSinceEpoch: "1750550400000"

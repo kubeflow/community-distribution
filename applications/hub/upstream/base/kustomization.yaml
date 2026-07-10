@@ -5,7 +5,3 @@ resources:
 - model-registry-deployment.yaml
 - model-registry-service.yaml
 - model-registry-sa.yaml
-images:
-- name: ghcr.io/kubeflow/hub/server
-  newName: ghcr.io/kubeflow/hub/server
-  newTag: v0.3.10

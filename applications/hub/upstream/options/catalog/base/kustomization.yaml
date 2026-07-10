@@ -5,7 +5,6 @@ resources:
 - deployment.yaml
 - service.yaml
 - postgres-statefulset.yaml
-- postgres-pvc.yaml
 - postgres-service.yaml
 
 configMapGenerator:
@@ -17,17 +16,13 @@ configMapGenerator:
     disableNameSuffixHash: true
 
 secretGenerator:
-- envs:
+- name: model-catalog-postgres
+  envs:
   - postgres.env
-  name: model-catalog-postgres
   options:
     disableNameSuffixHash: true
-- envs:
+- name: model-catalog-hf-api-key
+  envs:
   - hf-api-key.env
-  name: model-catalog-hf-api-key
   options:
     disableNameSuffixHash: true
-images:
-- name: ghcr.io/kubeflow/hub/server
-  newName: ghcr.io/kubeflow/hub/server
-  newTag: v0.3.10

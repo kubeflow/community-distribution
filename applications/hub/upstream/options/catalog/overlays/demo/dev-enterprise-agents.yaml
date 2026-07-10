@@ -1,0 +1,135 @@
+agents:
+  - name: incident-responder
+    displayName: "Incident Response Agent"
+    description: "Production incident response agent that triages alerts, queries observability systems, and suggests remediation steps based on runbooks."
+    framework: langgraph
+    labels:
+      - incident-response
+      - observability
+      - sre
+      - production
+    repositoryUrl: "https://github.com/example-org/enterprise-agents/tree/main/agents/incident-responder"
+    readme: |
+      # Incident Response Agent
+
+      An enterprise-grade incident response agent that integrates with
+      PagerDuty, Prometheus, Grafana, and internal runbooks to automate
+      the first 10 minutes of incident response.
+
+      ## Capabilities
+      - Triage incoming alerts by severity and blast radius
+      - Query Prometheus and Grafana for correlated metrics
+      - Search runbooks for matching remediation procedures
+      - Post status updates to Slack and incident channels
+      - Escalate to on-call engineers when human judgment is needed
+
+      ## Security
+      Runs with read-only access to observability systems. Remediation
+      actions require human approval via the incident channel.
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: PAGERDUTY_API_KEY
+        required: true
+      - name: PROMETHEUS_URL
+        required: true
+      - name: SLACK_WEBHOOK_URL
+        required: false
+    artifacts:
+      - uri: "oci://quay.io/example-org/incident-responder:v2.1.0"
+    templates:
+      - content: |
+          name: incident-responder
+          displayName: "Incident Response Agent"
+          framework: langgraph
+          description: "Production incident response agent that triages alerts and suggests remediation steps."
+          env:
+            required:
+              - MODEL_ENDPOINT
+              - PAGERDUTY_API_KEY
+              - PROMETHEUS_URL
+            optional:
+              - SLACK_WEBHOOK_URL
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct"]'
+    createTimeSinceEpoch: "1743465600000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
+
+  - name: compliance-auditor
+    displayName: "Compliance Auditor"
+    description: "Automated compliance checking agent that validates infrastructure configurations against SOC2, HIPAA, and PCI-DSS requirements."
+    framework: crewai
+    labels:
+      - compliance
+      - security
+      - audit
+      - governance
+    repositoryUrl: "https://github.com/example-org/enterprise-agents/tree/main/agents/compliance-auditor"
+    readme: |
+      # Compliance Auditor
+
+      A CrewAI-powered compliance agent that continuously audits your
+      infrastructure against regulatory frameworks.
+
+      ## Supported Frameworks
+      - SOC2 Type II
+      - HIPAA
+      - PCI-DSS v4.0
+      - NIST 800-53
+
+      ## How It Works
+      The agent scans Kubernetes manifests, Terraform state, and cloud
+      provider configurations, then generates compliance reports with
+      specific remediation recommendations.
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: K8S_CLUSTER_CONTEXT
+        required: true
+    artifacts:
+      - uri: "oci://quay.io/example-org/compliance-auditor:v1.4.0"
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct"]'
+    createTimeSinceEpoch: "1742083200000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
+
+  - name: onboarding-assistant
+    displayName: "Employee Onboarding Assistant"
+    description: "Interactive onboarding agent that guides new employees through setup, training, and policy acknowledgment workflows."
+    framework: langgraph
+    labels:
+      - hr
+      - onboarding
+      - workflow
+    repositoryUrl: "https://github.com/example-org/enterprise-agents/tree/main/agents/onboarding-assistant"
+    readme: |
+      # Employee Onboarding Assistant
+
+      A conversational agent that automates employee onboarding by guiding
+      new hires through account setup, training modules, and policy
+      acknowledgment — all via natural language chat.
+
+      ## Features
+      - Automated account provisioning (SSO, email, Slack)
+      - Interactive training module walkthroughs
+      - Policy acknowledgment tracking
+      - Manager notification and checklist sync
+    env:
+      - name: MODEL_ENDPOINT
+        required: true
+      - name: HR_SYSTEM_API_URL
+        required: true
+      - name: SLACK_BOT_TOKEN
+        required: false
+    artifacts:
+      - uri: "oci://quay.io/example-org/onboarding-assistant:v1.0.0"
+    customProperties:
+      models:
+        metadataType: MetadataStringValue
+        string_value: '["granite-3.1-8b-instruct","llama-3.1-8b-instruct"]'
+    createTimeSinceEpoch: "1746057600000"
+    lastUpdateTimeSinceEpoch: "1750550400000"
