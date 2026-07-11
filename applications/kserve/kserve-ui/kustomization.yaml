@@ -5,4 +5,4 @@ resources:
 
 images:
   - name: ghcr.io/kserve/models-web-app
-    newTag: 1.0.0
+    newTag: 1.0.1
