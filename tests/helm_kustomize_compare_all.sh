@@ -11,7 +11,7 @@ ROOT_DIRECTORY="$(dirname "$SCRIPT_DIRECTORY")"
 declare -A COMPONENT_SCENARIOS=(
     ["katib"]="standalone cert-manager external-db leader-election openshift standalone-postgres with-kubeflow"
     ["hub"]="base overlay-postgres overlay-db controller-manager controller-rbac controller-default controller-prometheus controller-network-policy ui-base ui-standalone ui-integrated ui-istio istio csi"
-    ["kserve-models-web-application"]="base kubeflow"
+    ["kserve-models-web-application"]="kubeflow"
     ["cert-manager"]="base kubeflow existing-cert-manager"
     ["kubeflow-namespaces"]="base platform-namespaces"
     ["kubeflow-platform"]="base"
@@ -28,14 +28,15 @@ prepare_component() {
 
 test_component() {
     local component=$1
-    local scenarios_str="${COMPONENT_SCENARIOS[$component]}"
+    local scenario_names="${COMPONENT_SCENARIOS[$component]}"
     
-    if [[ -z "$scenarios_str" ]]; then
+    if [[ -z "$scenario_names" ]]; then
         echo "ERROR: Unknown component: $component"
         return 1
     fi
     
-    local scenarios=($scenarios_str)
+    local scenarios=()
+    read -r -a scenarios <<< "$scenario_names"
     
     declare -a passed_scenarios=()
     declare -a failed_scenarios=()

@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
     - experimental/helm/charts/**
+    - applications/kserve/kserve-ui/**
     - common/cert-manager/**
     - common/kubeflow-namespace/**
     - common/kubeflow-roles/**

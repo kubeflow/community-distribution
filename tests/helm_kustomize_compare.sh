@@ -4,15 +4,24 @@
 set -euo pipefail
 
 COMPONENT=${1:-""}
-SCENARIO=${2:-"base"}
+SCENARIO=${2:-""}
 SCRIPT_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIRECTORY="$(dirname "$SCRIPT_DIRECTORY")"
 
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
-    echo "Usage: $0 <component> <scenario>"
+    echo "Usage: $0 <component> [scenario]"
     echo "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform"
+    echo "The scenario defaults to 'base', except KServe UI defaults to 'kubeflow'."
     exit 1
+fi
+
+if [[ -z "$SCENARIO" ]]; then
+    if [[ "$COMPONENT" == "kserve-models-web-application" ]]; then
+        SCENARIO="kubeflow"
+    else
+        SCENARIO="base"
+    fi
 fi
 
 # Component-specific configurations
@@ -113,20 +122,17 @@ case "$COMPONENT" in
         ;;
     "kserve-models-web-application")
         CHART_DIRECTORY="$ROOT_DIRECTORY/experimental/helm/charts/kserve-ui"
-        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/kserve/kserve-ui/upstream"
+        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/kserve/kserve-ui"
 
         declare -A KUSTOMIZE_PATHS=(
-            ["base"]="$MANIFESTS_DIRECTORY/base"
-            ["kubeflow"]="$MANIFESTS_DIRECTORY/overlays/kubeflow"
+            ["kubeflow"]="$MANIFESTS_DIRECTORY"
         )
 
         declare -A HELM_VALUES=(
-            ["base"]="$CHART_DIRECTORY/ci/base-values.yaml"
             ["kubeflow"]="$CHART_DIRECTORY/ci/kubeflow-values.yaml"
         )
 
         declare -A NAMESPACES=(
-            ["base"]="kserve"
             ["kubeflow"]="kubeflow"
         )
         ;;
