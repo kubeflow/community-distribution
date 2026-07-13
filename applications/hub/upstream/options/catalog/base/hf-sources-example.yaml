@@ -11,10 +11,9 @@ catalogs:
     type: hf
     enabled: true
     properties:
-      # Name of the environment variable containing the Hugging Face API key.
-      # The API key value itself should be stored in a Kubernetes Secret and
-      # exposed as an environment variable in the pod/deployment configuration.
-      # Default environment variable name is "HF_API_KEY"
+      # apiKeyEnvVar names the env var holding the Hugging Face API key.
+      # Must be "HF_API_KEY" (default) or start with "HF_API_KEY_" (e.g., "HF_API_KEY_ORG1").
+      # Store the key value in a Kubernetes Secret and expose it as an env var in the deployment.
       apiKeyEnvVar: "HF_API_KEY"
     includedModels:
       - "meta-llama/Llama-3.2-1B"
@@ -30,7 +29,7 @@ catalogs:
     type: hf
     enabled: false  # disabled by default
     properties:
-      apiKeyEnvVar: "HF_API_KEY"
+      apiKeyEnvVar: "HF_API_KEY_META"   # Per-org key; must be HF_API_KEY or HF_API_KEY_*
       allowedOrganization: "meta-llama"
     includedModels:
       # These patterns will be automatically prefixed with "meta-llama/"
@@ -46,8 +45,6 @@ catalogs:
     id: hf-microsoft
     type: hf
     enabled: false  # disabled by default
-    properties:
-      apiKeyEnvVar: "HF_API_KEY"
     includedModels:
       # Full wildcard patterns (organization/model)
       - "microsoft/phi-*"         # All phi variants
@@ -61,8 +58,6 @@ catalogs:
     id: hf-mixed
     type: hf
     enabled: false  # disabled by default
-    properties:
-      apiKeyEnvVar: "HF_API_KEY"
     includedModels:
       # Specific models
       - "huggingface/CodeBERTa-small-v1"

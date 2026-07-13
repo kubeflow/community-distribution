@@ -22,8 +22,7 @@ This command will create:
 *   A `Deployment` to run the Model Catalog server.
 *   A `Service` to expose the Model Catalog server.
 *   A `ConfigMap` named `model-catalog-sources` containing an empty configuration for catalog sources.
-*   A `StatefulSet` with a PostgreSQL database
-*   A `PersistentVolumeClaim` for PostgreSQL
+*   A `StatefulSet` with a PostgreSQL database (ephemeral storage)
 
 The `base` catalog is empty, you may alternatively load the `demo` manifests to include generated test data:
 

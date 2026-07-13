@@ -31,6 +31,16 @@ mcp_catalogs:
     properties:
       yamlCatalogPath: /testdata/test-mcp-servers.yaml
 
+agent_catalogs:
+  - name: Sample Agent Catalog
+    id: sample_agent_catalog
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: /testdata/sample-agent-catalog.yaml
+    labels:
+      - sample
+
 labels:
   - name: null
     displayName: Community and custom
@@ -38,6 +48,8 @@ labels:
     assetType: models
   - name: mcp-label
     assetType: mcp_servers
+  - name: sample
+    assetType: agents
 
 namedQueries:
   production_ready:

@@ -48,5 +48,4 @@ spec:
               - ALL
       volumes:
       - name: model-catalog-postgres
-        persistentVolumeClaim:
-          claimName: model-catalog-postgres
+        emptyDir: {}

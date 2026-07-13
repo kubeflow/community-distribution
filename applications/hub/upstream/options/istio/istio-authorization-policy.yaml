@@ -15,10 +15,21 @@ spec:
     - source:
         principals:
         - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
-  # Allow internal requests with a valid Kubernetes JWT (authorization header)
-  # but strictly block any request that also carries a kubeflow-userid header,
-  # preventing identity spoofing from within the cluster.
-  - when:
+  # Allow internal service-to-service requests that carry a Kubernetes JWT
+  # (authorization header) and no kubeflow-userid header, but ONLY from the
+  # Kubeflow control plane namespace. Without a source constraint this rule
+  # matched any in-mesh pod, so any tenant pod could present its own
+  # ServiceAccount token, omit kubeflow-userid, and reach another tenant's
+  # Model Registry. The only component that legitimately uses this path is the
+  # control-plane inferenceservice-controller (the UI BFF forwards user traffic
+  # with the kubeflow-userid header, so it is covered by the ingress-gateway
+  # rule above, not this one). If your control plane runs in a namespace other
+  # than "kubeflow", set it here.
+  - from:
+    - source:
+        namespaces:
+        - "kubeflow"
+    when:
     - key: request.headers[authorization]
       values:
       - "*"
