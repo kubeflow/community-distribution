@@ -19,6 +19,7 @@ We try to BEST-EFFORT support each release for 6 months as community. There is [
 - [Overview of the Kubeflow Platform](#overview-of-the-kubeflow-platform)
 - [Kubeflow Components Versions](#kubeflow-components-versions)
 - [Installation](#installation)
+  - [Security Considerations](#security-considerations)
   - [Prerequisites](#prerequisites)
   - [Install with a Single Command](#install-with-a-single-command)
   - [Install Individual Components](#install-individual-components)
@@ -27,7 +28,7 @@ We try to BEST-EFFORT support each release for 6 months as community. There is [
   - [Change Default User Password](#change-default-user-password)
 - [Upgrading and Extending](#upgrading-and-extending)
 - [Release Process](#release-process)
-- [Security](#security)
+    - [Security](#security)
 - [Pre-commit Hooks](#pre-commit-hooks)
 - [Architecture](#architecture)
 - [Frequently Asked Questions](#frequently-asked-questions)
@@ -90,9 +91,24 @@ We provide two options for installing the official Kubeflow components and commo
 
 The `example` directory contains an example kustomization for the single command to be able to run.
 
-:warning: In both options, we use a default email (`user@example.com`) and password (`12341234`). For any production Kubeflow deployment, you should change the default password by following [the relevant section](#change-default-user-password).
+### Security Considerations
+
+:warning: For any production Kubeflow deployment, you must take additional steps to ensure a secure setup of your Kubeflow environment. The following list highlights important security measures, but it may not be exhaustive:
+
+- The setup comes with a default email (`user@example.com`) and password (`12341234`). You should change the default password by following [the relevant section](#change-default-user-password).
+- Ensure you change the ``OIDC_CLIENT_SECRET`` in [Dex](common/dex/base/secret_params.env) and [OAuth2 Proxy](common/oauth2-proxy/base/kustomization.yaml) as well as the [``cookie-secret``](common/oauth2-proxy/base/kustomization.yaml).
+- Support for [Pod Security Admission is enabled](https://kubernetes.io/docs/concepts/security/pod-security-admission/), so that the Pod Security Standards
+ will be enforced [in the user's profile and workloads](applications/dashboard/upstream/profile-controller/overlays/kubeflow-pss/namespace-labels-kubeflow-pss.yaml). This helps prevent container breakouts and cluster privilege escalation.
+- Support for [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) is enabled. Otherwise, users may bypass security controls because they can communicate with central services.
+- Configure [the secure Notebook setup](proposals/20260705-secure-notebook-setup.md). This hosts notebooks on a different subdomain, which helps prevent session hijacking through a malicious notebook.
+  - If you don't use ``oauth2-proxy`` for authentication or Istio in ambient mode (as the ``EnvoyFilter`` is not supported there), ensure that you filter all authentication cookies from the requests sent to Notebooks (take a look at [``envoy-filter-gateway.yaml``](common/istio/istio-install/overlays/oauth2-proxy/envoy-filter-gateway.yaml) for details).
+- Ensure that you [have hardened your Kubernetes cluster](https://kubernetes.io/docs/concepts/security/security-checklist/).
+- Ensure you have a proper upgrade/patch management process in place to apply security fixes to images and deployments (or _manifests_) in a timely manner.
+
+Depending on your environment, threat model, and compliance requirements, additional hardening steps may be necessary.
 
 ### Prerequisites
+
 - For the specific Kubernetes version per release, consult the [release notes](https://github.com/kubeflow/community-distribution/releases).
 - Our Kind script below will take care of installing continuously tested Kubernetes, Kustomize and Kubectl versions for you.
 - We use Kind as default but also support Minikube, Rancher, EKS, AKS, and GKE. GKE might need tiny adjustments documented here in this file and OpenShift is also possible.
