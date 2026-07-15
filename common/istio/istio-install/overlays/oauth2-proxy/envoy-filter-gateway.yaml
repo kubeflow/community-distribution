@@ -1,0 +1,52 @@
+# This EnvoyFilter removes the cookie oauth2_proxy_kubeflow 
+# before the request is forwarded to the backend systems.
+# This prevents token stealing:
+# Otherwise, the bearer token would be leaked to the notebook's containers
+# which would allow a contributor could get access to other contributor's token.
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: gateway-remove-kubeflow-cookie
+  namespace: istio-system # Deployed in the gateway's namespace
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+            inlineCode: |
+              function envoy_on_request(request_handle)
+                local cookie_header = request_handle:headers():get("cookie")
+                
+                if cookie_header then
+                  local target_cookie = "oauth2_proxy_kubeflow"
+                  
+                  -- Regex pattern to safely isolate and remove the target cookie
+                  local pattern = "([;%s]*" .. target_cookie .. "=[^;]*)"
+                  local new_cookie = string.gsub(cookie_header, pattern, "")
+                  
+                  -- Clean up any dangling semicolons or whitespace
+                  new_cookie = string.gsub(new_cookie, "^[;%s]+", "")
+                  new_cookie = string.gsub(new_cookie, "[;%s]+$", "")
+                  
+                  if new_cookie == "" then
+                    request_handle:headers():remove("cookie")
+                  else
+                    request_handle:headers():replace("cookie", new_cookie)
+                  end
+                end
+              end
