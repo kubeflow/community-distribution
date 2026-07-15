@@ -55,11 +55,11 @@ spec:
               configMapKeyRef:
                 name: config
                 key: ISTIO_HOST_AUTH
-          - name: ISTIO_HOST_AUTH_PATH
+          - name: ISTIO_AUTH_PATH
             valueFrom:
               configMapKeyRef:
                 name: config
-                key: ISTIO_HOST_AUTH_PATH
+                key: ISTIO_AUTH_PATH
           - name: CLUSTER_DOMAIN
             valueFrom:
               configMapKeyRef:

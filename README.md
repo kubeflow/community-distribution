@@ -101,7 +101,7 @@ The `example` directory contains an example kustomization for the single command
  will be enforced [in the user's profile and workloads](applications/dashboard/upstream/profile-controller/overlays/kubeflow-pss/namespace-labels-kubeflow-pss.yaml). This helps prevent container breakouts and cluster privilege escalation.
 - Support for [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) is enabled. Otherwise, users may bypass security controls because they can communicate with central services.
 - Configure [the secure Notebook setup](proposals/20260705-secure-notebook-setup.md). This hosts notebooks on a different subdomain, which helps prevent session hijacking through a malicious notebook.
-  - If you don't use ``oauth2-proxy`` for authentication or Istio in ambient mode (as the ``EnvoyFilter`` is not supported there), ensure that you filter all authentication cookies from the requests sent to Notebooks (take a look at [``envoy-filter-gateway.yaml``](common/istio/istio-install/overlays/oauth2-proxy/envoy-filter-gateway.yaml) for details).
+  - If you do not use ``oauth2-proxy`` for authentication or Istio in ambient mode (as the ``EnvoyFilter`` is not supported there), ensure that you filter all authentication cookies from the requests sent to Notebooks (take a look at [``envoy-filter-gateway.yaml``](common/istio/istio-install/overlays/oauth2-proxy/envoy-filter-gateway.yaml) for details).
 - Ensure that you [have hardened your Kubernetes cluster](https://kubernetes.io/docs/concepts/security/security-checklist/).
 - Ensure you have a proper upgrade/patch management process in place to apply security fixes to images and deployments (or _manifests_) in a timely manner.
 

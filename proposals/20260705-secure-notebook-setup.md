@@ -43,6 +43,14 @@ As well as the JWT issuer in the file [``common/oauth2-proxy/components/istio-ex
   - issuer: http://dex.auth.svc.cluster.local:5556/dex
 ```
 
+As well as the JWT issuer in the dex configuration file [``common/dex/overlays/oauth2-proxy/config-map.yaml``](../common/dex/overlays/oauth2-proxy/config-map.yaml):
+
+```sh
+data:
+  config.yaml: |
+    issuer: http://dex.auth.svc.cluster.local:5556/dex
+```
+
 Secondly, the Kubeflow Ingress Gateway needs to be exposed via HTTPS:
 
 **Istio Service**
@@ -61,7 +69,7 @@ spec:
 
 **Kubeflow Gateway**
 
-The Kubeflow gateway should enable HTTPS, and an HTTP certificate needs to be referenced in the file [`common/istio/kubeflow-istio-resources/base/kf-istio-resources.yaml`](../common/istio/kubeflow-istio-resources/base/kf-istio-resources.yaml):
+The Kubeflow gateway should enable HTTPS, and a TLS certificate needs to be referenced in the file [`common/istio/kubeflow-istio-resources/base/kf-istio-resources.yaml`](../common/istio/kubeflow-istio-resources/base/kf-istio-resources.yaml):
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -93,26 +101,26 @@ spec:
 
 The list below shows all steps required to enable the multi-domain setup and shows how to configure them.
 
-The notebooks subdomains must be a part of the Kubeflow authentication authority. In a default setup, this means that the notebooks domain is a subdomain of the Kubeflow dashboard. Otherwise, the setup will not work. For instance, if the dashboard is hosted on ``kubeflow.example.org``, the profile's `example` notebook will be hosted on `example-notebook.kubeflow.example.org` by setting the `ISTIO_HOST_NOTEBOOK ` parameter to `${NAMESPACE}-notebook.kubeflow.example.org`.
+The notebooks subdomains must be a part of the Kubeflow authentication authority. In a default setup, this means that the notebooks domain is a subdomain of the Kubeflow dashboard. Otherwise, the setup will not work. For instance, if the dashboard is hosted on ``kubeflow.example.org``, the profile's `example` notebook will be hosted on `example-notebook.kubeflow.example.org` by setting the `ISTIO_HOST_NOTEBOOK` parameter to `${NAMESPACE}-notebook.kubeflow.example.org`.
 
 **Environment parameters**
 
 The following parameters need to be defined in the configuration file [`applications/notebooks-v1/upstream/notebook-controller/manager/params.env`](../applications/notebooks-v1/upstream/notebook-controller/manager/params.env):
 
-| Parameter                     | Description                                                                                                                                                          |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ISTIO_USE_NOTEBOOK_SUBDOMAINS | Set this value to ``true``.                                                                                                                                          |
-| ISTIO_HOST_NOTEBOOK           | Domain template used by Istio to host notebooks (e.g., `${NAMESPACE}-notebook.kubeflow.example.org`). `${NAMESPACE}` will be replaced with the Notebook's namespace (Kubeflow profile). |
-| ISTIO_HOST_AUTH               | Host used by Istio for handling authentication callbacks or login flows (e.g., `kubeflow.example.org`).                                                              |
-| ISTIO_HOST_AUTH_PATH          | Optional, defaults to `/oauth2/`; Can be used to change the base URL path used by Istio for authentication callbacks or login flows (e.g. `/oauth2/`).                                        |
-|                               | This path must match the routing configured in the authentication provider (e.g., OAuth2 Proxy) so that login and callback requests are correctly handled.           |
+| Parameter                       | Description                                                                                                                                                          |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ISTIO_USE_NOTEBOOK_SUBDOMAINS` | Set this value to ``true``.                                                                                                                                          |
+| `ISTIO_HOST_NOTEBOOK`           | Domain template used by Istio to host notebooks (e.g., `${NAMESPACE}-notebook.kubeflow.example.org`). `${NAMESPACE}` will be replaced with the Notebook's namespace (Kubeflow profile). |
+| `ISTIO_HOST_AUTH`               | Host used by Istio for handling authentication callbacks or login flows (e.g., `kubeflow.example.org`).                                                              |
+| `ISTIO_AUTH_PATH`               | Optional, defaults to `/oauth2/`; Can be used to change the base URL path used by Istio for authentication callbacks or login flows (e.g. `/oauth2/`).                                        |
+|                                 | This path must match the routing configured in the authentication provider (e.g., OAuth2 Proxy) so that login and callback requests are correctly handled.           |
 
 **Cookie domains**
 
 Enable this setting for multi-domain notebook support in the configuration file [`common/oauth2-proxy/base/oauth2_proxy.cfg`](../common/oauth2-proxy/base/oauth2_proxy.cfg):
 
 ```sh
-cookie_domains = kubeflow.example.org
+cookie_domains = [ "kubeflow.example.org" ]
 ```
 
 ## Does this break any existing functionality?

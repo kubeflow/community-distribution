@@ -2,7 +2,7 @@
 # before the request is forwarded to the backend systems.
 # This prevents token stealing:
 # Otherwise, the bearer token would be leaked to the notebook's containers
-# which would allow a contributor could get access to other contributor's token.
+# which would allow a contributor to access another contributor's token.
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -35,9 +35,9 @@ spec:
                 if cookie_header then
                   local target_cookie = "oauth2_proxy_kubeflow"
                   
-                  -- Regex pattern to safely isolate and remove the target cookie
-                  local pattern = "([;%s]*" .. target_cookie .. "=[^;]*)"
-                  local new_cookie = string.gsub(cookie_header, pattern, "")
+                  -- Prefix the header so every cookie has an explicit boundary.
+                  local new_cookie = string.gsub(";" .. cookie_header, ";%s*" .. target_cookie .. "=[^;]*", "")
+                  new_cookie = string.gsub(new_cookie, "^;", "")
                   
                   -- Clean up any dangling semicolons or whitespace
                   new_cookie = string.gsub(new_cookie, "^[;%s]+", "")
