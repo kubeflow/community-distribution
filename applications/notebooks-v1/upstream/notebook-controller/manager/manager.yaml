@@ -40,6 +40,26 @@ spec:
               configMapKeyRef:
                 name: config
                 key: ISTIO_HOST
+          - name: ISTIO_USE_NOTEBOOK_SUBDOMAINS
+            valueFrom:
+              configMapKeyRef:
+                name: config
+                key: ISTIO_USE_NOTEBOOK_SUBDOMAINS
+          - name: ISTIO_HOST_NOTEBOOK
+            valueFrom:
+              configMapKeyRef:
+                name: config
+                key: ISTIO_HOST_NOTEBOOK
+          - name: ISTIO_HOST_AUTH
+            valueFrom:
+              configMapKeyRef:
+                name: config
+                key: ISTIO_HOST_AUTH
+          - name: ISTIO_HOST_AUTH_PATH
+            valueFrom:
+              configMapKeyRef:
+                name: config
+                key: ISTIO_HOST_AUTH_PATH
           - name: CLUSTER_DOMAIN
             valueFrom:
               configMapKeyRef:
