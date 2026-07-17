@@ -9,6 +9,12 @@ spec:
     env:
     - name: MODEL_REGISTRY_BASE_URL
       value: "model-registry-service.kubeflow.svc.cluster.local:8080"
+    # Uncomment to restrict artifact URIs the storage-initializer will download.
+    # Comma-separated list of URI prefixes. If unset, all URIs with supported
+    # protocols are allowed. Use trailing slashes to avoid partial bucket name
+    # matches (e.g., "s3://my-bucket/" not "s3://my-bucket").
+    # - name: ALLOWED_ARTIFACT_URI_PREFIXES
+    #   value: "s3://my-trusted-bucket/,gs://my-gcs-bucket/"
     resources:
       requests:
         memory: 100Mi

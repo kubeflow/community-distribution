@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="hub"
 REPOSITORY_NAME="kubeflow/hub"
 REPOSITORY_URL="https://github.com/kubeflow/hub.git"
-COMMIT="v0.3.12"
+COMMIT="v0.3.14"
 REPOSITORY_DIRECTORY="hub"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-kubeflow-${COMPONENT_NAME}-manifests-${COMMIT?}}
