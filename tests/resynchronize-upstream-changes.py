@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import subprocess
 import sys
 
@@ -76,7 +77,7 @@ if __name__ == "__main__":
             [script],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            env={"KUBEFLOW_SYNCHRONIZE_NO_COMMIT": "true"},
+            env={**os.environ, "KUBEFLOW_SYNCHRONIZE_NO_COMMIT": "true"},
             text=True,
         )
         output, _ = process.communicate()

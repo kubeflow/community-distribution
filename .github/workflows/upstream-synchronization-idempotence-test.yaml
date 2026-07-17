@@ -19,6 +19,9 @@ jobs:
       with:
         python-version: "3.13"
 
+    - name: Install Python dependencies
+      run: python -m pip install ruamel.yaml==0.19.1
+
     - name: Run upstream synchronization scripts for changed files
       run: |
         mapfile -t changed_files < <(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
