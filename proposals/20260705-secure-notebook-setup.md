@@ -32,8 +32,8 @@ The internal cluster Dex URLs should be replaced with the external Kubeflow ingr
 
 ```sh
 oidc_issuer_url = "https://kubeflow.example.org/dex"
-redeem_url = "http://kubeflow.example.org/dex/token"
-oidc_jwks_url = "http://kubeflow.example.org/dex/keys"
+redeem_url = "https://kubeflow.example.org/dex/token"
+oidc_jwks_url = "https://kubeflow.example.org/dex/keys"
 ```
 
 As well as the JWT issuer in the file [``common/oauth2-proxy/components/istio-external-auth/requestauthentication.dex-jwt.yaml``](../common/oauth2-proxy/components/istio-external-auth/requestauthentication.dex-jwt.yaml):
@@ -97,7 +97,7 @@ spec:
       credentialName: https-credential # set this to the secret with the wildcard TLS certificate and key
 ```
 
-This will make the setup work. Please ensure that you follow the recommendations in the [_Security Considerations_ section](code/kubeflow-manifests/README.md) section for guidance on a secure setup.
+This will make the setup work. Please ensure that you follow the recommendations in the [_Security Considerations_ section](../README.md#security-considerations) section for guidance on a secure setup.
 
 ## Implementation details to enable multi-domain setup
 
