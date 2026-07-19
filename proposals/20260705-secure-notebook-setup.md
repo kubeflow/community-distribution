@@ -10,7 +10,7 @@ These features add support for running notebooks on their own subdomains. This p
 
 The multi-domain setup is recommended for a production Kubeflow deployment because the default setup allows an authenticated attacker to hijack sessions. However, because the setup has prerequisites and is not suitable for local development environments, it cannot be enabled by default.
 
-This setup hosts the Kubeflow dashboard and APIs on a separate domain from the notebooks to prevent session hijacking from malicious notebooks through the user’s agent (browser). So if an attacker hosts malicious notebooks and convinces a victim to visit the notebook’s URL, they cannot steal session data or make API requests in the victim’s name.
+This setup hosts the Kubeflow dashboard and APIs on a separate domain from the notebooks to prevent session hijacking from malicious notebooks through the user’s agent (browser). If an attacker hosts malicious notebooks and convinces a victim to visit the notebook’s URL, the attacker cannot steal session data or make API requests in the victim’s name.
 
 ## Prerequisite
 
@@ -28,19 +28,19 @@ For instance, a minimal configuration to expose Kubeflow on an external domain r
 
 **OAuth2/Dex**
 
-The internal cluster Dex URLs should be replaced with the external Kubeflow ingress URL for OIDC issuer, token redemption, and JWKS endpoints in [``common/oauth2-proxy/base/oauth2_proxy.cfg``](../common/oauth2-proxy/base/oauth2_proxy.cfg).
+The internal cluster Dex URLs should be replaced with the external Kubeflow ingress URL for OIDC issuer, token redemption, and JWKS endpoints in [``common/oauth2-proxy/base/oauth2_proxy.cfg``](../common/oauth2-proxy/base/oauth2_proxy.cfg). This example uses ``kubeflow.example.org`` as the external domain:
 
 ```sh
-oidc_issuer_url = "http://dex.auth.svc.cluster.local:5556/dex"
-redeem_url = "http://dex.auth.svc.cluster.local:5556/dex/token"
-oidc_jwks_url = "http://dex.auth.svc.cluster.local:5556/dex/keys"
+oidc_issuer_url = "https://kubeflow.example.org/dex"
+redeem_url = "http://kubeflow.example.org/dex/token"
+oidc_jwks_url = "http://kubeflow.example.org/dex/keys"
 ```
 
 As well as the JWT issuer in the file [``common/oauth2-proxy/components/istio-external-auth/requestauthentication.dex-jwt.yaml``](../common/oauth2-proxy/components/istio-external-auth/requestauthentication.dex-jwt.yaml):
 
 ```sh
   jwtRules:
-  - issuer: http://dex.auth.svc.cluster.local:5556/dex
+  - issuer: https://kubeflow.example.org/dex
 ```
 
 As well as the JWT issuer in the dex configuration file [``common/dex/overlays/oauth2-proxy/config-map.yaml``](../common/dex/overlays/oauth2-proxy/config-map.yaml):
@@ -48,7 +48,7 @@ As well as the JWT issuer in the dex configuration file [``common/dex/overlays/o
 ```sh
 data:
   config.yaml: |
-    issuer: http://dex.auth.svc.cluster.local:5556/dex
+    issuer: https://kubeflow.example.org/dex
 ```
 
 Secondly, the Kubeflow Ingress Gateway needs to be exposed via HTTPS:
@@ -86,7 +86,7 @@ spec:
       protocol: HTTP
     hosts:
     - "*"
-  - port: 
+  - port:
       number: 443
       name: https
       protocol: HTTPS
@@ -96,6 +96,8 @@ spec:
       mode: SIMPLE
       credentialName: https-credential # set this to the secret with the wildcard TLS certificate and key
 ```
+
+This will make the setup work. Please ensure that you follow the recommendations in the [_Security Considerations_ section](code/kubeflow-manifests/README.md) section for guidance on a secure setup.
 
 ## Implementation details to enable multi-domain setup
 

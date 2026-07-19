@@ -124,7 +124,7 @@ data:
     skip_provider_button = true
     set_authorization_header = true
     set_xauthrequest = true
-    
+
     # If you change the cookie_name, please ensure that you change the target_cookie name in common/istio/istio-install/overlays/oauth2-proxy/envoy-filter-gateway.yaml, too
     cookie_name = "oauth2_proxy_kubeflow"
     cookie_expire = "24h"
