@@ -6,6 +6,20 @@ spec:
       time: 10s
       interval: 5s
       probes: 3
+  values:
+    global:
+      proxy:
+        # Default sidecars are injected into low-traffic internal services
+        # (Kubeflow control-plane components), so size them accordingly
+        # instead of the upstream defaults (100m/128Mi request, 2000m/1024Mi
+        # limit) which are tuned for higher-throughput data-plane proxies.
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
   components:
     ingressGateways:
     - enabled: true

@@ -3246,12 +3246,12 @@ data:
           "readinessPeriodSeconds": 15,
           "resources": {
             "limits": {
-              "cpu": "2000m",
-              "memory": "1024Mi"
+              "cpu": "200m",
+              "memory": "128Mi"
             },
             "requests": {
-              "cpu": "100m",
-              "memory": "128Mi"
+              "cpu": "25m",
+              "memory": "64Mi"
             }
           },
           "seccompProfile": {},
@@ -3429,12 +3429,12 @@ data:
           "readinessPeriodSeconds": 15,
           "resources": {
             "limits": {
-              "cpu": "2000m",
-              "memory": "1024Mi"
+              "cpu": "200m",
+              "memory": "128Mi"
             },
             "requests": {
-              "cpu": "100m",
-              "memory": "128Mi"
+              "cpu": "25m",
+              "memory": "64Mi"
             }
           },
           "seccompProfile": {},
@@ -3584,6 +3584,18 @@ data:
         "configValidation": true,
         "hub": "registry.istio.io/release",
         "istioNamespace": "istio-system",
+        "proxy": {
+          "resources": {
+            "limits": {
+              "cpu": "200m",
+              "memory": "128Mi"
+            },
+            "requests": {
+              "cpu": "25m",
+              "memory": "64Mi"
+            }
+          }
+        },
         "tag": "1.30.3"
       },
       "meshConfig": {
