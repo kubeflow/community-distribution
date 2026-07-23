@@ -17,7 +17,7 @@ This setup hosts the Kubeflow dashboard and APIs on a separate domain from the n
 If you want to enable the multi-domain setup, you need to meet the following prerequisites:
 
 - A wildcard domain for Kubeflow or some kind of automated external domain management for the notebook domains (e.g., [ExternalDNS](https://github.com/kubernetes-sigs/external-dns)).
-- A wildcard TLS certificate for Kubeflow or some kind of automated certificate management for the notebook domains (e.g., [cert manager](https://cert-manager.io/docs/)).
+- A TLS certificate that covers both the Kubeflow dashboard domain and the wildcard notebook subdomains (for example, `kubeflow.example.org` and `*.kubeflow.example.org`), or some kind of automated certificate management for the notebook domains (e.g., [cert manager](https://cert-manager.io/docs/)).
 
 This includes that Kubeflow is exposed externally (which is most likely given in a production environment):
 
@@ -97,13 +97,13 @@ spec:
       credentialName: https-credential # set this to the secret with the wildcard TLS certificate and key
 ```
 
-This will make the setup work. Please ensure that you follow the recommendations in the [_Security Considerations_ section](../README.md#security-considerations) section for guidance on a secure setup.
+This will make the setup work. Please ensure that you follow the recommendations in the [_Security Considerations_ section](../README.md#security-considerations) for guidance on a secure setup.
 
 ## Implementation details to enable multi-domain setup
 
 The list below shows all steps required to enable the multi-domain setup and shows how to configure them.
 
-The notebooks subdomains must be a part of the Kubeflow authentication authority. In a default setup, this means that the notebooks domain is a subdomain of the Kubeflow dashboard. Otherwise, the setup will not work. For instance, if the dashboard is hosted on ``kubeflow.example.org``, the profile's `example` notebook will be hosted on `example-notebook.kubeflow.example.org` by setting the `ISTIO_HOST_NOTEBOOK` parameter to `${NAMESPACE}-notebook.kubeflow.example.org`.
+The notebook subdomains must be part of the Kubeflow authentication authority. In a default setup, this means that the notebook domain is a subdomain of the Kubeflow dashboard. Otherwise, the setup will not work. For instance, if the dashboard is hosted on ``kubeflow.example.org``, every Notebook in the `example` profile uses the host `example-notebook.kubeflow.example.org`, when `ISTIO_HOST_NOTEBOOK` is set to `${NAMESPACE}-notebook.kubeflow.example.org`.
 
 **Environment parameters**
 
