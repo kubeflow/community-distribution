@@ -1,19 +1,39 @@
+# Copyright The Kubeflow Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base/runtimes
 
+# The built-in ClusterTrainingRuntime are validated ahead of time.
+labels:
+  - pairs:
+      trainer.kubeflow.org/webhook-validation: disabled
+    includeSelectors: false
+
 # Update the Kubeflow LLM Trainer image tag.
 images:
   - name: ghcr.io/kubeflow/trainer/torchtune-trainer
-    newTag: v2.2.1
+    newTag: v2.3.0-rc.3
   - name: ghcr.io/kubeflow/trainer/dataset-initializer
-    newTag: v2.2.1
+    newTag: v2.3.0-rc.3
   - name: ghcr.io/kubeflow/trainer/model-initializer
-    newTag: v2.2.1
+    newTag: v2.3.0-rc.3
   - name: ghcr.io/kubeflow/trainer/mlx-runtime
-    newTag: v2.2.1
+    newTag: v2.3.0-rc.3
   - name: ghcr.io/kubeflow/trainer/deepspeed-runtime
-    newTag: v2.2.1
+    newTag: v2.3.0-rc.3
   - name: ghcr.io/kubeflow/trainer/xgboost-runtime
-    newTag: v2.2.1
+    newTag: v2.3.0-rc.3

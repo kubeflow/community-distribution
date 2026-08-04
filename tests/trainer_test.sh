@@ -17,5 +17,7 @@ kubectl get deployment kubeflow-trainer-controller-manager -n kubeflow-system
 kubectl get pods -n kubeflow-system -l app.kubernetes.io/name=trainer
 kubectl get clustertrainingruntimes torch-distributed
 
-pip install kubeflow
+# The Kubeflow SDK depends on kubeflow-trainer-api with a lower bound only, so the
+# generated API package must be pinned to the Trainer version installed above.
+pip install kubeflow kubeflow-trainer-api==2.3.0rc3
 python3 tests/trainer_test.py "$KF_PROFILE"
