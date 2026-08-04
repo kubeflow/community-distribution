@@ -2,7 +2,7 @@ apiVersion: v2
 name: cert-manager
 description: A Helm wrapper chart for cert-manager with Kubeflow platform defaults
 version: 0.1.0
-appVersion: v1.20.2
+appVersion: v1.21.1
 keywords:
 - cert-manager
 - kubeflow
@@ -13,7 +13,7 @@ sources:
 - https://github.com/kubeflow/community-distribution/tree/master/common/cert-manager
 dependencies:
 - name: cert-manager
-  version: "1.20.2"
+  version: "1.21.1"
   repository: https://charts.jetstack.io
   condition: cert-manager.enabled
 annotations:
