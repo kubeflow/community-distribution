@@ -25,6 +25,7 @@ on:
     - tests/helm_kustomize_compare.sh
     - tests/helm_kustomize_compare_all.sh
     - tests/test_dex_helm_rollout_checksums.py
+    - tests/test_dex_helm_crd_lifecycle.py
     - tests/test_istio_helm_chart.py
     - tests/test_dashboard_helm_chart.py
     - tests/test_generate_dashboard_helm_manifests.py
@@ -63,6 +64,8 @@ jobs:
       run: python tests/test_helm_kustomize_compare.py
     - name: Test Dex Helm behavior
       run: python tests/test_dex_helm_rollout_checksums.py
+    - name: Test Dex CustomResourceDefinition lifecycle
+      run: python tests/test_dex_helm_crd_lifecycle.py
     - name: Compare Dex Helm and Kustomize manifests
       env:
         VERBOSE: "true"
