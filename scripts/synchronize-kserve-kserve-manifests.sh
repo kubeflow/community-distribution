@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="kserve"
 REPOSITORY_NAME="kserve/kserve"
 REPOSITORY_URL="https://github.com/kserve/kserve.git"
-COMMIT="v0.19.0"
+COMMIT="v0.20.0"
 REPOSITORY_DIRECTORY="kserve"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
