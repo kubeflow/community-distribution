@@ -34,6 +34,9 @@ EXPECTED_HELM_CRD_RESOURCE_POLICIES = {
         "poddefaults.kubeflow.org",
         "profiles.kubeflow.org",
     },
+    "dex": {
+        "authcodes.dex.coreos.com",
+    },
 }
 
 

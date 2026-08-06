@@ -300,6 +300,44 @@ class IstioManifestSelectionTest(unittest.TestCase):
         )
 
 
+def dex_custom_resource_definition(annotations=None):
+    metadata = {"name": "authcodes.dex.coreos.com"}
+    if annotations is not None:
+        metadata["annotations"] = annotations
+    return {
+        "apiVersion": "apiextensions.k8s.io/v1",
+        "kind": "CustomResourceDefinition",
+        "metadata": metadata,
+    }
+
+
+class DexCustomResourceDefinitionRetentionTest(unittest.TestCase):
+    """A crds directory carries no annotation, so this check catches a move back."""
+
+    def test_retained_definition_passes(self):
+        self.assertTrue(
+            helm_kustomize_compare.validate_helm_crd_resource_policies(
+                [dex_custom_resource_definition({"helm.sh/resource-policy": "keep"})],
+                "dex",
+            )
+        )
+
+    def test_definition_without_the_retention_annotation_fails(self):
+        self.assertFalse(
+            helm_kustomize_compare.validate_helm_crd_resource_policies(
+                [dex_custom_resource_definition()], "dex"
+            )
+        )
+
+    def test_component_without_an_entry_is_not_checked(self):
+        """No entry means the check is skipped, which is why this regression hid."""
+        self.assertTrue(
+            helm_kustomize_compare.validate_helm_crd_resource_policies(
+                [dex_custom_resource_definition()], "oauth2-proxy"
+            )
+        )
+
+
 class ComparisonWorkflowTest(unittest.TestCase):
     def test_dashboard_ignores_only_rollout_checksum_annotations(self):
         deployment = {
