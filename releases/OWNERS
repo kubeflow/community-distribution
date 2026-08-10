@@ -1,14 +1,10 @@
 approvers:
-  - rimolive
   - tarekabouzeid
   - varodrig
   - juliusvonkohout
 reviewers:
-  - StefanoFioravanzo
   - hbelmiro
-  - nagar-ajay
   - thesuperzapper
-  - ca-scribner
   - juliusvonkohout
 emeritus_approvers:
   - kimwnasptd
