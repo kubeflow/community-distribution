@@ -1,12 +1,13 @@
 approvers:
   - tarekabouzeid
-  - varodrig
   - juliusvonkohout
+  - Dominikkawka
 reviewers:
   - hbelmiro
   - thesuperzapper
   - juliusvonkohout
 emeritus_approvers:
-  - kimwnasptd
   - annajung
   - DnPlas
+  - kimwnasptd
+  - varodrig
