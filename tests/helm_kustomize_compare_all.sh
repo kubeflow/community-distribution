@@ -19,6 +19,7 @@ declare -A COMPONENT_SCENARIOS=(
     ["oauth2-proxy"]="m2m-dex-and-kind"
     ["istio"]="crds base oauth2-proxy gke cluster-local-gateway kubeflow-istio-resources platform-full"
     ["kubeflow-dashboard"]="platform"
+    ["kubeflow-notebooks"]="platform"
 )
 
 prepare_component() {
@@ -68,7 +69,7 @@ if [[ "$COMPONENT" == "all" ]]; then
     declare -a passed_components=()
     declare -a failed_components=()
 
-    for component in katib hub kserve-models-web-application cert-manager kubeflow-namespaces kubeflow-platform dex oauth2-proxy istio kubeflow-dashboard; do
+    for component in katib hub kserve-models-web-application cert-manager kubeflow-namespaces kubeflow-platform dex oauth2-proxy istio kubeflow-dashboard kubeflow-notebooks; do
         if test_component "$component"; then
             passed_components+=("$component")
         else
@@ -103,6 +104,7 @@ elif [[ "$COMPONENT" == "help" ]] || [[ "$COMPONENT" == "--help" ]] || [[ "$COMP
     echo "  oauth2-proxy           Test oauth2-proxy wrapper scenarios"
     echo "  istio                  Test Istio wrapper scenarios"
     echo "  kubeflow-dashboard     Test Kubeflow Dashboard platform scenario"
+    echo "  kubeflow-notebooks     Test Kubeflow Notebooks platform scenario"
     echo ""
     echo "Examples:"
     echo "  $0                     # Test all components"
@@ -124,7 +126,7 @@ elif [[ "${COMPONENT_SCENARIOS[$COMPONENT]:-}" ]]; then
 
 else
     echo "ERROR: Unknown component: $COMPONENT"
-    echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, all"
+    echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks, all"
     echo "Use '$0 help' for more information."
     exit 1
 fi

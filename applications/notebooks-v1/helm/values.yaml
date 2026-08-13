@@ -1,0 +1,19 @@
+# Default values for the Kubeflow Notebooks chart.
+#
+# The chart vendors the Kustomize platform overlay verbatim. Values that the
+# Kustomize baseline declares - container images and configMapGenerator inputs -
+# are not exposed yet; that is a separate change.
+
+# -- Rendered Kustomize parity scenario.
+# Supported value: platform
+scenario: platform
+
+customResourceDefinitions:
+  # -- Render the Notebook, PodDefault and PVCViewer custom resource definitions.
+  # They are rendered as ordinary templates rather than from crds/, because Helm
+  # never upgrades or deletes anything in crds/, and they carry
+  # helm.sh/resource-policy: keep so uninstalling the release cannot delete
+  # existing custom resources. Helm's --skip-crds does not apply to templates;
+  # set this to false instead when an administrator or another release already
+  # owns them.
+  enabled: true

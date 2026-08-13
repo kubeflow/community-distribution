@@ -1,0 +1,17 @@
+apiVersion: v2
+name: kubeflow-notebooks
+description: A Helm wrapper chart for Kubeflow Notebooks v1 platform resources
+version: 0.1.0
+appVersion: "v1.11.0"
+keywords:
+- kubeflow
+- notebooks
+- jupyter
+- tensorboard
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/kubeflow/community-distribution/tree/master/applications/notebooks-v1
+- https://github.com/kubeflow/notebooks
+annotations:
+  category: Notebooks
+  licenses: Apache-2.0

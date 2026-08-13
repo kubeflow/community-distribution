@@ -20,6 +20,8 @@ jobs:
         python-version: "3.13"
 
     - name: Install Python dependencies
+      # PyYAML is required because the synchronization scripts now run the
+      # Helm/Kustomize parity comparison before committing.
       run: python -m pip install pyyaml ruamel.yaml==0.19.1
 
     - name: Test Helm synchronization library

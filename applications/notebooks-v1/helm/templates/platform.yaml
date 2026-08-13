@@ -1,0 +1,6 @@
+{{- if eq .Values.scenario "platform" }}
+{{- if .Values.customResourceDefinitions.enabled }}
+{{ include "kubeflow-notebooks.generatedPayload" (dict "root" . "path" "manifests/platform-crds.yaml") }}
+{{- end }}
+{{ include "kubeflow-notebooks.generatedPayload" (dict "root" . "path" "manifests/platform-resources.yaml") }}
+{{- end }}

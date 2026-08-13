@@ -11,8 +11,8 @@ ROOT_DIRECTORY="$(dirname "$SCRIPT_DIRECTORY")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> [scenario]"
-    echo "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard"
-    echo "The scenario is optional. Defaults: KServe Models Web Application uses 'kubeflow', Dex uses 'oauth2-proxy', OAuth2-proxy uses 'm2m-dex-and-kind', Kubeflow Dashboard uses 'platform', and other components use 'base'."
+    echo "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
+    echo "The scenario is optional. Defaults: KServe Models Web Application uses 'kubeflow', Dex uses 'oauth2-proxy', OAuth2-proxy uses 'm2m-dex-and-kind', Kubeflow Dashboard uses 'platform', Kubeflow Notebooks uses 'platform', and other components use 'base'."
     exit 1
 fi
 
@@ -283,9 +283,26 @@ case "$COMPONENT" in
         )
         ;;
 
+    "kubeflow-notebooks")
+        CHART_DIRECTORY="$ROOT_DIRECTORY/applications/notebooks-v1/helm"
+        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/notebooks-v1"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["platform"]="$MANIFESTS_DIRECTORY/overlays/istio"
+        )
+
+        declare -A HELM_VALUES=(
+            ["platform"]="$CHART_DIRECTORY/ci/values-platform.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["platform"]="kubeflow"
+        )
+        ;;
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard"
+        echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
         exit 1
         ;;
 esac
@@ -302,6 +319,9 @@ if [[ -z "$SCENARIO" ]]; then
             SCENARIO="m2m-dex-and-kind"
             ;;
         "kubeflow-dashboard")
+            SCENARIO="platform"
+            ;;
+        "kubeflow-notebooks")
             SCENARIO="platform"
             ;;
         *)
@@ -402,6 +422,10 @@ elif [[ "$COMPONENT" == "dex" ]]; then
     fi
 elif [[ "$COMPONENT" == "kubeflow-dashboard" ]]; then
     helm template kubeflow-dashboard "$CHART_DIRECTORY" \
+        --namespace "$NAMESPACE" \
+        --values "$HELM_VALUES_ARGUMENTS" > "$HELM_OUTPUT"
+elif [[ "$COMPONENT" == "kubeflow-notebooks" ]]; then
+    helm template kubeflow-notebooks "$CHART_DIRECTORY" \
         --namespace "$NAMESPACE" \
         --values "$HELM_VALUES_ARGUMENTS" > "$HELM_OUTPUT"
 else

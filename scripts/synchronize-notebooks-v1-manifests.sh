@@ -26,23 +26,56 @@ copy_component_manifests() {
     local destination_text="\[${COMMIT}\](https://github.com/${REPOSITORY_NAME}/tree/${COMMIT}/)"
     update_readme "$MANIFESTS_DIRECTORY" "$source_text" "$destination_text"
 }
-TARGET_DIR="applications/notebooks-v1/upstream/"
+TARGET_DIRECTORY="applications/notebooks-v1/upstream"
+HELM_CHART_PATH="applications/notebooks-v1/helm"
+HELM_CHART_DIRECTORY="${MANIFESTS_DIRECTORY}/${HELM_CHART_PATH}"
+COMPONENT_NAME="kubeflow-notebooks"
+
+update_notebooks_helm_chart() {
+    local chart_yaml="${HELM_CHART_DIRECTORY}/Chart.yaml"
+
+    update_helm_chart_application_version "$chart_yaml" "$COMMIT"
+    python3 "${SCRIPT_DIRECTORY}/generate-notebooks-v1-helm-manifests.py" \
+        --repository-root "$MANIFESTS_DIRECTORY"
+}
+
+validate_notebooks_helm_chart() {
+    # The chart refuses any namespace but kubeflow, so the linter needs it too.
+    helm lint "$HELM_CHART_DIRECTORY" --namespace kubeflow
+    "${MANIFESTS_DIRECTORY}/tests/helm_kustomize_compare_all.sh" "$COMPONENT_NAME"
+}
 
 copy_component_manifests "components/crud-web-apps/jupyter/manifests" \
-    "${TARGET_DIR}/jupyter-web-app/"
+    "${TARGET_DIRECTORY}/jupyter-web-app"
 copy_component_manifests "components/crud-web-apps/volumes/manifests" \
-    "${TARGET_DIR}/volumes-web-app/"
+    "${TARGET_DIRECTORY}/volumes-web-app"
 copy_component_manifests "components/crud-web-apps/tensorboards/manifests" \
-    "${TARGET_DIR}/tensorboards-web-app/"
+    "${TARGET_DIRECTORY}/tensorboards-web-app"
 copy_component_manifests "components/notebook-controller/config" \
-    "${TARGET_DIR}/notebook-controller/"
+    "${TARGET_DIRECTORY}/notebook-controller"
 copy_component_manifests "components/tensorboard-controller/config" \
-    "${TARGET_DIR}/tensorboard-controller"
+    "${TARGET_DIRECTORY}/tensorboard-controller"
 copy_component_manifests "components/pvcviewer-controller/config" \
-    "${TARGET_DIR}/pvcviewer-controller/"
+    "${TARGET_DIRECTORY}/pvcviewer-controller"
 
+update_notebooks_helm_chart
+validate_notebooks_helm_chart
+
+# An upstream change that the chart cannot absorb makes the parity comparison
+# above fail until a maintainer edits the chart. The component-owned chart paths
+# are therefore part of a synchronization change, and staging them keeps this
+# script from reporting success while that correction stays uncommitted.
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests to ${COMMIT}" \
-  "${TARGET_DIR}" \
+  "${TARGET_DIRECTORY}" \
+  "${HELM_CHART_PATH}/Chart.yaml" \
+  "${HELM_CHART_PATH}/kustomize/kustomization.yaml" \
+  "${HELM_CHART_PATH}/manifests" \
+  "${HELM_CHART_PATH}/templates" \
+  "${HELM_CHART_PATH}/values.yaml" \
+  "${HELM_CHART_PATH}/ci" \
+  "${HELM_CHART_PATH}/README.md" \
+  "${SCRIPT_DIRECTORY}/helm_manifest_generator.py" \
+  "${SCRIPT_DIRECTORY}/generate-notebooks-v1-helm-manifests.py" \
   "${SCRIPT_DIRECTORY}/synchronize-notebooks-v1-manifests.sh" \
   "README.md"
 echo "Synchronization completed successfully."

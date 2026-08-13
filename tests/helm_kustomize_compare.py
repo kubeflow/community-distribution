@@ -34,6 +34,11 @@ EXPECTED_HELM_CRD_RESOURCE_POLICIES = {
         "poddefaults.kubeflow.org",
         "profiles.kubeflow.org",
     },
+    "kubeflow-notebooks": {
+        "notebooks.kubeflow.org",
+        "pvcviewers.kubeflow.org",
+        "tensorboards.tensorboard.kubeflow.org",
+    },
 }
 
 
@@ -109,7 +114,10 @@ def clean_helm_metadata(obj: Any, component: str = "katib") -> Any:
                         # Remove Helm-specific labels (component-specific logic)
                         cleaned_labels = {}
                         for label_key, label_value in meta_value.items():
-                            if component == "kserve-models-web-application":
+                            if component == "kubeflow-notebooks":
+                                if not label_key.startswith("helm.sh/"):
+                                    cleaned_labels[label_key] = label_value
+                            elif component == "kserve-models-web-application":
                                 # More restrictive filtering for KServe
                                 if not label_key.startswith(
                                     ("helm.sh/", "app.kubernetes.io/managed-by")
@@ -554,7 +562,7 @@ if __name__ == "__main__":
             "Usage: python helm_kustomize_compare.py <kustomize_file> <helm_file> <component> <scenario> [namespace] [--verbose]"
         )
         print(
-            "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard"
+            "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
         )
         sys.exit(1)
 
@@ -577,10 +585,11 @@ if __name__ == "__main__":
         "oauth2-proxy",
         "istio",
         "kubeflow-dashboard",
+        "kubeflow-notebooks",
     ]:
         print(f"ERROR: Unknown component: {component}")
         print(
-            "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard"
+            "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
         )
         sys.exit(1)
 

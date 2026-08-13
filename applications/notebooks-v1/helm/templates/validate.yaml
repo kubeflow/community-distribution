@@ -1,0 +1,5 @@
+{{- $scenario := default "" .Values.scenario -}}
+{{- $validScenarios := list "platform" -}}
+{{- if not (has $scenario $validScenarios) -}}
+{{- fail (printf "invalid scenario %q; supported values: %s" $scenario (join ", " $validScenarios)) -}}
+{{- end -}}
