@@ -11,6 +11,7 @@ ROOT_DIRECTORY="$(dirname "$SCRIPT_DIRECTORY")"
 declare -A COMPONENT_SCENARIOS=(
     ["katib"]="standalone cert-manager external-db leader-election openshift standalone-postgres with-kubeflow"
     ["hub"]="base overlay-postgres overlay-db controller-manager controller-rbac controller-default controller-prometheus controller-network-policy ui-base ui-standalone ui-integrated ui-istio istio csi"
+    ["mlflow"]="kubeflow"
     ["kserve-models-web-application"]="kubeflow"
     ["cert-manager"]="base kubeflow existing-cert-manager"
     ["kubeflow-namespaces"]="base platform-namespaces"
@@ -28,6 +29,9 @@ prepare_component() {
     if [[ "$component" == "cert-manager" ]]; then
         helm repo add jetstack https://charts.jetstack.io >/dev/null 2>&1 || helm repo update jetstack >/dev/null
         helm dependency build "$ROOT_DIRECTORY/common/cert-manager/helm" >/dev/null
+    elif [[ "$component" == "mlflow" ]]; then
+        KUBEFLOW_SYNCHRONIZE_NO_COMMIT=true \
+            "$ROOT_DIRECTORY/scripts/synchronize-mlflow-manifests.sh" >/dev/null
     fi
 }
 
@@ -69,7 +73,7 @@ if [[ "$COMPONENT" == "all" ]]; then
     declare -a passed_components=()
     declare -a failed_components=()
 
-    for component in katib hub kserve-models-web-application cert-manager kubeflow-namespaces kubeflow-platform dex oauth2-proxy istio kubeflow-dashboard kubeflow-notebooks; do
+    for component in katib hub mlflow kserve-models-web-application cert-manager kubeflow-namespaces kubeflow-platform dex oauth2-proxy istio kubeflow-dashboard kubeflow-notebooks; do
         if test_component "$component"; then
             passed_components+=("$component")
         else
@@ -96,6 +100,7 @@ elif [[ "$COMPONENT" == "help" ]] || [[ "$COMPONENT" == "--help" ]] || [[ "$COMP
     echo "  all                    Test all components"
     echo "  katib                  Test Katib scenarios"
     echo "  hub                    Test Hub / Model Registry scenarios"
+    echo "  mlflow                 Test MLflow Kubeflow scenario"
     echo "  kserve-models-web-application  Test KServe UI scenarios"
     echo "  cert-manager           Test cert-manager wrapper scenarios"
     echo "  kubeflow-namespaces    Test Kubeflow namespace foundation chart"
@@ -126,7 +131,7 @@ elif [[ "${COMPONENT_SCENARIOS[$COMPONENT]:-}" ]]; then
 
 else
     echo "ERROR: Unknown component: $COMPONENT"
-    echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks, all"
+    echo "Supported components: katib, hub, mlflow, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks, all"
     echo "Use '$0 help' for more information."
     exit 1
 fi

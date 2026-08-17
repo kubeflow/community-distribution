@@ -11,7 +11,7 @@ ROOT_DIRECTORY="$(dirname "$SCRIPT_DIRECTORY")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> [scenario]"
-    echo "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
+    echo "Components: katib, hub, mlflow, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
     echo "The scenario is optional. Defaults: KServe Models Web Application uses 'kubeflow', Dex uses 'oauth2-proxy', OAuth2-proxy uses 'm2m-dex-and-kind', Kubeflow Dashboard uses 'platform', Kubeflow Notebooks uses 'platform', and other components use 'base'."
     exit 1
 fi
@@ -110,6 +110,22 @@ case "$COMPONENT" in
             ["ui-istio"]="kubeflow"
             ["istio"]="kubeflow"
             ["csi"]="kubeflow"
+        )
+        ;;
+    "mlflow")
+        CHART_DIRECTORY="${MLFLOW_CHART_DIRECTORY:-/tmp/kubeflow-mlflow/mlflow-integration/charts/mlflow}"
+        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/mlflow"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["kubeflow"]="$MANIFESTS_DIRECTORY/upstream/base"
+        )
+
+        declare -A HELM_VALUES=(
+            ["kubeflow"]="$MANIFESTS_DIRECTORY/values-kubeflow.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["kubeflow"]="kubeflow"
         )
         ;;
     "kserve-models-web-application")
@@ -302,7 +318,7 @@ case "$COMPONENT" in
 
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
+        echo "Supported components: katib, hub, mlflow, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
         exit 1
         ;;
 esac
@@ -317,6 +333,9 @@ if [[ -z "$SCENARIO" ]]; then
             ;;
         "oauth2-proxy")
             SCENARIO="m2m-dex-and-kind"
+            ;;
+        "mlflow")
+            SCENARIO="kubeflow"
             ;;
         "kubeflow-dashboard")
             SCENARIO="platform"
@@ -426,6 +445,10 @@ elif [[ "$COMPONENT" == "kubeflow-dashboard" ]]; then
         --values "$HELM_VALUES_ARGUMENTS" > "$HELM_OUTPUT"
 elif [[ "$COMPONENT" == "kubeflow-notebooks" ]]; then
     helm template kubeflow-notebooks "$CHART_DIRECTORY" \
+        --namespace "$NAMESPACE" \
+        --values "$HELM_VALUES_ARGUMENTS" > "$HELM_OUTPUT"
+elif [[ "$COMPONENT" == "mlflow" ]]; then
+    helm template mlflow "$CHART_DIRECTORY" \
         --namespace "$NAMESPACE" \
         --values "$HELM_VALUES_ARGUMENTS" > "$HELM_OUTPUT"
 else

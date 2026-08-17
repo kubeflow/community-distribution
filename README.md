@@ -68,13 +68,14 @@ This repository periodically synchronizes all official Kubeflow components from 
 | KServe | applications/kserve/kserve | [v0.20.0](https://github.com/kserve/kserve/tree/v0.20.0) | 600m | 1200Mi | 0GB |
 | Kubeflow Pipelines | applications/pipeline/upstream | [2.17.0](https://github.com/kubeflow/pipelines/tree/2.17.0/manifests/kustomize) | 970m | 3552Mi | 35GB |
 | Kubeflow Hub | applications/hub/upstream | [v0.3.14](https://github.com/kubeflow/hub/tree/v0.3.14/manifests/kustomize) | 510m | 2112Mi | 20GB |
+| MLflow | applications/mlflow/upstream | [d276153](https://github.com/kubeflow/mlflow-integration/tree/d276153b84844c076d92c74519a3c405936220de/charts/mlflow) | Not measured | Not measured | 2GB |
 | Spark Operator | applications/spark/spark-operator | [2.5.2](https://github.com/kubeflow/spark-operator/tree/v2.5.2) | 9m | 41Mi | 0GB |
 | Istio | common/istio | [1.30.3](https://github.com/istio/istio/releases/tag/1.30.3) | 750m | 2364Mi | 0GB |
 | Knative | common/knative/knative-serving <br /> common/knative/knative-eventing | [v1.22.0](https://github.com/knative/serving/releases/tag/knative-v1.22.0) <br /> [v1.22.0](https://github.com/knative/eventing/releases/tag/knative-v1.22.0) | 1450m | 1038Mi | 0GB |
 | Cert Manager | common/cert-manager | [1.21.1](https://github.com/cert-manager/cert-manager/releases/tag/v1.21.1) | 3m | 128Mi | 0GB |
 | Dex | common/dex | [2.45.1](https://github.com/dexidp/dex/releases/tag/v2.45.1) | 3m | 27Mi | 0GB |
 | OAuth2-Proxy | common/oauth2-proxy | [7.15.3](https://github.com/oauth2-proxy/oauth2-proxy/releases/tag/v7.15.3) | 3m | 27Mi | 0GB |
-| **Total** | | | **4377m** | **12316Mi** | **65GB** |
+| **Total** | | | **4377m** | **12316Mi** | **67GB** |
 
 
 ## Installation
@@ -328,6 +329,21 @@ For Keycloak, we have rough guidelines in <https://github.com/kubeflow/community
 ```sh
 ./tests/dashboard_install.sh
 ```
+
+#### MLflow Experiment Tracking
+
+MLflow maps workspaces to Kubeflow Profile namespaces and authorizes requests
+through Kubernetes role-based access control. Install the multi-user overlay:
+
+```sh
+./tests/mlflow_install.sh
+```
+
+The example uses SQLite metadata, file-based artifacts, and a 2 GiB persistent
+volume for single-replica evaluation. Configure shared database and artifact
+stores before production use. See
+[`applications/mlflow/README.md`](applications/mlflow/README.md) for the storage,
+authorization, and synchronization details.
 
 #### Admission Webhook
 

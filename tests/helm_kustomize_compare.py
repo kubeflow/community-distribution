@@ -562,7 +562,7 @@ if __name__ == "__main__":
             "Usage: python helm_kustomize_compare.py <kustomize_file> <helm_file> <component> <scenario> [namespace] [--verbose]"
         )
         print(
-            "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
+            "Components: katib, hub, mlflow, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
         )
         sys.exit(1)
 
@@ -577,6 +577,7 @@ if __name__ == "__main__":
     if component not in [
         "katib",
         "hub",
+        "mlflow",
         "kserve-models-web-application",
         "cert-manager",
         "kubeflow-namespaces",
@@ -589,7 +590,7 @@ if __name__ == "__main__":
     ]:
         print(f"ERROR: Unknown component: {component}")
         print(
-            "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
+            "Supported components: katib, hub, mlflow, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
         )
         sys.exit(1)
 
