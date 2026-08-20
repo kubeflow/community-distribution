@@ -62,6 +62,8 @@ class MLflowManifestTest(unittest.TestCase):
         self.assertIn("--enable-workspaces", container["args"])
         self.assertIn("--workspace-store-uri=kubernetes://", container["args"])
         self.assertIn("--static-prefix=/mlflow", container["args"])
+        self.assertIn("kubeflow.example.com", container["args"][-2])
+        self.assertIn("*.kubeflow.example.com", container["args"][-2])
 
         environment = {item["name"]: item["value"] for item in container["env"]}
         self.assertEqual(
@@ -73,12 +75,16 @@ class MLflowManifestTest(unittest.TestCase):
             environment["MLFLOW_K8S_WORKSPACE_LABEL_SELECTOR"],
         )
         self.assertEqual(
-            "x-auth-request-email",
+            "kubeflow-userid",
             environment["MLFLOW_K8S_AUTH_REMOTE_USER_HEADER"],
         )
         self.assertEqual(
-            "x-auth-request-groups",
+            "kubeflow-groups",
             environment["MLFLOW_K8S_AUTH_REMOTE_GROUPS_HEADER"],
+        )
+        self.assertEqual(
+            ",",
+            environment["MLFLOW_K8S_AUTH_REMOTE_GROUPS_SEPARATOR"],
         )
 
         self.assertEqual(
@@ -91,6 +97,10 @@ class MLflowManifestTest(unittest.TestCase):
     def test_istio_routes_the_mlflow_prefix_through_the_platform_gateway(self):
         virtual_service = self.resource("VirtualService")
         self.assertEqual(["kubeflow-gateway"], virtual_service["spec"]["gateways"])
+        self.assertEqual(
+            ["kubeflow.example.com", "*.kubeflow.example.com"],
+            virtual_service["spec"]["hosts"],
+        )
         matches = virtual_service["spec"]["http"][0]["match"]
         self.assertEqual(
             [{"uri": {"prefix": "/mlflow/"}}, {"uri": {"exact": "/mlflow"}}],

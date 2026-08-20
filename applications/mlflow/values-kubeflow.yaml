@@ -9,14 +9,20 @@ mlflow:
   workspaceStoreUri: kubernetes://
   workspaceLabelSelector: app.kubernetes.io/part-of=kubeflow-profile
   authorizationMode: subject_access_review
+  # Keep this list aligned with the Kubeflow gateway host configuration.
+  allowedHosts:
+    - kubeflow.example.com
+    - "*.kubeflow.example.com"
   staticPrefix: /mlflow
   port: 5000
 
 env:
   - name: MLFLOW_K8S_AUTH_REMOTE_USER_HEADER
-    value: x-auth-request-email
+    value: kubeflow-userid
   - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_HEADER
-    value: x-auth-request-groups
+    value: kubeflow-groups
+  - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_SEPARATOR
+    value: ","
 
 service:
   port: 5000
@@ -35,7 +41,8 @@ istio:
     gateways:
       - kubeflow-gateway
     hosts:
-      - "*"
+      - kubeflow.example.com
+      - "*.kubeflow.example.com"
   authorizationPolicy:
     enabled: true
     action: ALLOW
