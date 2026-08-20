@@ -232,6 +232,9 @@ spec:
           operator: In
           values:
           - istio-system
+  - ports:
+    - port: 8443
+      protocol: TCP
   podSelector:
     matchExpressions:
     - key: app
