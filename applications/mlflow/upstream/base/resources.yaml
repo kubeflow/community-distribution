@@ -135,6 +135,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: mlflow
+  namespace: kubeflow
   labels:
     helm.sh/chart: mlflow-0.1.0
     app.kubernetes.io/name: mlflow
@@ -217,8 +218,6 @@ spec:
         - name: mlflow-storage
           persistentVolumeClaim:
             claimName: mlflow
-        
-      
 
       containers:
         - name: mlflow
@@ -237,7 +236,7 @@ spec:
             - --port=5000
             - --workers=1
             - --allowed-hosts
-            - "localhost,127.0.0.1,[::1],0.0.0.0,localhost:*,127.0.0.1:*,[[]::1]:*,0.0.0.0:*,192.168.*,10.*,172.16.*,172.17.*,172.18.*,172.19.*,172.20.*,172.21.*,172.22.*,172.23.*,172.24.*,172.25.*,172.26.*,172.27.*,172.28.*,172.29.*,172.30.*,172.31.*,fc00:*,fd00:*,mlflow,mlflow:*,mlflow.kubeflow,mlflow.kubeflow:*,mlflow.kubeflow.svc,mlflow.kubeflow.svc:*,mlflow.kubeflow.svc.cluster.local,mlflow.kubeflow.svc.cluster.local:*"
+            - "localhost,127.0.0.1,[::1],0.0.0.0,localhost:*,127.0.0.1:*,[[]::1]:*,0.0.0.0:*,192.168.*,10.*,172.16.*,172.17.*,172.18.*,172.19.*,172.20.*,172.21.*,172.22.*,172.23.*,172.24.*,172.25.*,172.26.*,172.27.*,172.28.*,172.29.*,172.30.*,172.31.*,fc00:*,fd00:*,kubeflow.example.com,*.kubeflow.example.com,mlflow,mlflow:*,mlflow.kubeflow,mlflow.kubeflow:*,mlflow.kubeflow.svc,mlflow.kubeflow.svc:*,mlflow.kubeflow.svc.cluster.local,mlflow.kubeflow.svc.cluster.local:*"
             - --static-prefix=/mlflow
           env:
             - name: MLFLOW_DISABLE_TELEMETRY
@@ -253,9 +252,11 @@ spec:
             - name: MLFLOW_SERVER_DISABLE_SECURITY_MIDDLEWARE
               value: "false"
             - name: MLFLOW_K8S_AUTH_REMOTE_USER_HEADER
-              value: "x-auth-request-email"
+              value: "kubeflow-userid"
             - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_HEADER
-              value: "x-auth-request-groups"
+              value: "kubeflow-groups"
+            - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_SEPARATOR
+              value: ","
           ports:
             - name: http
               containerPort: 5000
@@ -350,7 +351,8 @@ spec:
   gateways:
     - kubeflow-gateway
   hosts:
-    - '*'
+    - kubeflow.example.com
+    - "*.kubeflow.example.com"
   http:
     - match:
         - uri:
