@@ -1,0 +1,115 @@
+# Test-only copy of the upstream JupyterLab WorkspaceKind sample
+# (applications/workspaces/upstream/controller/samples/jupyterlab_v1beta1_workspacekind.yaml),
+# trimmed to what the pipeline run test needs. The only functional difference
+# from the upstream sample is the `serviceAccount.clusterRoles` grant below.
+apiVersion: kubeflow.org/v1beta1
+kind: WorkspaceKind
+metadata:
+  name: jupyterlab
+spec:
+  spawner:
+    displayName: "JupyterLab Notebook"
+    description: "A Workspace which runs JupyterLab in a Pod"
+    hidden: false
+    deprecated: false
+    icon:
+      url: "https://jupyter.org/assets/favicons/apple-touch-icon-152x152.png"
+    logo:
+      url: "https://upload.wikimedia.org/wikipedia/commons/3/38/Jupyter_logo.svg"
+
+  podTemplate:
+    podMetadata:
+      labels:
+        my-workspace-kind-label: "my-value"
+      annotations:
+        my-workspace-kind-annotation: "my-value"
+    # Grant the per-Workspace ServiceAccount ("ws-{WORKSPACE_NAME}") access to
+    # Kubeflow Pipelines. As of Workspaces v2.0.0-beta.0 this ServiceAccount is
+    # no longer automatically granted the Kubeflow ClusterRoles (as the old
+    # "default-editor" was), so the pipeline run test needs these bindings to
+    # get/list/create experiments and runs. We bind only the pipeline-scoped
+    # ClusterRoles rather # than the broad "kubeflow-edit" to keep the grant
+    # minimal.
+    serviceAccount:
+      clusterRoles:
+        # get/list experiments and runs
+        - name: "kubeflow-pipelines-view"
+        # create/delete/archive experiments and runs
+        - name: "kubeflow-pipelines-edit"
+    activityProbe:
+      minProbeIntervalSeconds: 300
+      probeIntervalSeconds: 3600
+      jupyter:
+        lastActivity: true
+        portId: "jupyterlab"
+    volumeMounts:
+      home: "/home/jovyan"
+    ports:
+      - id: "jupyterlab"
+        defaultDisplayName: "JupyterLab"
+        protocol: "HTTP"
+        httpProxy:
+          removePathPrefix: false
+          requestHeaders: {}
+    extraEnv:
+      - name: "NB_PREFIX"
+        value: |-
+          {{ httpPathPrefix "jupyterlab" }}
+    extraVolumeMounts:
+      - name: "dshm"
+        mountPath: "/dev/shm"
+    extraVolumes:
+      - name: "dshm"
+        emptyDir:
+          medium: "Memory"
+    securityContext:
+      fsGroup: 100
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    options:
+      imageConfig:
+        spawner:
+          default: "jupyter-scipy:v1.10.0"
+        values:
+          - id: "jupyter-scipy:v1.10.0"
+            spawner:
+              displayName: "jupyter-scipy:v1.10.0"
+              description: "JupyterLab, with SciPy Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.11.11"
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.10.0"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+      podConfig:
+        spawner:
+          default: "tiny_cpu"
+        values:
+          - id: "tiny_cpu"
+            spawner:
+              displayName: "Tiny CPU"
+              description: "Pod with 0.1 CPU, 128 Mb RAM"
+              labels:
+                - key: "cpu"
+                  value: "100m"
+                - key: "memory"
+                  value: "128Mi"
+            spec:
+              affinity: {}
+              nodeSelector: {}
+              tolerations: []
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
