@@ -46,6 +46,13 @@ spec:
           spec:
             description: WorkspaceSpec defines the desired state of Workspace
             properties:
+              displayName:
+                description: an optional human-readable name for the Workspace, displayed
+                  in the UI instead of metadata.name
+                example: My Workspace
+                maxLength: 128
+                minLength: 1
+                type: string
               kind:
                 description: the WorkspaceKind to use
                 example: jupyterlab
@@ -207,32 +214,102 @@ spec:
             properties:
               activity:
                 description: activity information for the Workspace, used to determine
-                  when to cull
+                  activity rule actions
                 properties:
                   lastActivity:
                     default: 0
-                    description: the last time activity was observed on the Workspace
-                      (UNIX epoch)
-                    example: 1704067200
+                    description: |-
+                      the last time activity was observed on the Workspace (UNIX epoch in milliseconds)
+                       - this is the value returned by the activity probe, not the time the probe was run
+                       - the activity probe is authoritative: on success, the probe result unconditionally
+                         overwrites this timestamp (the controller does not validate monotonicity or clamp to wall-clock time)
+                       - not updated when a probe fails
+                    example: 1704067200000
                     format: int64
                     type: integer
+                  lastProbe:
+                    description: probe result tracking
+                    properties:
+                      endTime:
+                        description: the time the probe was completed (UNIX epoch
+                          in milliseconds)
+                        example: 1710435305000
+                        format: int64
+                        type: integer
+                      message:
+                        default: ""
+                        description: |-
+                          a human-readable message about the probe result
+                           - WARNING: this field is NOT FOR MACHINE USE, subject to change without notice
+                        example: Jupyter probe succeeded
+                        type: string
+                      result:
+                        description: the result of the last probe execution
+                        enum:
+                        - Success
+                        - Failure
+                        - Timeout
+                        type: string
+                      startTime:
+                        description: the time the probe was started (UNIX epoch in
+                          milliseconds)
+                        example: 1710435303000
+                        format: int64
+                        type: integer
+                    required:
+                    - endTime
+                    - message
+                    - result
+                    - startTime
+                    type: object
                   lastUpdate:
                     default: 0
-                    description: the last time we checked for activity on the Workspace
-                      (UNIX epoch)
-                    example: 1704067200
+                    description: |-
+                      the end time of the last successful probe (UNIX epoch in milliseconds)
+                       - not updated when a probe fails
+                       - used to determine when the next probe should run
+                    example: 1704067200000
                     format: int64
                     type: integer
+                  rules:
+                    description: rule evaluation state
+                    properties:
+                      pauseWorkspace:
+                        description: rule evaluation state for the pauseWorkspace
+                          effect
+                        properties:
+                          eligibleAfter:
+                            default: 0
+                            description: |-
+                              the time after which if the rule is evaluated the Workspace would be paused (UNIX epoch in milliseconds)
+                               - set to 0 when lastActivity is unknown (<= 0), indicating eligibility cannot be computed / not applicable
+                               - the controller will not pause a Workspace when eligibleAfter is 0
+                            example: 1707667200000
+                            format: int64
+                            type: integer
+                        required:
+                        - eligibleAfter
+                        type: object
+                    type: object
                 required:
                 - lastActivity
                 - lastUpdate
                 type: object
+              lastRunningTime:
+                default: 0
+                description: |-
+                  the last time the Workspace entered a Running state (UNIX epoch in milliseconds)
+                   - used to compute running duration for `minRunningSeconds` activity guard
+                   - set to 0 when the Workspace has never been in a Running state
+                example: 1704060000000
+                format: int64
+                type: integer
               pauseTime:
                 default: 0
                 description: |-
-                  the time when the Workspace was paused (UNIX epoch)
+                  the time when the Workspace was paused (UNIX epoch in milliseconds)
                    - set to 0 when the Workspace is NOT paused
-                example: 1704067200
+                example: 1704067200000
                 format: int64
                 type: integer
               pendingRestart:
@@ -344,6 +421,14 @@ spec:
                   nodeName:
                     description: the name of the node on which the Pod is scheduled
                     type: string
+                  serviceAccountName:
+                    description: |-
+                      the name of the ServiceAccount that the Pod runs as
+                       - this ServiceAccount is created and owned by the Workspace, and is stable for its lifetime
+                       - it is reported here so that Roles, RoleBindings, and Istio AuthorizationPolicies
+                         which reference the ServiceAccount do not have to recompute its name
+                    example: ws-my-workspace
+                    type: string
                 required:
                 - name
                 - nodeName
@@ -367,6 +452,7 @@ spec:
                 type: string
             required:
             - activity
+            - lastRunningTime
             - pauseTime
             - pendingRestart
             - podTemplateOptions

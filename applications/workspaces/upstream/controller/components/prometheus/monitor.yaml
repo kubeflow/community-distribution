@@ -13,6 +13,5 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/component: metrics
-      app.kubernetes.io/managed-by: kustomize
       app.kubernetes.io/name: workspaces-controller
       app.kubernetes.io/part-of: kubeflow-workspaces

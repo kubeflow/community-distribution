@@ -8,7 +8,6 @@ spec:
     matchLabels:
       app: workspaces-frontend
       app.kubernetes.io/component: ui
-      app.kubernetes.io/managed-by: kustomize
       app.kubernetes.io/name: workspaces-frontend
       app.kubernetes.io/part-of: kubeflow-workspaces
   rules:

@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kubeflow-workspaces
+
+resources:
+## see the 'istio' overlay for more configuration options
+- ../istio
+
+components:
+- ../../components/prometheus
+# NOTE: the common component should always be last, to ensure it labels all resources.
+- ../../components/common

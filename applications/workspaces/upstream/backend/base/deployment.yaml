@@ -36,9 +36,6 @@ spec:
         env:
         - name: PORT
           value: "4000"
-        # TODO: remove before GA
-        - name: DISABLE_AUTH
-          value: "false"
         resources:
           limits:
             cpu: 1

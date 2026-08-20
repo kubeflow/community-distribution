@@ -1,8 +1,15 @@
+## --> NOTE <--
+##
+## These are just example definitions for WorkspaceKind, please thoroughly vet
+## them and customize them for your usecase before using them in a production
+## setting!
+
 apiVersion: kubeflow.org/v1beta1
 kind: WorkspaceKind
 metadata:
   name: jupyterlab
 spec:
+
   ## ================================================================
   ## SPAWNER CONFIGS
   ##  - how the WorkspaceKind is displayed in the Workspace Spawner UI
@@ -47,6 +54,88 @@ spec:
       #   mediaType: "image/svg+xml"
 
   ## ================================================================
+  ## FILTER RULES
+  ##  - admin-defined rules used by the backend API server to dynamically filter
+  ##    which WorkspaceKinds, imageConfig values, and podConfig values are visible
+  ##    or allowed in a given context
+  ##  - the controller does NOT evaluate these rules, it only persists and validates them
+  ## ================================================================
+  filterRules:
+
+    ## hide this WorkspaceKind in namespaces which are not labeled 'workspace_team=team_1'
+    - scope: WORKSPACE_KIND
+      effect:
+        ui:
+          hide: true
+      match:
+        - matchNamespace:
+            selector:
+              matchExpressions:
+                - key: "workspace_team"
+                  operator: NotIn
+                  values: ["team_1"]
+
+  ## ================================================================
+  ## ACTIVITY RULES
+  ##  - policies for handling inactivity in Workspaces of this kind
+  ##  - rules are evaluated sequentially from top to bottom (first-match-wins semantics)
+  ##    independently for each configured effect type (e.g., pauseWorkspace)
+  ## ================================================================
+  activityRules:
+
+    ## activityRule to pause workspaces which (AND)
+    ##  - have the namespaces with the label 'tier=development' set
+    ##  - have been running for at least 5 minutes (300 seconds)
+    ##  - have been inactive for at least 2 hours (7200 seconds)
+    - config:
+        secondsSinceActive: 7200
+        minRunningSeconds: 300
+      match:
+        matchNamespace:
+          selector:
+            matchLabels:
+              tier: development
+      effect:
+        pauseWorkspace: true
+
+    ## activityRule to pause workspaces which (AND)
+    ##  - the podconfig has the label 'gpu: "1"' set
+    ##  - have been running for at least 5 minutes (300 seconds)
+    ##  - have been inactive for at least 1 hour (3600 seconds)
+    #- config:
+    #    secondsSinceActive: 3600
+    #    minRunningSeconds: 300
+    #  match:
+    #    matchPodConfig:
+    #      selector:
+    #        matchLabels:
+    #          gpu: "1"
+    #  effect:
+    #    pauseWorkspace: true
+
+    ## activityRule to exempt from pausing workspaces which (AND)
+    ##  - have the namespaces with the label 'tier=production' set
+    #- config:
+    #  match:
+    #    matchNamespace:
+    #      selector:
+    #        matchLabels:
+    #          tier: production
+    #  effect:
+    #    pauseWorkspace: false
+
+    ## catch-all activityRule to pause workspaces which (AND)
+    ##  - have been inactive for at least 1 day
+    ##  - are not matched to any of the above pauseWorkspace rules
+    - config:
+        secondsSinceActive: 86400
+      ## empty match (`match: {}` or omitted `match`) matches all Workspaces.
+      ## At most one catch-all rule is allowed per effect type, and it must be the last rule.
+      match: {}
+      effect:
+        pauseWorkspace: true
+
+  ## ================================================================
   ## DEFINITION CONFIGS
   ##  - currently the only supported type is `podTemplate`
   ##  - in the future, there will be MORE types like `virtualMachine`
@@ -63,52 +152,51 @@ spec:
         my-workspace-kind-annotation: "my-value"
 
     ## service account configs for Workspace Pods
+    ##  - each Workspace runs as its own ServiceAccount named "ws-{WORKSPACE_NAME}",
+    ##    which the controller creates, owns, and deletes along with the Workspace
+    ##  - the resolved name is reported in the Workspace
+    ##    `status.podTemplatePod.serviceAccountName`
     ##
-    serviceAccount:
-
-      ## the name of the ServiceAccount (NOT MUTABLE)
-      ##  - this Service Account MUST already exist in the Namespace
-      ##    of the Workspace, the controller will NOT create it
-      ##  - we will not show this WorkspaceKind in the Spawner UI
-      ##    if the SA does not exist in the Namespace
-      ##
-      name: "default-editor"
-
-    ## activity culling configs (MUTABLE)
-    ##  - for pausing inactive Workspaces
+    ## NOTE: commented out because these ClusterRoles are provided by the Kubeflow
+    ##       platform, they do NOT exist in a standalone install of this controller
     ##
-    culling:
+    #serviceAccount:
+    #
+    #  ## ClusterRoles to grant to the ServiceAccount of each Workspace (MUTABLE)
+    #  ##  - each entry becomes a RoleBinding in the Namespace of the Workspace, so the
+    #  ##    permissions are scoped to that Namespace and are NOT cluster-wide
+    #  ##  - these are ClusterRole names, NOT ServiceAccount names
+    #  ##
+    #  clusterRoles:
+    #    - name: "kubeflow-view"
 
-      ## if the culling feature is enabled
+    ## activity probe configs (MUTABLE)
+    ##  - determines how to detect activity in the Workspace
+    ##
+    activityProbe:
+
+      ## determines the minimum period in seconds between each Workspace probe
       ##
-      enabled: true
+      minProbeIntervalSeconds: 300
 
-      ## the maximum number of seconds a Workspace can be inactive
+      ## determines the desired period in seconds between each Workspace probe
       ##
-      maxInactiveSeconds: 86400
+      probeIntervalSeconds: 3600
 
-      ## the probe used to determine if the Workspace is active
+      ## OPTION 1: a script-based probe executed in the Pod
       ##
-      activityProbe:
+      #podExec:
+      #  timeoutSeconds: 60
+      #  script: |-
+      #    #!/usr/bin/env bash
+      #    echo '{"has_activity": true}' > "$OUTPUT_JSON_PATH"
+      #    exit 0
 
-        ## OPTION 1: a shell command probe
-        ##  - if the Workspace had activity in the last 60 seconds this command
-        ##    should return status 0, otherwise it should return status 1
-        ##
-        #exec:
-        #  command:
-        #    - "bash"
-        #    - "-c"
-        #    - "exit 0"
-
-        ## OPTION 2: a Jupyter-specific probe
-        ##  - will poll the `/api/status` endpoint of the Jupyter API, and use the `last_activity` field
-        ##    https://github.com/jupyter-server/jupyter_server/blob/v2.13.0/jupyter_server/services/api/handlers.py#L62-L67
-        ##  - note, users need to be careful that their other probes don't trigger a "last_activity" update
-        ##    e.g. they should only check the health of Jupyter using the `/api/status` endpoint
-        ##
-        jupyter:
-          lastActivity: true
+      ## OPTION 2: a Jupyter-specific API probe
+      ##
+      jupyter:
+        lastActivity: true
+        portId: "jupyterlab"
 
     ## standard probes to determine Container health (MUTABLE)
     ##  - spec for Probe:
@@ -212,6 +300,8 @@ spec:
     ##
     securityContext:
       fsGroup: 100
+      seccompProfile:
+        type: RuntimeDefault
 
     ## container SecurityContext for Workspace Pods (MUTABLE)
     ##  - spec for SecurityContext:
@@ -223,6 +313,8 @@ spec:
         drop:
           - ALL
       runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
 
     ## ==============================================================
     ## WORKSPACE OPTIONS
