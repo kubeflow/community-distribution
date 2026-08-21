@@ -44,3 +44,25 @@ kubectl -n $NAMESPACE logs pod/spark-pi-python-driver
 
 # Delete Spark Deployment
 kubectl -n $NAMESPACE delete -f "$SPARK_APPLICATION_YAML"
+
+
+# Verify the aggregated Spark ClusterRoles grant access to SparkConnect resources.
+# kubeflow-edit aggregates into default-editor and kubeflow-view into default-viewer,
+# so these assert what a notebook user can actually do in their own namespace.
+EDITOR="system:serviceaccount:${NAMESPACE}:default-editor"
+VIEWER="system:serviceaccount:${NAMESPACE}:default-viewer"
+
+for VERB in create delete get list patch update watch; do
+    kubectl auth can-i "$VERB" sparkconnects --as="$EDITOR" -n "$NAMESPACE" | grep -qx yes
+done
+
+for VERB in get list watch; do
+    kubectl auth can-i "$VERB" sparkconnects --as="$VIEWER" -n "$NAMESPACE" | grep -qx yes
+done
+
+# Viewers must not be able to modify SparkConnect resources.
+for VERB in create delete patch update; do
+    ! kubectl auth can-i "$VERB" sparkconnects --as="$VIEWER" -n "$NAMESPACE" | grep -qx yes
+done
+
+echo "Aggregated Spark ClusterRole permissions for sparkconnects verified."
