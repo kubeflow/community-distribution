@@ -24,6 +24,7 @@ rules:
     resources:
       - sparkapplications
       - scheduledsparkapplications
+      - sparkconnects
     verbs:
       - create
       - delete
@@ -37,6 +38,7 @@ rules:
     resources:
       - sparkapplications/status
       - scheduledsparkapplications/status
+      - sparkconnects/status
     verbs:
       - get
 ---
@@ -54,6 +56,7 @@ rules:
     resources:
       - sparkapplications
       - scheduledsparkapplications
+      - sparkconnects
     verbs:
       - get
       - list
@@ -63,6 +66,7 @@ rules:
     resources:
       - sparkapplications/status
       - scheduledsparkapplications/status
+      - sparkconnects/status
     verbs:
       - get
 ---
