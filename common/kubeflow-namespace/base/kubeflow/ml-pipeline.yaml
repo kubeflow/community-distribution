@@ -24,5 +24,14 @@ spec:
                 operator: In
                 values:
                   - istio-system
+    # ml-pipeline serves the pipelineversions.pipelines.kubeflow.org admission
+    # webhooks on this port. Calls come directly from kube-apiserver, which is
+    # not a pod and cannot be matched via podSelector/namespaceSelector, so the
+    # webhook port must stay open to all sources (its own TLS/CA is the trust
+    # boundary). Matches the pattern used by katib-controller, spark-operator-webhook,
+    # jobset-webhook and trainer-webhook.
+    - ports:
+        - protocol: TCP
+          port: 8443
   policyTypes:
     - Ingress
