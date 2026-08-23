@@ -47,10 +47,16 @@ kubectl -n $NAMESPACE delete -f "$SPARK_APPLICATION_YAML"
 
 
 # Verify the aggregated Spark ClusterRoles grant access to SparkConnect resources.
-# kubeflow-edit aggregates into default-editor and kubeflow-view into default-viewer,
-# so these assert what a notebook user can actually do in their own namespace.
+# kubeflow-spark-edit aggregates into kubeflow-edit, which is bound to default-editor.
+# Profiles do not create a default-viewer, so bind a dedicated viewer identity here.
 EDITOR="system:serviceaccount:${NAMESPACE}:default-editor"
-VIEWER="system:serviceaccount:${NAMESPACE}:default-viewer"
+VIEWER_SERVICE_ACCOUNT_NAME="spark-permissions-viewer"
+trap 'kubectl -n "$NAMESPACE" delete rolebinding "$VIEWER_SERVICE_ACCOUNT_NAME" --ignore-not-found; kubectl -n "$NAMESPACE" delete serviceaccount "$VIEWER_SERVICE_ACCOUNT_NAME" --ignore-not-found' EXIT
+kubectl -n "$NAMESPACE" create serviceaccount "$VIEWER_SERVICE_ACCOUNT_NAME"
+kubectl -n "$NAMESPACE" create rolebinding "$VIEWER_SERVICE_ACCOUNT_NAME" \
+    --clusterrole=kubeflow-view \
+    --serviceaccount="${NAMESPACE}:${VIEWER_SERVICE_ACCOUNT_NAME}"
+VIEWER="system:serviceaccount:${NAMESPACE}:${VIEWER_SERVICE_ACCOUNT_NAME}"
 
 for VERB in create delete get list patch update watch; do
     kubectl auth can-i "$VERB" sparkconnects --as="$EDITOR" -n "$NAMESPACE" | grep -qx yes
