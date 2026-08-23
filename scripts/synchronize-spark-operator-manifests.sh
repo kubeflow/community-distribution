@@ -14,6 +14,7 @@ MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)
 DESTINATION_MANIFESTS_PATH="applications/spark/${COMPONENT_NAME}/base"
 SOURCE_TEXT="\[[^]]*\](https://github.com/${REPOSITORY_NAME}/tree/[^)]*)"
 DESTINATION_TEXT="\[${COMMIT#v}\](https://github.com/${REPOSITORY_NAME}/tree/${COMMIT})"
+require_helm_major_version 4
 create_branch "$BRANCH_NAME"
 clone_and_checkout "$SOURCE_DIRECTORY" "$REPOSITORY_URL" "$REPOSITORY_DIRECTORY" "$COMMIT"
 helm template -n kubeflow --include-crds spark-operator \

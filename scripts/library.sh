@@ -7,6 +7,17 @@ setup_error_handling() {
   IFS=$'\n\t'
 }
 
+# Helm v4 renders template files differently from v3, so a chart must be
+# rendered with the major version that the idempotence workflow pins.
+require_helm_major_version() {
+  local version
+  version="$(helm version --template '{{.Version}}')"
+  if [[ "$version" != v"$1".* ]]; then
+    echo "ERROR: Helm v$1.x required to match the idempotence workflow, found $version." >&2
+    exit 1
+  fi
+}
+
 # Check if the git repository has uncommitted changes
 check_uncommitted_changes() {
   if [ -n "$(git status --porcelain)" ]; then

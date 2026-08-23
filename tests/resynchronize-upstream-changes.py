@@ -86,7 +86,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.all:
-        upstream_scripts = set(path_to_synchronization_script.values())
+        upstream_scripts = {
+            script
+            for scripts in path_to_synchronization_script.values()
+            for script in scripts
+        }
     else:
         upstream_scripts = find_upstream_scripts(args.files)
     failed = False
