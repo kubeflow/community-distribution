@@ -62,9 +62,13 @@ for VERB in create delete get list patch update watch; do
     kubectl auth can-i "$VERB" sparkconnects --as="$EDITOR" -n "$NAMESPACE" | grep -qx yes
 done
 
+kubectl auth can-i get sparkconnects/status --as="$EDITOR" -n "$NAMESPACE" | grep -qx yes
+
 for VERB in get list watch; do
     kubectl auth can-i "$VERB" sparkconnects --as="$VIEWER" -n "$NAMESPACE" | grep -qx yes
 done
+
+kubectl auth can-i get sparkconnects/status --as="$VIEWER" -n "$NAMESPACE" | grep -qx yes
 
 # Viewers must not be able to modify SparkConnect resources.
 for VERB in create delete patch update; do
