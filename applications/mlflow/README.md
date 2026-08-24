@@ -18,7 +18,7 @@ platform OAuth2-Proxy. The MLflow ServiceAccount can discover Profile namespaces
 and submit Kubernetes SubjectAccessReviews. Callers receive MLflow permissions
 through the standard Kubeflow Profile roles.
 
-## Install
+## Installation
 
 Install the Kubeflow namespace, Profile controller, Istio, and OAuth2-Proxy
 before MLflow. Then run:
