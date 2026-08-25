@@ -45,6 +45,7 @@ def main() -> None:
     try:
         spark = client.connect(
             options=[
+                Name(SESSION_NAME),
                 PodTemplateOverride(
                     role="driver",
                     template={
