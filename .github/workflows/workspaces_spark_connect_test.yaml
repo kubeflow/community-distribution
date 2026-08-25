@@ -65,9 +65,7 @@ jobs:
       run: kustomize build common/user-namespace/base | kubectl apply -f -
 
     - name: Install Spark Operator
-      run: |
-        chmod u+x tests/*.sh
-        ./tests/spark_install.sh
+      run: ./tests/spark_install.sh
 
     - name: Install Kubeflow Workspaces
       run: ./tests/workspaces_install.sh
