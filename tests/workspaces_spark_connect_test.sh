@@ -26,6 +26,17 @@ kubectl auth can-i create sparkconnects \
 kubectl -n "${KF_PROFILE}" exec "${WORKSPACE_POD}" -- \
   python -m pip install --quiet "kubeflow[spark]"
 
+# Pin the Spark Connect client to the server version the SDK will provision, so the two
+# cannot drift when either the SDK default or the PyPI resolution changes. If this
+# constant moves in a future SDK release the test fails here, which is the right place
+# to find out.
+SPARK_VERSION="$(kubectl -n "${KF_PROFILE}" exec "${WORKSPACE_POD}" -- python -c \
+  'from kubeflow.spark.backends.kubernetes import constants; print(constants.DEFAULT_SPARK_VERSION)')"
+echo "SDK default Spark version: ${SPARK_VERSION}"
+
+kubectl -n "${KF_PROFILE}" exec "${WORKSPACE_POD}" -- \
+  python -m pip install --quiet "pyspark-connect==${SPARK_VERSION}"
+
 kubectl -n "${KF_PROFILE}" cp \
   ./tests/spark_connect_from_workspace.py \
   "${WORKSPACE_POD}:/home/jovyan/spark_connect_from_workspace.py"

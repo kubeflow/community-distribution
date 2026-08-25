@@ -9,6 +9,7 @@ WorkspaceKind grants "kubeflow-spark-edit" so it can create SparkConnect resourc
 import logging
 import os
 import sys
+import pyspark
 
 logger = logging.getLogger("spark_connect_from_workspace")
 logging.basicConfig(
@@ -49,12 +50,25 @@ def main() -> None:
             ),
             PodTemplateOverride(
                 role="executor",
-                template={"metadata": {"labels": NO_SIDECAR}},
+                template={
+                    "metadata": {"labels": NO_SIDECAR},
+                    # Spark submits with executor.podTemplateContainerName=spark-kubernetes-executor
+                    # and looks the container up by name, so the template must declare it even
+                    # though the operator supplies the image.
+                    "spec": {"containers": [{"name": "spark-kubernetes-executor"}]},
+                },
             ),
         ]
     )
 
-    logger.info("Connected to Spark %s", spark.version)
+    logger.info("Connected to Spark %s (client %s)", spark.version, pyspark.__version__)
+
+    # The shell script pins the client to the SDK's default server version. Assert it
+    # held, so a drift shows up as a clear failure rather than an odd protocol error.
+    client_minor = pyspark.__version__.rsplit(".", 1)[0]
+    assert spark.version.startswith(client_minor), (
+        f"client {pyspark.__version__} and server {spark.version} major.minor differ"
+    )
 
     # A grouped aggregation rather than a plain count, so the work is distributed
     # across executors and the driver-executor block transfer is exercised.
