@@ -66,9 +66,9 @@ def main() -> None:
     # The shell script pins the client to the SDK's default server version. Assert it
     # held, so a drift shows up as a clear failure rather than an odd protocol error.
     client_minor = pyspark.__version__.rsplit(".", 1)[0]
-    assert spark.version.startswith(client_minor), (
-        f"client {pyspark.__version__} and server {spark.version} major.minor differ"
-    )
+    assert spark.version.startswith(
+        client_minor
+    ), f"client {pyspark.__version__} and server {spark.version} major.minor differ"
 
     # A grouped aggregation rather than a plain count, so the work is distributed
     # across executors and the driver-executor block transfer is exercised.
