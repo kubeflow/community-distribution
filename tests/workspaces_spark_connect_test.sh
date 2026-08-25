@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 
-KF_PROFILE=${1:-kubeflow-user-example-com}
+KF_PROFILE="kubeflow-user-example-com"
 
 kubectl apply -f tests/workspacekind.spark.test.yaml
 kubectl apply -f tests/workspace.spark.test.kubeflow-user-example-com.yaml
