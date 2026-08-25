@@ -65,7 +65,9 @@ def main() -> None:
             ]
         )
 
-        logger.info("Connected to Spark %s (client %s)", spark.version, pyspark.__version__)
+        logger.info(
+            "Connected to Spark %s (client %s)", spark.version, pyspark.__version__
+        )
 
         # The shell script pins the client to the SDK's default server version. Assert it
         # held, so a drift shows up as a clear failure rather than an odd protocol error.
