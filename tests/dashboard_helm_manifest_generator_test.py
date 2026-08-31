@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dashboard-specific generator behaviour.
 
-The component-independent engine is covered by tests/test_helm_manifest_generator.py.
+The component-independent engine is covered by tests/helm_manifest_generator_test.py.
 What is asserted here is the Dashboard configuration itself: that its selectors
 match what Kustomize actually renders, and that the chart consumes the result.
 """

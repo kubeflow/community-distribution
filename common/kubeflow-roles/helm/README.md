@@ -20,5 +20,10 @@ helm install kubeflow-platform ./common/kubeflow-roles/helm --namespace kubeflow
 Validate parity with:
 
 ```bash
-./tests/helm_kustomize_compare.sh kubeflow-platform base
+python3 tests/run_helm_kustomize_comparison.py kubeflow-platform platform-cluster-roles
 ```
+
+How this chart is compared, including every declared allowance, is in
+[`ci/comparison.yaml`](ci/comparison.yaml); the descriptor format is documented in
+[`tests/README.md`](../../../tests/README.md).
+

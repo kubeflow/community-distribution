@@ -91,7 +91,7 @@ The expectation for the contributor is that he must understand all changes he is
 - Every component ships an installation script and, where applicable, a verification test under `tests`, written in Bash or Python.
 - The GitHub Actions workflows in `.github/workflows` provision an ephemeral KinD cluster, install the components and run these tests on every pull request and on every push to `master`.
 - The full end-to-end installation is validated by `full_kubeflow_integration_test.yaml`; individual components are validated by their dedicated workflow.
-- The Helm charts are checked for parity against the Kustomize manifests through `tests/helm_kustomize_compare.sh` and its `helm-kustomize-comparison.yml` workflow.
+- The Helm charts are checked for parity against the Kustomize manifests through `tests/run_helm_kustomize_comparison.py` and its `helm-kustomize-comparison.yml` workflow.
 
 ## Tooling
 

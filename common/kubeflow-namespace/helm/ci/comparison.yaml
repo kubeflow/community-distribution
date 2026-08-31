@@ -1,0 +1,26 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: kubeflow-namespaces
+releaseName: kubeflow-namespaces
+namespace: default
+includeCustomResourceDefinitions: false
+defaultScenario: platform-network-policies
+# The two scenarios partition one chart output: platform-network-policies
+# compares everything but the Namespace objects, platform-namespaces compares
+# only the Namespace objects against the namespaces the platform bases create.
+scenarios:
+  platform-network-policies:
+    kustomize:
+    - common/kubeflow-namespace/base
+    values: ci/values-default.yaml
+    excludeKinds: [Namespace]
+  platform-namespaces:
+    kustomize:
+    - common/kubeflow-namespace/base
+    - common/cert-manager/base
+    - common/istio/istio-namespace/base
+    - common/oauth2-proxy/base
+    - common/dex/base
+    - applications/kserve/kserve
+    values: ci/values-default.yaml
+    onlyKinds: [Namespace]

@@ -125,48 +125,6 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: kserve
-  namespace: kubeflow
-spec:
-  ingress:
-  - ports:
-    - port: 9443
-      protocol: TCP
-  podSelector:
-    matchExpressions:
-    - key: control-plane
-      operator: In
-      values:
-      - kserve-controller-manager
-  policyTypes:
-  - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: kserve-models-web-application
-  namespace: kubeflow
-spec:
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchExpressions:
-        - key: kubernetes.io/metadata.name
-          operator: In
-          values:
-          - istio-system
-  podSelector:
-    matchExpressions:
-    - key: app.kubernetes.io/component
-      operator: In
-      values:
-      - kserve-models-web-application
-  policyTypes:
-  - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
   name: metadata-grpc-server
   namespace: kubeflow
 spec:
@@ -232,6 +190,9 @@ spec:
           operator: In
           values:
           - istio-system
+  - ports:
+    - port: 8443
+      protocol: TCP
   podSelector:
     matchExpressions:
     - key: app

@@ -22,6 +22,7 @@ copy_manifests "${SOURCE_DIRECTORY}/${REPOSITORY_DIRECTORY}/${SOURCE_MANIFESTS_P
 IMAGE_TAG="${COMMIT#v}"
 sed -i "s|newTag: .*|newTag: ${IMAGE_TAG}|" "${MANIFESTS_DIRECTORY}/applications/kserve/${COMPONENT_NAME}/kustomization.yaml"
 sed -i "s|imageTag: .*|imageTag: ${IMAGE_TAG}|" "${MANIFESTS_DIRECTORY}/experimental/helm/charts/${COMPONENT_NAME}/values.yaml"
+update_helm_chart_application_version "${MANIFESTS_DIRECTORY}/experimental/helm/charts/${COMPONENT_NAME}/Chart.yaml" "$COMMIT"
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" "$MANIFESTS_DIRECTORY"
 echo "Synchronization completed successfully."

@@ -1,0 +1,74 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: hub
+releaseName: hub
+namespace: kubeflow
+includeCustomResourceDefinitions: true
+defaultScenario: base
+ignoredLabels:
+- keys:
+  - app.kubernetes.io/managed-by
+  - app.kubernetes.io/version
+  - app.kubernetes.io/name
+  - app.kubernetes.io/instance
+  - app.kubernetes.io/component
+  reason: >
+    The chart derives the standard app.kubernetes.io labels from the release;
+    the upstream manifests pin different static values per component.
+scenarios:
+  base:
+    kustomize:
+    - applications/hub/upstream/base
+    values: ci/ci-values.yaml
+  controller-default:
+    kustomize:
+    - applications/hub/upstream/options/controller/default
+    values: ci/values-controller.yaml
+  controller-manager:
+    kustomize:
+    - applications/hub/upstream/options/controller/manager
+    values: ci/values-controller-manager.yaml
+  controller-network-policy:
+    kustomize:
+    - applications/hub/upstream/options/controller/network-policy
+    values: ci/values-controller-network-policy.yaml
+  controller-prometheus:
+    kustomize:
+    - applications/hub/upstream/options/controller/prometheus
+    values: ci/values-controller-prometheus.yaml
+  controller-rbac:
+    kustomize:
+    - applications/hub/upstream/options/controller/rbac
+    values: ci/values-controller-rbac.yaml
+  csi:
+    kustomize:
+    - applications/hub/upstream/options/csi
+    values: ci/values-csi.yaml
+  istio:
+    kustomize:
+    - applications/hub/upstream/options/istio
+    values: ci/values-istio.yaml
+  overlay-db:
+    kustomize:
+    - applications/hub/upstream/overlays/db
+    values: ci/values-db.yaml
+  overlay-postgres:
+    kustomize:
+    - applications/hub/upstream/overlays/postgres
+    values: ci/values-postgres.yaml
+  ui-base:
+    kustomize:
+    - applications/hub/upstream/options/ui/base
+    values: ci/values-ui.yaml
+  ui-integrated:
+    kustomize:
+    - applications/hub/upstream/options/ui/overlays/kubeflow
+    values: ci/values-ui-integrated.yaml
+  ui-istio:
+    kustomize:
+    - applications/hub/upstream/options/ui/overlays/istio
+    values: ci/values-ui-istio.yaml
+  ui-standalone:
+    kustomize:
+    - applications/hub/upstream/options/ui/overlays/standalone
+    values: ci/values-ui-standalone.yaml

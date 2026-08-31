@@ -1,0 +1,19 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: kubeflow-notebooks
+releaseName: kubeflow-notebooks
+namespace: kubeflow
+includeCustomResourceDefinitions: false
+retainedCustomResourceDefinitions:
+  reason: >
+    helm uninstall must leave the notebook, PVC viewer and tensorboard
+    definitions, and with them every user's workloads, behind.
+  names:
+  - notebooks.kubeflow.org
+  - pvcviewers.kubeflow.org
+  - tensorboards.tensorboard.kubeflow.org
+scenarios:
+  platform:
+    kustomize:
+    - applications/notebooks-v1/overlays/istio
+    values: ci/values-platform.yaml

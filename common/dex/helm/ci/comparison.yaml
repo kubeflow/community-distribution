@@ -1,0 +1,31 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: dex
+releaseName: dex
+namespace: auth
+includeCustomResourceDefinitions: true
+knownDifferences:
+- skip: Namespace/auth
+  reason: >
+    The Kustomize base creates the auth namespace; the chart is installed
+    into an existing namespace and renders none.
+- resource: Deployment/auth/dex
+  ignorePodTemplateAnnotations:
+  - checksum/config
+  - checksum/oidc-client
+  - checksum/passwords
+  reason: >
+    The chart triggers a rollout on configuration changes with checksum
+    annotations; the Kustomize base disables generator name hashes and
+    renders no such annotations.
+- resource: ConfigMap/auth/dex
+  compareDataAsYaml: [config.yaml]
+  reason: >
+    The chart templates the Dex configuration with different YAML quoting
+    than the baseline; parsing both sides compares the configuration's value
+    instead of its quote style.
+scenarios:
+  oauth2-proxy:
+    kustomize:
+    - common/dex/overlays/oauth2-proxy
+    values: ci/values-oauth2-proxy.yaml

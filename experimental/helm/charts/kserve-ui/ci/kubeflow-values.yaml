@@ -1,5 +1,5 @@
 global:
-  namespace: kubeflow
+  namespace: kserve
 
 kubeflow:
   enabled: true
@@ -9,3 +9,14 @@ istio:
     enabled: true
   authorizationPolicy:
     enabled: true
+
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - istio-system

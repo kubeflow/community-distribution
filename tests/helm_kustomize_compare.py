@@ -1,45 +1,26 @@
 #!/usr/bin/env python3
+"""Decide whether two rendered manifest sets describe the same resources.
+
+Invoked by tests/run_helm_kustomize_comparison.py, which discovers components,
+renders both sides and loads each chart's descriptor. This module knows about
+Kubernetes resources; that one knows about files and processes.
+
+Only universal facts about the two renderers are normalized here in code: the
+helm.sh label and annotation namespaces, and Kustomize's content-hash suffixes,
+stripped from the Helm side only when the chart reproduces them. Everything
+specific to one chart is declared in that chart's ci/comparison.yaml, carries a
+validated reason, and is reported as stale when it stops matching anything.
+"""
+
+import fnmatch
+import re
+from typing import Any, Dict, List
 
 import yaml
-import sys
-import json
-from typing import Dict, List, Tuple, Any
-import re
 
 KUSTOMIZE_HASH_SUFFIX = re.compile(r"-(?=[a-z0-9]{10}$)[a-z0-9]{10}$")
-
-CERT_MANAGER_KUBEFLOW_RESOURCES = {
-    ("ClusterIssuer", "kubeflow-self-signing-issuer"),
-    ("NetworkPolicy", "cert-manager-webhook"),
-    ("NetworkPolicy", "default-allow-same-namespace-cert-manager"),
-}
-
-CERT_MANAGER_KUBEFLOW_LABELS = {
-    "app.kubernetes.io/component",
-    "app.kubernetes.io/name",
-}
-
-DEX_POD_TEMPLATE_CHECKSUM_KEYS = {
-    "checksum/config",
-    "checksum/oidc-client",
-    "checksum/passwords",
-}
-
-DASHBOARD_POD_TEMPLATE_CHECKSUM_KEYS = {
-    "checksum/config",
-}
-
-EXPECTED_HELM_CRD_RESOURCE_POLICIES = {
-    "kubeflow-dashboard": {
-        "poddefaults.kubeflow.org",
-        "profiles.kubeflow.org",
-    },
-    "kubeflow-notebooks": {
-        "notebooks.kubeflow.org",
-        "pvcviewers.kubeflow.org",
-        "tensorboards.tensorboard.kubeflow.org",
-    },
-}
+HELM_LABEL_PREFIX = "helm.sh/"
+HELM_ANNOTATION_PREFIXES = ("helm.sh/", "meta.helm.sh/")
 
 
 def load_manifests(file_path: str) -> List[Dict]:
@@ -66,100 +47,253 @@ def load_manifests(file_path: str) -> List[Dict]:
     return docs
 
 
-def validate_helm_crd_resource_policies(
-    helm_manifests: List[Dict], component: str
-) -> bool:
-    """Validate component-specific CRD retention policies before normalization."""
-    expected_crds = EXPECTED_HELM_CRD_RESOURCE_POLICIES.get(component)
-    if expected_crds is None:
+def resource_matches(pattern: str, kind: str, namespace: str, name: str) -> bool:
+    """Match a 'Kind/name' or 'Kind/namespace/name' pattern with * wildcards.
+
+    A two-segment pattern matches the kind and name in any namespace, which is
+    how cluster-scoped resources are named.
+    """
+    segments = pattern.split("/")
+    if len(segments) == 2:
+        return fnmatch.fnmatchcase(kind, segments[0]) and fnmatch.fnmatchcase(
+            name, segments[1]
+        )
+    return (
+        fnmatch.fnmatchcase(kind, segments[0])
+        and fnmatch.fnmatchcase(namespace, segments[1])
+        and fnmatch.fnmatchcase(name, segments[2])
+    )
+
+
+class ChartComparisonRules:
+    """Interpret one chart's declared comparison allowances.
+
+    Reuse a single instance across every scenario of a component: each
+    allowance must apply to at least one resource in at least one scenario,
+    and unfired() reports the ones that never did. An allowance that matches
+    nothing is indistinguishable from one that is wrong, so the caller treats
+    a non-empty unfired() as a failure.
+    """
+
+    def __init__(self, descriptor: Dict):
+        self.ignored_labels = descriptor.get("ignoredLabels") or []
+        self.known_differences = descriptor.get("knownDifferences") or []
+        self.retained_custom_resource_definitions = set(
+            (descriptor.get("retainedCustomResourceDefinitions") or {}).get("names")
+            or []
+        )
+        self.helm_only_resources = descriptor.get("helmOnlyResources") or []
+        self.helm_uses_kustomize_name_hashes = descriptor.get(
+            "helmUsesKustomizeNameHashes", True
+        )
+        self._fired = set()
+
+    def should_compare(self, manifest: Dict, scenario: Dict) -> bool:
+        """Select the resource subset owned by a comparison scenario."""
+        kind = manifest.get("kind", "")
+        metadata = manifest.get("metadata", {})
+        namespace = metadata.get("namespace", "")
+        name = metadata.get("name", "")
+
+        only_kinds = scenario.get("onlyKinds")
+        if only_kinds is not None and kind not in only_kinds:
+            return False
+        if kind in (scenario.get("excludeKinds") or []):
+            return False
+
+        for index, entry in enumerate(self.known_differences):
+            pattern = entry.get("skip")
+            if pattern and resource_matches(pattern, kind, namespace, name):
+                self._fired.add(f"knownDifferences[{index}]")
+                return False
         return True
 
-    retained_crds = {
-        manifest.get("metadata", {}).get("name", "")
-        for manifest in helm_manifests
-        if manifest.get("kind") == "CustomResourceDefinition"
-        and manifest.get("metadata", {})
-        .get("annotations", {})
-        .get("helm.sh/resource-policy")
-        == "keep"
-    }
+    def normalize(self, manifest: Dict, is_helm_manifest: bool) -> Dict:
+        """Normalize one manifest according to universal and declared rules."""
+        kind = manifest.get("kind", "")
+        metadata = manifest.get("metadata", {})
+        namespace = metadata.get("namespace", "")
+        name = metadata.get("name", "")
 
-    missing_crds = expected_crds - retained_crds
-    unexpected_crds = retained_crds - expected_crds
+        normalized = self._strip_ignored_metadata(manifest)
+        self._apply_known_differences(normalized, kind, namespace, name)
 
-    if missing_crds:
-        print(
-            "Helm CRDs missing helm.sh/resource-policy=keep: "
-            + ", ".join(sorted(missing_crds))
-        )
-    if unexpected_crds:
-        print(
-            "Unexpected Helm CRDs with helm.sh/resource-policy=keep: "
-            + ", ".join(sorted(unexpected_crds))
-        )
+        # Kustomize appends a ten-character content hash to generated ConfigMap
+        # and Secret names and to every reference to them. The Helm side is only
+        # normalized when the chart reproduces those hashed names; stripping a
+        # hash the chart never adds would truncate a legitimate name segment.
+        if not is_helm_manifest or self.helm_uses_kustomize_name_hashes:
+            normalized = normalize_kustomize_refs(normalized)
+            if normalized.get("kind") in ("Secret", "ConfigMap"):
+                name_value = normalized.get("metadata", {}).get("name")
+                if isinstance(name_value, str):
+                    normalized["metadata"]["name"] = KUSTOMIZE_HASH_SUFFIX.sub(
+                        "", name_value
+                    )
 
-    return not missing_crds and not unexpected_crds
+        return remove_empty_values(normalized)
 
+    def validate_retained_custom_resource_definitions(
+        self, helm_manifests: List[Dict]
+    ) -> bool:
+        """Every keep-annotated CustomResourceDefinition must be declared.
 
-def clean_helm_metadata(obj: Any, component: str = "katib") -> Any:
-    """Remove Helm-specific metadata that should be ignored in comparison."""
-    if isinstance(obj, dict):
-        cleaned = {}
-        for key, value in obj.items():
-            if key == "metadata" and isinstance(value, dict):
-                # Clean metadata section
-                cleaned_metadata = {}
-                for meta_key, meta_value in value.items():
-                    if meta_key == "labels" and isinstance(meta_value, dict):
-                        # Remove Helm-specific labels (component-specific logic)
-                        cleaned_labels = {}
-                        for label_key, label_value in meta_value.items():
-                            if component == "kubeflow-notebooks":
-                                if not label_key.startswith("helm.sh/"):
-                                    cleaned_labels[label_key] = label_value
-                            elif component == "kserve-models-web-application":
-                                # More restrictive filtering for KServe
-                                if not label_key.startswith(
-                                    ("helm.sh/", "app.kubernetes.io/managed-by")
-                                ):
-                                    cleaned_labels[label_key] = label_value
-                            else:
-                                # Standard filtering for Katib and Model Registry
-                                helm_labels = [
-                                    "app.kubernetes.io/managed-by",
-                                    "app.kubernetes.io/version",
-                                    "app.kubernetes.io/name",
-                                    "app.kubernetes.io/instance",
-                                    "app.kubernetes.io/component",
-                                ]
-                                if (
-                                    not label_key.startswith("helm.sh/")
-                                    and label_key not in helm_labels
-                                ):
-                                    cleaned_labels[label_key] = label_value
-                        if cleaned_labels:  # Only add if there are remaining labels
-                            cleaned_metadata[meta_key] = cleaned_labels
-                    elif meta_key == "annotations" and isinstance(meta_value, dict):
-                        # Remove only Helm-specific annotations
-                        cleaned_annotations = {}
-                        for ann_key, ann_value in meta_value.items():
-                            if not ann_key.startswith(("helm.sh/", "meta.helm.sh/")):
-                                cleaned_annotations[ann_key] = ann_value
-                        if (
-                            cleaned_annotations
-                        ):  # Only add if there are remaining annotations
-                            cleaned_metadata[meta_key] = cleaned_annotations
+        The keep annotation freezes a CustomResourceDefinition's lifecycle:
+        helm uninstall leaves it behind. That behavior must be a declared,
+        reviewed property of the chart, never a silent one.
+        """
+        retained = {
+            manifest.get("metadata", {}).get("name", "")
+            for manifest in helm_manifests
+            if manifest.get("kind") == "CustomResourceDefinition"
+            and manifest.get("metadata", {})
+            .get("annotations", {})
+            .get("helm.sh/resource-policy")
+            == "keep"
+        }
+        for name in retained & self.retained_custom_resource_definitions:
+            self._fired.add(f"retainedCustomResourceDefinitions[{name}]")
+
+        unexpected = retained - self.retained_custom_resource_definitions
+        if unexpected:
+            print(
+                "CustomResourceDefinitions with helm.sh/resource-policy=keep "
+                "that are not declared in retainedCustomResourceDefinitions: "
+                + ", ".join(sorted(unexpected))
+            )
+        return not unexpected
+
+    def unexpected_helm_only(self, only_in_helm: set) -> set:
+        """Filter Helm-side extras down to the undeclared ones."""
+        declared = {
+            entry["resource"]: f"helmOnlyResources[{index}]"
+            for index, entry in enumerate(self.helm_only_resources)
+        }
+        for key in only_in_helm:
+            if key in declared:
+                self._fired.add(declared[key])
+        return {key for key in only_in_helm if key not in declared}
+
+    def unfired(self) -> List[str]:
+        """Describe every declared allowance that matched nothing."""
+        report = []
+        for index, entry in enumerate(self.ignored_labels):
+            if f"ignoredLabels[{index}]" not in self._fired:
+                report.append(f"ignoredLabels: {', '.join(entry['keys'])}")
+        for index, entry in enumerate(self.known_differences):
+            if f"knownDifferences[{index}]" not in self._fired:
+                report.append(
+                    f"knownDifferences: {entry.get('resource') or entry.get('skip')}"
+                )
+        for name in sorted(self.retained_custom_resource_definitions):
+            if f"retainedCustomResourceDefinitions[{name}]" not in self._fired:
+                report.append(f"retainedCustomResourceDefinitions: {name}")
+        for index, entry in enumerate(self.helm_only_resources):
+            if f"helmOnlyResources[{index}]" not in self._fired:
+                report.append(f"helmOnlyResources: {entry['resource']}")
+        return report
+
+    def _ignored_label_entries(self, top_level: bool) -> List[int]:
+        """Indices of ignoredLabels entries applying at this metadata block.
+
+        An entry applies to every resource's own metadata; nested template
+        metadata is compared strictly unless the entry declares podTemplates,
+        for a chart that also adds the keys to its workloads' pod templates.
+        """
+        return [
+            index
+            for index, entry in enumerate(self.ignored_labels)
+            if top_level or entry.get("podTemplates")
+        ]
+
+    def _strip_ignored_metadata(self, manifest: Dict) -> Dict:
+        """Rebuild the manifest without ignored labels and Helm annotations.
+
+        Helm's own label and annotation namespaces are stripped from every
+        metadata mapping; declared ignoredLabels apply per entry, to top-level
+        metadata by default.
+        """
+
+        def clean_metadata(block: Dict, entry_indices: List[int]) -> Dict:
+            cleaned = {}
+            for key, value in block.items():
+                if key == "labels" and isinstance(value, dict):
+                    kept = {}
+                    for label_key, label_value in value.items():
+                        if label_key.startswith(HELM_LABEL_PREFIX):
+                            continue
+                        owners = [
+                            index
+                            for index in entry_indices
+                            if label_key in self.ignored_labels[index]["keys"]
+                        ]
+                        if owners:
+                            for index in owners:
+                                self._fired.add(f"ignoredLabels[{index}]")
+                            continue
+                        kept[label_key] = label_value
+                    if kept:
+                        cleaned[key] = kept
+                elif key == "annotations" and isinstance(value, dict):
+                    kept = {
+                        annotation_key: annotation_value
+                        for annotation_key, annotation_value in value.items()
+                        if not annotation_key.startswith(HELM_ANNOTATION_PREFIXES)
+                    }
+                    if kept:
+                        cleaned[key] = kept
+                else:
+                    cleaned[key] = value
+            return cleaned
+
+        def walk(obj: Any, at_resource_root: bool) -> Any:
+            if isinstance(obj, dict):
+                result = {}
+                for key, value in obj.items():
+                    if key == "metadata" and isinstance(value, dict):
+                        indices = self._ignored_label_entries(at_resource_root)
+                        result[key] = clean_metadata(value, indices)
                     else:
-                        # Keep all other metadata fields as-is
-                        cleaned_metadata[meta_key] = meta_value
-                cleaned[key] = cleaned_metadata
-            else:
-                cleaned[key] = clean_helm_metadata(value, component)
-        return cleaned
-    elif isinstance(obj, list):
-        return [clean_helm_metadata(item, component) for item in obj]
-    else:
-        return obj
+                        result[key] = walk(value, False)
+                return result
+            if isinstance(obj, list):
+                return [walk(item, False) for item in obj]
+            return obj
+
+        return walk(manifest, True)
+
+    def _apply_known_differences(
+        self, normalized: Dict, kind: str, namespace: str, name: str
+    ) -> None:
+        for index, entry in enumerate(self.known_differences):
+            pattern = entry.get("resource")
+            if not pattern or not resource_matches(pattern, kind, namespace, name):
+                continue
+            identity = f"knownDifferences[{index}]"
+
+            ignored_annotations = entry.get("ignorePodTemplateAnnotations")
+            if ignored_annotations:
+                annotations = (
+                    normalized.get("spec", {})
+                    .get("template", {})
+                    .get("metadata", {})
+                    .get("annotations")
+                )
+                if isinstance(annotations, dict):
+                    kept = {
+                        key: value
+                        for key, value in annotations.items()
+                        if key not in set(ignored_annotations)
+                    }
+                    if kept != annotations:
+                        self._fired.add(identity)
+                        normalized["spec"]["template"]["metadata"]["annotations"] = kept
+
+            for data_key in entry.get("compareDataAsYaml") or []:
+                value = normalized.get("data", {}).get(data_key)
+                if isinstance(value, str):
+                    normalized["data"][data_key] = yaml.safe_load(value)
+                    self._fired.add(identity)
 
 
 def normalize_kustomize_refs(obj: Any, path: str = "") -> Any:
@@ -195,203 +329,31 @@ def normalize_kustomize_refs(obj: Any, path: str = "") -> Any:
         return obj
 
 
-def normalize_manifest(
-    manifest: Dict, component: str = "katib", normalize_kustomize_names: bool = True
-) -> Dict:
-    """Normalize manifest by removing/standardizing certain fields."""
-    normalized = manifest.copy()
-
-    # Clean Helm-specific metadata
-    normalized = clean_helm_metadata(normalized, component)
-
-    if component == "dex":
-        remove_dex_pod_template_checksums(normalized)
-        normalize_dex_config_map(normalized)
-
-    if component == "kubeflow-dashboard":
-        remove_dashboard_pod_template_checksums(normalized)
-
-    if component == "cert-manager":
-        preserve_cert_manager_kubeflow_labels(manifest, normalized)
-
-    # Normalize Kustomize hash references only for Kustomize output.
-    if normalize_kustomize_names:
-        normalized = normalize_kustomize_refs(normalized)
-
-    # Handle ConfigMap data normalization (only for Katib)
-    if (
-        component == "katib"
-        and normalized.get("kind") == "ConfigMap"
-        and "data" in normalized
-    ):
-        data = normalized["data"]
-        normalized_data = {}
-        for key, value in data.items():
-            if isinstance(value, str):
-                # Remove leading/trailing whitespace and normalize YAML content
-                normalized_value = value.strip()
-                # Remove leading --- if present (common in ConfigMap YAML data)
-                if normalized_value.startswith("---"):
-                    normalized_value = normalized_value[3:].strip()
-                normalized_data[key] = normalized_value
-            else:
-                normalized_data[key] = value
-        normalized["data"] = normalized_data
-
-    if (
-        normalize_kustomize_names
-        and "metadata" in normalized
-        and "name" in normalized["metadata"]
-    ):
-        kind = normalized.get("kind", "")
-        if kind in ["Secret", "ConfigMap"]:
-            name = normalized["metadata"]["name"]
-            normalized["metadata"]["name"] = KUSTOMIZE_HASH_SUFFIX.sub("", name)
-
-    if "metadata" in normalized:
-        metadata = normalized["metadata"]
-
-        metadata.pop("generation", None)
-        metadata.pop("resourceVersion", None)
-        metadata.pop("uid", None)
-        metadata.pop("creationTimestamp", None)
-        metadata.pop("managedFields", None)
-
-    normalized.pop("status", None)
-
-    def remove_empty_values(obj):
-        if isinstance(obj, dict):
-            return {
-                k: remove_empty_values(v)
-                for k, v in obj.items()
-                if v is not None and v != {} and v != []
-            }
-        elif isinstance(obj, list):
-            return [remove_empty_values(item) for item in obj if item is not None]
-        else:
-            return obj
-
-    return remove_empty_values(normalized)
+def remove_empty_values(obj: Any) -> Any:
+    """Drop None, empty mappings and empty lists everywhere."""
+    if isinstance(obj, dict):
+        return {
+            k: remove_empty_values(v)
+            for k, v in obj.items()
+            if v is not None and v != {} and v != []
+        }
+    elif isinstance(obj, list):
+        return [remove_empty_values(item) for item in obj if item is not None]
+    else:
+        return obj
 
 
-def remove_dex_pod_template_checksums(manifest: Dict) -> None:
-    """Ignore rollout checksums while preserving other Dex annotations."""
-    metadata = manifest.get("metadata", {})
-    if (
-        manifest.get("kind") != "Deployment"
-        or metadata.get("name") != "dex"
-        or metadata.get("namespace") != "auth"
-    ):
-        return
-
-    pod_metadata = manifest.get("spec", {}).get("template", {}).get("metadata", {})
-    annotations = pod_metadata.get("annotations")
-    if not isinstance(annotations, dict):
-        return
-
-    pod_metadata["annotations"] = {
-        key: value
-        for key, value in annotations.items()
-        if key not in DEX_POD_TEMPLATE_CHECKSUM_KEYS
-    }
-
-
-def remove_dashboard_pod_template_checksums(manifest: Dict) -> None:
-    """Ignore rollout checksums while preserving other Dashboard annotations.
-
-    The chart names its ConfigMaps without the Kustomize content-hash suffix, so
-    it triggers a rollout with a checksum annotation instead. Kustomize achieves
-    the same effect through the hashed name and renders no annotation.
-    """
-    metadata = manifest.get("metadata", {})
-    if manifest.get("kind") != "Deployment" or metadata.get("name") not in {
-        "dashboard",
-        "profiles-deployment",
-    }:
-        return
-
-    pod_metadata = manifest.get("spec", {}).get("template", {}).get("metadata", {})
-    annotations = pod_metadata.get("annotations")
-    if not isinstance(annotations, dict):
-        return
-
-    pod_metadata["annotations"] = {
-        key: value
-        for key, value in annotations.items()
-        if key not in DASHBOARD_POD_TEMPLATE_CHECKSUM_KEYS
-    }
-
-
-def normalize_dex_config_map(manifest: Dict) -> None:
-    """Compare the embedded Dex configuration by YAML value, not quote style."""
-    metadata = manifest.get("metadata", {})
-    if (
-        manifest.get("kind") != "ConfigMap"
-        or metadata.get("name") != "dex"
-        or metadata.get("namespace") != "auth"
-    ):
-        return
-
-    config_yaml = manifest.get("data", {}).get("config.yaml")
-    if isinstance(config_yaml, str):
-        manifest["data"]["config.yaml"] = yaml.safe_load(config_yaml)
-
-
-def preserve_cert_manager_kubeflow_labels(original: Dict, normalized: Dict) -> None:
-    """Keep labels that are intentionally added by cert-manager's Kubeflow overlay."""
-    kind = original.get("kind", "")
-    name = original.get("metadata", {}).get("name", "")
-
-    if (kind, name) not in CERT_MANAGER_KUBEFLOW_RESOURCES:
-        return
-
-    labels = original.get("metadata", {}).get("labels", {})
-    preserved_labels = {
-        key: value
-        for key, value in labels.items()
-        if key in CERT_MANAGER_KUBEFLOW_LABELS
-    }
-
-    if preserved_labels:
-        normalized.setdefault("metadata", {}).setdefault("labels", {}).update(
-            preserved_labels
-        )
-
-
-def should_compare_manifest(
-    manifest: Dict,
-    component: str,
-    scenario: str,
-    is_kustomize_manifest: bool = True,
-) -> bool:
-    """Select the resource subset owned by a comparison scenario."""
-    kind = manifest.get("kind", "")
-
-    if component in ["cert-manager", "dex", "oauth2-proxy"] and kind == "Namespace":
-        return False
-
-    if component == "kubeflow-namespaces" and scenario == "base":
-        return kind != "Namespace"
-
-    if component == "kubeflow-namespaces" and scenario == "platform-namespaces":
-        return kind == "Namespace"
-
-    if component == "istio" and kind == "Namespace" and is_kustomize_manifest:
-        return manifest.get("metadata", {}).get("name", "") != "istio-system"
-
-    return True
-
-
-def get_resource_key(manifest: Dict, component: str = "katib") -> str:
+def get_resource_key(manifest: Dict) -> str:
     """Generate a unique key for the resource."""
     kind = manifest.get("kind", "Unknown")
     name = manifest.get("metadata", {}).get("name", "unknown")
     namespace = manifest.get("metadata", {}).get("namespace", "")
 
-    # The name has already been normalized by normalize_manifest. Stripping the
-    # hash suffix a second time here would also remove a legitimate final name
-    # segment of exactly ten lowercase alphanumeric characters, for example
-    # "dashboard-parameters", and would do so on only one of the two sides.
+    # The name has already been normalized by ChartComparisonRules.normalize.
+    # Stripping the hash suffix a second time here would also remove a
+    # legitimate final name segment of exactly ten lowercase alphanumeric
+    # characters, for example "dashboard-parameters", and would do so on only
+    # one of the two sides.
 
     # Include namespace for namespaced resources so same-name objects in
     # different namespaces cannot overwrite each other in the comparison map.
@@ -437,73 +399,40 @@ def deep_diff(obj1: Any, obj2: Any, path: str = "") -> List[str]:
     return differences
 
 
-def get_expected_helm_extras(component: str, scenario: str) -> set:
-    """Get expected extra resources in Helm for different components and scenarios."""
-    if component == "katib":
-        return {
-            "Secret/kubeflow/katib-webhook-cert",  # Webhook certificates
-        }
-    elif component == "hub":
-        return set()  # No extra resources in Helm for Model Registry
-    elif component == "kserve-models-web-application":
-        return set()
-    elif component in ["cert-manager", "dex", "oauth2-proxy"]:
-        return set()
-    else:
-        return set()
-
-
-def helm_uses_kustomize_generated_names(component: str) -> bool:
-    """Whether the chart reproduces Kustomize's content-hashed resource names.
-
-    Charts that name their ConfigMaps and Secrets without the hash suffix must
-    not have that suffix stripped from their side of the comparison, otherwise a
-    legitimate final name segment can be removed from one side only.
-    """
-    return component not in ("oauth2-proxy", "kubeflow-dashboard")
-
-
 def compare_manifests(
     kustomize_file: str,
     helm_file: str,
-    component: str,
-    scenario: str,
-    namespace: str = "",
-    verbose: bool = False,
+    rules: ChartComparisonRules,
+    scenario: Dict,
 ) -> bool:
-    """Compare Kustomize and Helm manifests."""
+    """Compare Kustomize and Helm manifests under one chart's declared rules."""
     kustomize_manifests = load_manifests(kustomize_file)
     helm_manifests = load_manifests(helm_file)
 
-    if not validate_helm_crd_resource_policies(helm_manifests, component):
+    if not rules.validate_retained_custom_resource_definitions(helm_manifests):
         return False
 
     kustomize_resources = {}
     helm_resources = {}
 
     for manifest in kustomize_manifests:
-        if not should_compare_manifest(
-            manifest, component, scenario, is_kustomize_manifest=True
-        ):
+        if not rules.should_compare(manifest, scenario):
             continue
-        normalized = normalize_manifest(
-            manifest, component, normalize_kustomize_names=True
-        )
-        key = get_resource_key(normalized, component)
-        kustomize_resources[key] = normalized
+        normalized = rules.normalize(manifest, is_helm_manifest=False)
+        kustomize_resources[get_resource_key(normalized)] = normalized
 
     for manifest in helm_manifests:
-        if not should_compare_manifest(
-            manifest, component, scenario, is_kustomize_manifest=False
-        ):
+        if not rules.should_compare(manifest, scenario):
             continue
-        normalized = normalize_manifest(
-            manifest,
-            component,
-            normalize_kustomize_names=helm_uses_kustomize_generated_names(component),
-        )
-        key = get_resource_key(normalized, component)
-        helm_resources[key] = normalized
+        normalized = rules.normalize(manifest, is_helm_manifest=True)
+        helm_resources[get_resource_key(normalized)] = normalized
+
+    # A misspelled onlyKinds or excludeKinds filter selects nothing on either
+    # side, and two empty sets compare equal; that is a coverage failure, not
+    # a parity success.
+    if not kustomize_resources and not helm_resources:
+        print("Scenario selection left nothing to compare on either side")
+        return False
 
     kustomize_keys = set(kustomize_resources.keys())
     helm_keys = set(helm_resources.keys())
@@ -512,25 +441,22 @@ def compare_manifests(
     only_in_kustomize = kustomize_keys - helm_keys
     only_in_helm = helm_keys - kustomize_keys
 
-    expected_helm_extras = get_expected_helm_extras(component, scenario)
-    unexpected_helm_extras = only_in_helm - expected_helm_extras
+    unexpected_helm_extras = rules.unexpected_helm_only(only_in_helm)
 
     differences_found = []
     success = True
 
     if only_in_kustomize:
         print(f"Resources only in Kustomize: {len(only_in_kustomize)}")
-        if verbose:
-            for key in sorted(only_in_kustomize):
-                print(f"  {key}")
+        for key in sorted(only_in_kustomize):
+            print(f"  {key}")
         success = False
         differences_found.extend(only_in_kustomize)
 
     if unexpected_helm_extras:
         print(f"Unexpected resources only in Helm: {len(unexpected_helm_extras)}")
-        if verbose:
-            for key in sorted(unexpected_helm_extras):
-                print(f"  {key}")
+        for key in sorted(unexpected_helm_extras):
+            print(f"  {key}")
         success = False
         differences_found.extend(unexpected_helm_extras)
 
@@ -543,9 +469,8 @@ def compare_manifests(
 
         if differences:
             print(f"Differences in {key}: {len(differences)} fields")
-            if verbose:
-                for difference in differences:
-                    print(f"  {difference}")
+            for difference in differences:
+                print(f"  {difference}")
             differences_found.append(key)
             success = False
 
@@ -554,49 +479,3 @@ def compare_manifests(
         return False
 
     return True
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 5:
-        print(
-            "Usage: python helm_kustomize_compare.py <kustomize_file> <helm_file> <component> <scenario> [namespace] [--verbose]"
-        )
-        print(
-            "Components: katib, hub, mlflow, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
-        )
-        sys.exit(1)
-
-    kustomize_file = sys.argv[1]
-    helm_file = sys.argv[2]
-    component = sys.argv[3]
-    scenario = sys.argv[4]
-    namespace = (
-        sys.argv[5] if len(sys.argv) > 5 and not sys.argv[5].startswith("--") else ""
-    )
-
-    if component not in [
-        "katib",
-        "hub",
-        "mlflow",
-        "kserve-models-web-application",
-        "cert-manager",
-        "kubeflow-namespaces",
-        "kubeflow-platform",
-        "dex",
-        "oauth2-proxy",
-        "istio",
-        "kubeflow-dashboard",
-        "kubeflow-notebooks",
-    ]:
-        print(f"ERROR: Unknown component: {component}")
-        print(
-            "Supported components: katib, hub, mlflow, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform, dex, oauth2-proxy, istio, kubeflow-dashboard, kubeflow-notebooks"
-        )
-        sys.exit(1)
-
-    verbose = "--verbose" in sys.argv[1:]
-
-    success = compare_manifests(
-        kustomize_file, helm_file, component, scenario, namespace, verbose
-    )
-    sys.exit(0 if success else 1)

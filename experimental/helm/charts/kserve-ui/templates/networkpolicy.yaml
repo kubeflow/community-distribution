@@ -1,0 +1,27 @@
+{{- if and .Values.app.enabled .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "kserve-models-web-app.fullname" . }}
+  namespace: {{ include "kserve-models-web-app.namespace" . }}
+spec:
+  podSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/component
+      operator: In
+      values:
+      - kserve-models-web-application
+  {{- with .Values.networkPolicy.ingress }}
+  ingress:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with .Values.networkPolicy.egress }}
+  egress:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  policyTypes:
+  - Ingress
+  {{- if .Values.networkPolicy.egress }}
+  - Egress
+  {{- end }}
+{{- end }}

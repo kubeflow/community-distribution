@@ -12,7 +12,6 @@ import yaml
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 CHART_DIRECTORY = REPOSITORY_ROOT / "common/istio/helm"
 OAUTH2_PROXY_VALUES = CHART_DIRECTORY / "ci/values-oauth2-proxy.yaml"
-WORKFLOW_PATH = REPOSITORY_ROOT / ".github/workflows/helm-kustomize-comparison.yml"
 SYNCHRONIZATION_SCRIPT = REPOSITORY_ROOT / "scripts/synchronize-istio-manifests.sh"
 HELM_BINARY = os.environ.get("HELM_BINARY", "helm")
 
@@ -192,54 +191,6 @@ class IstioHelmChartTest(unittest.TestCase):
         self.assertNotIn(
             '> "$HELM_MANIFESTS_DIRECTORY/networkpolicies.yaml"',
             synchronization_script,
-        )
-
-
-class IstioWorkflowTest(unittest.TestCase):
-    def test_istio_job_persists_the_pinned_kustomize_directory(self):
-        workflow = yaml.safe_load(WORKFLOW_PATH.read_text())
-        unit_test_job = workflow["jobs"]["validate-istio-unit-tests"]
-        installation_step = next(
-            step
-            for step in unit_test_job["steps"]
-            if step.get("name") == "Install Kustomize"
-        )
-
-        self.assertIn("./tests/kustomize_install.sh", installation_step["run"])
-        self.assertIn(
-            'echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"',
-            installation_step["run"],
-        )
-
-    def test_istio_unit_tests_run_in_enforcing_job(self):
-        workflow = yaml.safe_load(WORKFLOW_PATH.read_text())
-        unit_test_job = workflow["jobs"]["validate-istio-unit-tests"]
-        test_step = next(
-            step
-            for step in unit_test_job["steps"]
-            if step.get("name") == "Test Istio Helm behavior"
-        )
-
-        self.assertFalse(unit_test_job.get("continue-on-error", False))
-        self.assertFalse(test_step.get("continue-on-error", False))
-        self.assertNotIn("if", test_step)
-        self.assertIn("python tests/test_istio_helm_chart.py", test_step["run"])
-
-    def test_istio_comparison_runs_in_enforcing_job(self):
-        workflow = yaml.safe_load(WORKFLOW_PATH.read_text())
-        unit_test_job = workflow["jobs"]["validate-istio-unit-tests"]
-        comparison_step = next(
-            step
-            for step in unit_test_job["steps"]
-            if step.get("name") == "Compare Istio Helm and Kustomize manifests"
-        )
-
-        self.assertFalse(unit_test_job.get("continue-on-error", False))
-        self.assertFalse(comparison_step.get("continue-on-error", False))
-        self.assertNotIn("if", comparison_step)
-        self.assertIn(
-            "./tests/helm_kustomize_compare_all.sh istio",
-            comparison_step["run"],
         )
 
 

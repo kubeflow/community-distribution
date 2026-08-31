@@ -82,11 +82,16 @@ static payload together, including provenance headers and formatting cleanup.
 
 ```bash
 helm lint common/istio/helm
-./tests/helm_kustomize_compare.sh istio crds
-./tests/helm_kustomize_compare.sh istio base
-./tests/helm_kustomize_compare.sh istio oauth2-proxy
-./tests/helm_kustomize_compare.sh istio gke
-./tests/helm_kustomize_compare.sh istio cluster-local-gateway
-./tests/helm_kustomize_compare.sh istio kubeflow-istio-resources
-./tests/helm_kustomize_compare.sh istio platform-full
+python3 tests/run_helm_kustomize_comparison.py istio crds
+python3 tests/run_helm_kustomize_comparison.py istio base
+python3 tests/run_helm_kustomize_comparison.py istio oauth2-proxy
+python3 tests/run_helm_kustomize_comparison.py istio gke
+python3 tests/run_helm_kustomize_comparison.py istio cluster-local-gateway
+python3 tests/run_helm_kustomize_comparison.py istio kubeflow-istio-resources
+python3 tests/run_helm_kustomize_comparison.py istio platform-full
 ```
+
+How this chart is compared, including every declared allowance, is in
+[`ci/comparison.yaml`](ci/comparison.yaml); the descriptor format is documented in
+[`tests/README.md`](../../../tests/README.md).
+

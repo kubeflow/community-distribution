@@ -1,0 +1,16 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: kserve-models-web-application
+releaseName: kserve-models-web-application
+namespace: kserve
+includeCustomResourceDefinitions: false
+ignoredLabels:
+- keys: [app.kubernetes.io/managed-by]
+  reason: >
+    The chart labels every resource app.kubernetes.io/managed-by: Helm; the
+    Kustomize baseline carries no such label.
+scenarios:
+  kubeflow:
+    kustomize:
+    - applications/kserve/kserve-ui
+    values: ci/kubeflow-values.yaml

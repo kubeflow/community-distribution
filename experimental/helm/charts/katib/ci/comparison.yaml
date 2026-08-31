@@ -1,0 +1,58 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: katib
+releaseName: katib
+namespace: kubeflow
+includeCustomResourceDefinitions: true
+defaultScenario: standalone
+ignoredLabels:
+- keys:
+  - app.kubernetes.io/managed-by
+  - app.kubernetes.io/version
+  - app.kubernetes.io/name
+  - app.kubernetes.io/instance
+  - app.kubernetes.io/component
+  reason: >
+    The chart adds the standard app.kubernetes.io release labels to every
+    resource; the upstream Kustomize manifests carry none of them.
+knownDifferences:
+- resource: ConfigMap/kubeflow/katib-config
+  compareDataAsYaml: [katib-config.yaml]
+  reason: >
+    The two sides embed katib-config.yaml with different leading document
+    separators and surrounding whitespace; parsing both sides compares the
+    configuration's value instead of its serialization.
+helmOnlyResources:
+- resource: Secret/kubeflow/katib-webhook-cert
+  reason: >
+    The chart pre-creates the webhook certificate Secret that upstream's
+    certificate generator otherwise creates at runtime.
+scenarios:
+  cert-manager:
+    kustomize:
+    - applications/katib/upstream/installs/katib-cert-manager
+    values: ci/values-cert-manager.yaml
+  external-db:
+    kustomize:
+    - applications/katib/upstream/installs/katib-external-db
+    values: ci/values-external-db.yaml
+  leader-election:
+    kustomize:
+    - applications/katib/upstream/installs/katib-leader-election
+    values: ci/values-leader-election.yaml
+  openshift:
+    kustomize:
+    - applications/katib/upstream/installs/katib-openshift
+    values: ci/values-openshift.yaml
+  standalone:
+    kustomize:
+    - applications/katib/upstream/installs/katib-standalone
+    values: ci/values-standalone.yaml
+  standalone-postgres:
+    kustomize:
+    - applications/katib/upstream/installs/katib-standalone-postgres
+    values: ci/values-postgres.yaml
+  with-kubeflow:
+    kustomize:
+    - applications/katib/upstream/installs/katib-with-kubeflow
+    values: ci/values-kubeflow.yaml

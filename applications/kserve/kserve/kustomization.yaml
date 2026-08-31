@@ -1,110 +1,98 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-# Install KServe in kubeflow namespace
-- ./upstream/kserve_kubeflow.yaml
+# Install KServe in its upstream control-plane namespace
+- namespace.yaml
+- ./upstream/kserve.yaml
 - ./upstream/kserve-cluster-resources.yaml
+- aggregated-roles.yaml
+- kserve-networkpolicy.yaml
 
 patches:
-# Fix cert-manager inject-ca-from annotations: kserve_kubeflow.yaml hardcodes
-# "kserve/<cert-name>" in the inject-ca-from annotation on all webhook configs and CRDs,
-# but the Certificate resources live in the "kubeflow" namespace. cert-manager's ca-injector
-# uses this annotation to populate the webhook caBundle, so without this fix TLS verification
-# fails with "certificate signed by unknown authority".
+# ClusterStorageContainer is cluster-scoped, but the generated bundle assigns it
+# the KServe namespace. Remove the invalid namespace until the upstream manifest
+# is corrected.
 - patch: |-
-    - op: replace
-      path: /metadata/annotations/cert-manager.io~1inject-ca-from
-      value: kubeflow/serving-cert
+    - op: remove
+      path: /metadata/namespace
   target:
-    name: "(clusterservingruntime|inferencegraph|inferenceservices?|servingruntime|trainedmodel)\\.serving\\.kserve\\.io"
-- patch: |-
-    - op: replace
-      path: /metadata/annotations/cert-manager.io~1inject-ca-from
-      value: kubeflow/llmisvc-serving-cert
-  target:
-    name: "llminferenceservice(s|config|configs)?\\.serving\\.kserve\\.io"
-- patch: |-
-    - op: replace
-      path: /metadata/annotations/cert-manager.io~1inject-ca-from
-      value: kubeflow/localmodel-serving-cert
-  target:
-    name: "localmodelcache\\.serving\\.kserve\\.io"
+    group: serving.kserve.io
+    version: v1alpha1
+    kind: ClusterStorageContainer
+    name: default
 
-# Fix Certificate SANs: kserve_kubeflow.yaml contains a second set of Certificate resources
-# that still reference the upstream kserve namespace instead of kubeflow.
-# These duplicates override the correct kubeflow-scoped ones, causing TLS SAN mismatches
-# on the webhook server. Patch all three to use the correct kubeflow.svc SAN.
-- patch: |
-    apiVersion: cert-manager.io/v1
-    kind: Certificate
-    metadata:
-      name: serving-cert
-      namespace: kubeflow
-    spec:
-      commonName: kserve-webhook-server-service.kubeflow.svc
-      dnsNames:
-        - kserve-webhook-server-service.kubeflow.svc
-- patch: |
-    apiVersion: cert-manager.io/v1
-    kind: Certificate
-    metadata:
-      name: llmisvc-serving-cert
-      namespace: kubeflow
-    spec:
-      commonName: llmisvc-webhook-server-service.kubeflow.svc
-      dnsNames:
-        - llmisvc-webhook-server-service.kubeflow.svc
-- patch: |
-    apiVersion: cert-manager.io/v1
-    kind: Certificate
-    metadata:
-      name: localmodel-serving-cert
-      namespace: kubeflow
-    spec:
-      commonName: localmodel-webhook-server-service.kubeflow.svc
-      dnsNames:
-        - localmodel-webhook-server-service.kubeflow.svc
+# Make storage initializer containers compatible with the restricted Pod
+# Security Standard used by Kubeflow Profile namespaces. runAsUser is not set
+# because the image already declares a numeric non-root user, which is what
+# runAsNonRoot needs to verify. Upstream follows the same rule and sets
+# runAsUser only for the runtimes whose images lack one.
+- patch: |-
+    - op: add
+      path: /spec/container/securityContext
+      value:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+  target:
+    group: serving.kserve.io
+    version: v1alpha1
+    kind: ClusterStorageContainer
+    name: default
 
-# Delete the kserve-localmodelnode-agent DaemonSet
-# Runs as privileged: true with hostPID: true and hostNetwork: true
+# The shared kserve namespace also hosts the Models Web Application, which
+# requires an Istio sidecar. Keep controller injection disabled per workload
+# instead of disabling the injection webhook for the entire namespace.
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/annotations/sidecar.istio.io~1inject
+      value: "false"
+  target:
+    group: apps
+    version: v1
+    kind: Deployment
+    labelSelector: control-plane
+
+# Disable the local model node agent because its writable /models hostPath is
+# incompatible with the restricted Pod Security Standard. Remove all companion
+# authorization resources so a disabled workload leaves no unused permissions.
 - patch: |
     apiVersion: apps/v1
     kind: DaemonSet
     metadata:
       name: kserve-localmodelnode-agent
-      namespace: kubeflow
+      namespace: kserve
     $patch: delete
 
-# Add seccompProfile: RuntimeDefault to kserve-controller-manager
 - patch: |
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: v1
+    kind: ServiceAccount
     metadata:
-      name: kserve-controller-manager
-      namespace: kubeflow
-    spec:
-      template:
-        spec:
-          securityContext:
-            seccompProfile:
-              type: RuntimeDefault
+      name: kserve-localmodelnode-agent
+      namespace: kserve
+    $patch: delete
 
-# Add seccompProfile: RuntimeDefault to kserve-localmodel-controller-manager
 - patch: |
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
     metadata:
-      name: kserve-localmodel-controller-manager
-      namespace: kubeflow
-    spec:
-      template:
-        spec:
-          securityContext:
-            seccompProfile:
-              type: RuntimeDefault
+      name: kserve-localmodelnode-agent-role
+    $patch: delete
 
-# Delete ALL insecure LLMInferenceServiceConfig resources
-# IPC_LOCK, SYS_RAWIO, NET_RAW capabilities, runAsNonRoot: false
+- patch: |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: kserve-localmodelnode-agent-rolebinding
+    $patch: delete
+
+# Preserve the existing Kubeflow policy of omitting LLMInferenceServiceConfig
+# resources. KServe 0.19 data-parallel templates still request IPC_LOCK,
+# SYS_RAWIO, and NET_RAW capabilities. Re-enable individual templates only with
+# runtime coverage under the restricted Pod Security Standard.
 # Ref: https://github.com/kubeflow/community-distribution/issues/3290
 - patch: |
     apiVersion: serving.kserve.io/v1alpha2
@@ -117,8 +105,10 @@ patches:
     version: v1alpha2
     kind: LLMInferenceServiceConfig
 
-# Delete the ValidatingWebhookConfiguration for LLM resources
-# Webhook server (llmisvc-webhook-server-service) is not running — EOF errors
+# Preserve existing installation behavior while the LLM configuration templates
+# are omitted. Restore this validation webhook with the templates and runtime
+# coverage in a dedicated change.
+# Ref: https://github.com/kubeflow/community-distribution/issues/3290
 - patch: |
     apiVersion: admissionregistration.k8s.io/v1
     kind: ValidatingWebhookConfiguration
@@ -127,6 +117,9 @@ patches:
     $patch: delete
 
 # Enable path-based routing via pathTemplate on the inferenceservice-config ConfigMap.
+# This replaces the whole ingress value, so every key upstream ships must be
+# repeated here. Compare against upstream/kserve.yaml on each synchronization,
+# otherwise a newly added key is dropped without any error.
 # This allows KServe to auto-generate VirtualServices for path-based URLs
 # (/serving/<namespace>/<name>/...), eliminating manual VirtualService creation.
 # Ref: https://github.com/kserve/kserve/issues/2257
@@ -136,10 +129,11 @@ patches:
     kind: ConfigMap
     metadata:
       name: inferenceservice-config
-      namespace: kubeflow
+      namespace: kserve
     data:
       ingress: |-
         {
+          "disableHTTPRouteTimeout": false,
           "enableGatewayApi": false,
           "kserveIngressGateway": "kserve/kserve-ingress-gateway",
           "ingressGateway": "kubeflow/kubeflow-gateway",

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kserve
+  labels:
+    control-plane: kserve
+    pod-security.kubernetes.io/enforce: restricted

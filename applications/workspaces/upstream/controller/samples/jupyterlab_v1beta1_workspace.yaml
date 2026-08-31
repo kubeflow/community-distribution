@@ -1,3 +1,9 @@
+## --> NOTE <--
+##
+## These are just example definitions for Workspace, please thoroughly vet
+## them and customize them for your usecase before using them in a production
+## setting!
+
 apiVersion: kubeflow.org/v1beta1
 kind: Workspace
 metadata:
@@ -5,6 +11,9 @@ metadata:
 spec:
   ## if the workspace is paused (no pods running)
   paused: false
+
+  ## an optional human-readable name, displayed in the UI instead of metadata.name
+  displayName: "Example JupyterLab Workspace"
 
   ## the WorkspaceKind to use
   kind: "jupyterlab"

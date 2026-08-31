@@ -41,7 +41,8 @@ update_dashboard_helm_chart() {
 validate_dashboard_helm_chart() {
     # The chart refuses any namespace but kubeflow, so the linter needs it too.
     helm lint "$HELM_CHART_DIRECTORY" --namespace kubeflow
-    "${MANIFESTS_DIRECTORY}/tests/helm_kustomize_compare_all.sh" "$COMPONENT_NAME"
+    # Parity is compared in continuous integration, by the
+    # "Compare ${COMPONENT_NAME}" job, with its pinned Helm version.
 }
 
 copy_component_manifests "components/poddefaults-webhooks/manifests/kustomize" \
@@ -52,11 +53,11 @@ copy_component_manifests "components/profile-controller/manifests/kustomize" \
     "${TARGET_DIRECTORY}/profile-controller"
 update_dashboard_helm_chart
 validate_dashboard_helm_chart
-# An upstream change to one of the hand-written resources makes the parity
-# comparison above fail until a maintainer updates the corresponding template.
-# The component-owned chart paths are therefore part of a synchronization
-# change, and staging them keeps the script from reporting success while that
-# correction stays uncommitted.
+# The script regenerates the payloads and Chart.yaml; the hand-written chart
+# files are staged with them so that re-running the script reproduces the
+# commit exactly. An upstream change to a hand-written resource additionally
+# needs a template correction, which the comparison job reports on the pull
+# request.
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" \
   "${TARGET_DIRECTORY}" \
   "${HELM_CHART_PATH}/Chart.yaml" \

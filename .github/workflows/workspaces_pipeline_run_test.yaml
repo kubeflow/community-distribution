@@ -18,6 +18,7 @@ on:
     - tests/pipelines_install.sh
     - tests/workspaces_install.sh
     - tests/workspaces_pipeline_run_test.sh
+    - tests/workspacekind.test.yaml
 
 permissions:
   contents: read

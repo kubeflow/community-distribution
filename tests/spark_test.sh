@@ -44,3 +44,35 @@ kubectl -n $NAMESPACE logs pod/spark-pi-python-driver
 
 # Delete Spark Deployment
 kubectl -n $NAMESPACE delete -f "$SPARK_APPLICATION_YAML"
+
+
+# Verify the aggregated Spark ClusterRoles grant access to SparkConnect resources.
+# kubeflow-spark-edit aggregates into kubeflow-edit, which is bound to default-editor.
+# Profiles do not create a default-viewer, so bind a dedicated viewer identity here.
+EDITOR="system:serviceaccount:${NAMESPACE}:default-editor"
+VIEWER_SERVICE_ACCOUNT_NAME="spark-permissions-viewer"
+trap 'kubectl -n "$NAMESPACE" delete rolebinding "$VIEWER_SERVICE_ACCOUNT_NAME" --ignore-not-found; kubectl -n "$NAMESPACE" delete serviceaccount "$VIEWER_SERVICE_ACCOUNT_NAME" --ignore-not-found' EXIT
+kubectl -n "$NAMESPACE" create serviceaccount "$VIEWER_SERVICE_ACCOUNT_NAME"
+kubectl -n "$NAMESPACE" create rolebinding "$VIEWER_SERVICE_ACCOUNT_NAME" \
+    --clusterrole=kubeflow-view \
+    --serviceaccount="${NAMESPACE}:${VIEWER_SERVICE_ACCOUNT_NAME}"
+VIEWER="system:serviceaccount:${NAMESPACE}:${VIEWER_SERVICE_ACCOUNT_NAME}"
+
+for VERB in create delete get list patch update watch; do
+    kubectl auth can-i "$VERB" sparkconnects --as="$EDITOR" -n "$NAMESPACE" | grep -qx yes
+done
+
+kubectl auth can-i get sparkconnects/status --as="$EDITOR" -n "$NAMESPACE" | grep -qx yes
+
+for VERB in get list watch; do
+    kubectl auth can-i "$VERB" sparkconnects --as="$VIEWER" -n "$NAMESPACE" | grep -qx yes
+done
+
+kubectl auth can-i get sparkconnects/status --as="$VIEWER" -n "$NAMESPACE" | grep -qx yes
+
+# Viewers must not be able to modify SparkConnect resources.
+for VERB in create delete patch update; do
+    ! kubectl auth can-i "$VERB" sparkconnects --as="$VIEWER" -n "$NAMESPACE" | grep -qx yes
+done
+
+echo "Aggregated Spark ClusterRole permissions for sparkconnects verified."

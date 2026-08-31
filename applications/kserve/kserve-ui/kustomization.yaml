@@ -1,8 +1,32 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: kserve
 resources:
 - ./upstream/overlays/kubeflow
+- kserve-ui-networkpolicy.yaml
 
 images:
   - name: ghcr.io/kserve/models-web-app
     newTag: 1.0.1
+
+patches:
+# Istio selects individual pods by label when their namespace is not
+# injection-enabled.
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/sidecar.istio.io~1inject
+      value: "true"
+  target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: kserve-models-web-application
+- patch: |-
+    - op: replace
+      path: /spec/http/0/route/0/destination/host
+      value: kserve-models-web-application.kserve.svc.cluster.local
+  target:
+    group: networking.istio.io
+    version: v1beta1
+    kind: VirtualService
+    name: kserve-models-web-application

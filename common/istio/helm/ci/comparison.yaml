@@ -1,0 +1,72 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: istio
+releaseName: istio
+namespace: istio-system
+includeCustomResourceDefinitions: true
+defaultScenario: base
+knownDifferences:
+- skip: Namespace/istio-system
+  reason: >
+    The istio-namespace Kustomize base creates the namespace; the chart is
+    installed into an existing namespace and renders none.
+retainedCustomResourceDefinitions:
+  reason: >
+    Upstream Istio annotates every CustomResourceDefinition with
+    helm.sh/resource-policy: keep, and the chart ships those payloads byte
+    for byte, so helm uninstall leaves the definitions and their objects.
+  names:
+  - authorizationpolicies.security.istio.io
+  - destinationrules.networking.istio.io
+  - envoyfilters.networking.istio.io
+  - gateways.networking.istio.io
+  - peerauthentications.security.istio.io
+  - proxyconfigs.networking.istio.io
+  - requestauthentications.security.istio.io
+  - serviceentries.networking.istio.io
+  - sidecars.networking.istio.io
+  - telemetries.telemetry.istio.io
+  - trafficextensions.extensions.istio.io
+  - virtualservices.networking.istio.io
+  - wasmplugins.extensions.istio.io
+  - workloadentries.networking.istio.io
+  - workloadgroups.networking.istio.io
+scenarios:
+  base:
+    kustomize:
+    - common/istio/istio-crds/base
+    - common/istio/istio-namespace/base
+    - common/istio/istio-install/base
+    values: ci/values-base.yaml
+  cluster-local-gateway:
+    kustomize:
+    - common/istio/cluster-local-gateway/base
+    values: ci/values-cluster-local-gateway.yaml
+  crds:
+    kustomize:
+    - common/istio/istio-crds/base
+    values: ci/values-crds.yaml
+  gke:
+    kustomize:
+    - common/istio/istio-crds/base
+    - common/istio/istio-namespace/base
+    - common/istio/istio-install/overlays/gke
+    values: ci/values-gke.yaml
+  kubeflow-istio-resources:
+    kustomize:
+    - common/istio/kubeflow-istio-resources/base
+    values: ci/values-kubeflow-istio-resources.yaml
+  oauth2-proxy:
+    kustomize:
+    - common/istio/istio-crds/base
+    - common/istio/istio-namespace/base
+    - common/istio/istio-install/overlays/oauth2-proxy
+    values: ci/values-oauth2-proxy.yaml
+  platform-full:
+    kustomize:
+    - common/istio/istio-crds/base
+    - common/istio/istio-namespace/base
+    - common/istio/istio-install/overlays/oauth2-proxy
+    - common/istio/cluster-local-gateway/base
+    - common/istio/kubeflow-istio-resources/base
+    values: ci/values-platform-full.yaml

@@ -33,7 +33,7 @@ spec:
     cores: 1
     memory: 512m
     labels:
-      sidecar.istio.io.inject: "false"
+      sidecar.istio.io/inject: "false"
     securityContext:
       capabilities:
         drop:

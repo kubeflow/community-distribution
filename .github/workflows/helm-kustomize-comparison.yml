@@ -3,41 +3,11 @@ name: Helm vs Kustomize Comparison
 on:
   pull_request:
     paths:
-    - applications/dashboard/**
-    - scripts/synchronize-dashboard-manifests.sh
-    - experimental/helm/charts/**
-    - applications/hub/**
-    - applications/mlflow/**
-    - applications/kserve/kserve-ui/**
-    - common/cert-manager/**
-    - common/kubeflow-namespace/**
-    - common/kubeflow-roles/**
-    - scripts/synchronize-cert-manager-manifests.sh
-    - scripts/synchronize-hub-manifests.sh
-    - scripts/synchronize-mlflow-manifests.sh
-    - common/dex/**
-    - scripts/synchronize-dex-manifests.sh
-    - common/oauth2-proxy/**
-    - scripts/synchronize-oauth2-proxy-manifests.sh
-    - common/istio/**
-    - scripts/synchronize-istio-manifests.sh
-    - applications/notebooks-v1/**
-    - scripts/synchronize-notebooks-v1-manifests.sh
-    - scripts/generate-notebooks-v1-helm-manifests.py
-    - scripts/helm_manifest_generator.py
-    - tests/kustomize_install.sh
-    - tests/helm_kustomize_compare.py
-    - tests/test_helm_kustomize_compare.py
-    - tests/helm_kustomize_compare.sh
-    - tests/helm_kustomize_compare_all.sh
-    - tests/test_dex_helm_rollout_checksums.py
-    - tests/test_istio_helm_chart.py
-    - tests/test_dashboard_helm_chart.py
-    - tests/test_generate_dashboard_helm_manifests.py
-    - tests/test_helm_manifest_generator.py
-    - tests/test_mlflow_manifests.py
-    - tests/mlflow_install.sh
-    - scripts/generate-dashboard-helm-manifests.py
+    - common/**
+    - applications/**
+    - experimental/**
+    - scripts/**
+    - tests/**
     - .github/workflows/helm-kustomize-comparison.yml
   workflow_dispatch:
 
@@ -46,9 +16,45 @@ permissions:
   actions: read
 
 jobs:
-  validate-dex-unit-tests:
+  discover-components:
     runs-on: ubuntu-latest
-    name: Test Dex Helm behavior
+    name: Discover comparison components
+    outputs:
+      components: ${{ steps.discover.outputs.components }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.12'
+    - name: Install Python dependencies
+      run: python -m pip install pyyaml
+    # Validating descriptors here fails the workflow in seconds rather than once
+    # per matrix job, and a malformed descriptor would break discovery anyway.
+    - name: Test comparison descriptors
+      run: python tests/comparison_descriptors_test.py
+    - name: Test comparison normalization
+      run: |
+        python tests/helm_kustomize_compare_test.py
+        python -m unittest tests/helm_kustomize_compare_test.py
+    - name: Discover components
+      id: discover
+      run: |
+        components=$(python3 tests/run_helm_kustomize_comparison.py --list --json)
+        echo "components=${components}" >> "$GITHUB_OUTPUT"
+        echo "Discovered: ${components}"
+
+  compare:
+    needs: discover-components
+    runs-on: ubuntu-latest
+    name: Compare ${{ matrix.component }}
+    strategy:
+      # Every component reports its own verdict; one failure must not hide the
+      # others, because a shared change usually breaks several at once.
+      fail-fast: false
+      matrix:
+        component: ${{ fromJSON(needs.discover-components.outputs.components) }}
     steps:
     - name: Checkout code
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -66,168 +72,38 @@ jobs:
       run: |
         ./tests/kustomize_install.sh
         echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
-    - name: Test Helm comparison normalization
-      run: python tests/test_helm_kustomize_compare.py
+    - name: Compare Helm and Kustomize manifests
+      run: python3 tests/run_helm_kustomize_comparison.py "${{ matrix.component }}" --all-scenarios
+
+  chart-behavior-tests:
+    runs-on: ubuntu-latest
+    name: Test chart behavior
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.12'
+    - name: Install Python dependencies
+      run: python -m pip install pyyaml ruamel.yaml==0.19.1
+    - name: Install Helm
+      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+      with:
+        version: v4.2.2
+    - name: Install Kustomize
+      run: |
+        ./tests/kustomize_install.sh
+        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
     - name: Test Dex Helm behavior
-      run: python tests/test_dex_helm_rollout_checksums.py
-    - name: Compare Dex Helm and Kustomize manifests
-      env:
-        VERBOSE: "true"
-      run: ./tests/helm_kustomize_compare_all.sh dex
-
-  validate-comparison-unit-tests:
-    runs-on: ubuntu-latest
-    name: Test comparison normalization
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.12'
-    - name: Install Python dependencies
-      run: python -m pip install pyyaml
-    - name: Run comparison unit tests
-      run: python -m unittest tests/test_helm_kustomize_compare.py
-
-  validate-istio-unit-tests:
-    runs-on: ubuntu-latest
-    name: Test Istio Helm behavior
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.12'
-    - name: Install Python dependencies
-      run: python -m pip install pyyaml
-    - name: Install Helm
-      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
-      with:
-        version: v4.2.2
-    - name: Install Kustomize
-      run: |
-        ./tests/kustomize_install.sh
-        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
+      run: python tests/dex_helm_rollout_checksums_test.py
     - name: Test Istio Helm behavior
-      run: python tests/test_istio_helm_chart.py
-    - name: Compare Istio Helm and Kustomize manifests
-      env:
-        VERBOSE: "true"
-      run: ./tests/helm_kustomize_compare_all.sh istio
-
-  validate-dashboard:
-    runs-on: ubuntu-latest
-    name: Compare Dashboard Helm and Kustomize manifests
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.12'
-    - name: Install Python dependencies
-      run: python -m pip install pyyaml
-    - name: Install Helm
-      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
-      with:
-        version: v4.2.2
-    - name: Install Kustomize
-      run: |
-        ./tests/kustomize_install.sh
-        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
+      run: python tests/istio_helm_chart_test.py
     - name: Test Dashboard Helm behavior
-      run: python tests/test_dashboard_helm_chart.py
+      run: python tests/dashboard_helm_chart_test.py
+    - name: Test Notebooks Helm behavior
+      run: python tests/notebooks_helm_chart_test.py
     - name: Test Dashboard manifest generation
       run: |
-        python -m pip install ruamel.yaml==0.19.1
-        python tests/test_helm_manifest_generator.py
-        python tests/test_generate_dashboard_helm_manifests.py
-    - name: Compare Dashboard Helm and Kustomize manifests
-      env:
-        VERBOSE: "true"
-      run: ./tests/helm_kustomize_compare_all.sh kubeflow-dashboard
-
-  validate-notebooks:
-    runs-on: ubuntu-latest
-    name: Compare Notebooks Helm and Kustomize manifests
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.12'
-    - name: Install Python dependencies
-      run: python -m pip install pyyaml
-    - name: Install Helm
-      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
-      with:
-        version: v4.2.2
-    - name: Install Kustomize
-      run: |
-        ./tests/kustomize_install.sh
-        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
-    - name: Test Notebooks Helm behavior
-      run: python tests/test_notebooks_helm_chart.py
-    - name: Compare Notebooks Helm and Kustomize manifests
-      env:
-        VERBOSE: "true"
-      run: ./tests/helm_kustomize_compare_all.sh kubeflow-notebooks
-
-  validate-mlflow:
-    runs-on: ubuntu-latest
-    name: Compare MLflow Helm and Kustomize manifests
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.12'
-    - name: Install Python dependencies
-      run: python -m pip install pyyaml
-    - name: Install Helm
-      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
-      with:
-        version: v4.2.2
-    - name: Install Kustomize
-      run: |
-        ./tests/kustomize_install.sh
-        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
-    - name: Test MLflow manifests
-      run: python tests/test_mlflow_manifests.py
-    - name: Compare MLflow Helm and Kustomize manifests
-      env:
-        VERBOSE: "true"
-      run: ./tests/helm_kustomize_compare_all.sh mlflow
-
-  validate-helm-kustomize-equivalence:
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    name: Compare All Scenarios
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - name: Set up Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.12'
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyyaml
-    - name: Install Helm
-      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
-      with:
-        version: v4.2.2
-    - name: Install Kustomize
-      run: |
-        ./tests/kustomize_install.sh
-        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
-    - name: Run all scenarios comparison
-      env:
-        VERBOSE: "true"
-      run: |
-        ./tests/helm_kustomize_compare_all.sh
+        python tests/helm_manifest_generator_test.py
+        python tests/dashboard_helm_manifest_generator_test.py

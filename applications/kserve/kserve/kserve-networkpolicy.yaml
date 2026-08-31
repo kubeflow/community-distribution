@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kserve-webhooks
+  namespace: kserve
+spec:
+  podSelector:
+    matchExpressions:
+      - key: control-plane
+        operator: In
+        values:
+          - kserve-controller-manager
+          - kserve-localmodel-controller-manager
+          - llmisvc-controller-manager
+  # The Kubernetes API server must reach KServe admission webhooks. Do not
+  # restrict ingress sources here because API server source addresses and
+  # labels are cluster-provider specific. This policy only limits ingress to
+  # the webhook port on KServe control-plane pods; it does not open the
+  # controller metrics port 8443.
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 9443
+  policyTypes:
+    - Ingress

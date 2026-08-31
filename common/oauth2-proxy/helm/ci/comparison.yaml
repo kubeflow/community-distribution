@@ -1,0 +1,19 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: oauth2-proxy
+releaseName: oauth2-proxy
+namespace: oauth2-proxy
+includeCustomResourceDefinitions: true
+# The chart names its ConfigMaps and Secrets without Kustomize's content-hash
+# suffix, so the hash must be stripped from the Kustomize side only.
+helmUsesKustomizeNameHashes: false
+knownDifferences:
+- skip: Namespace/oauth2-proxy
+  reason: >
+    The Kustomize base creates the oauth2-proxy namespace; the chart is
+    installed into an existing namespace and renders none.
+scenarios:
+  m2m-dex-and-kind:
+    kustomize:
+    - common/oauth2-proxy/overlays/m2m-dex-and-kind
+    values: ci/values-m2m-dex-and-kind.yaml

@@ -1,0 +1,11 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: kubeflow-platform
+releaseName: kubeflow-platform
+namespace: kubeflow-system
+includeCustomResourceDefinitions: false
+scenarios:
+  platform-cluster-roles:
+    kustomize:
+    - common/kubeflow-roles/base
+    values: ci/values-default.yaml

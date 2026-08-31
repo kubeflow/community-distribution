@@ -20,12 +20,13 @@ jobs:
         python-version: "3.13"
 
     - name: Install Python dependencies
-      # PyYAML is required because the synchronization scripts now run the
-      # Helm/Kustomize parity comparison before committing.
+      # PyYAML is required because the synchronization scripts generate Helm
+      # payloads. They no longer compare parity; the per-component comparison
+      # jobs in helm-kustomize-comparison.yml are the authority on that.
       run: python -m pip install pyyaml ruamel.yaml==0.19.1
 
     - name: Test Helm synchronization library
-      run: python -m unittest tests/test_helm_synchronization_library.py
+      run: python -m unittest tests/helm_synchronization_library_test.py
 
     - name: Install Kustomize
       working-directory: /tmp
@@ -40,8 +41,8 @@ jobs:
 
     - name: Test Helm synchronization tooling
       run: |
-        python -m unittest tests/test_helm_manifest_generator.py
-        python -m unittest tests/test_generate_dashboard_helm_manifests.py
+        python -m unittest tests/helm_manifest_generator_test.py
+        python -m unittest tests/dashboard_helm_manifest_generator_test.py
 
     - name: Run upstream synchronization scripts for changed files
       run: |

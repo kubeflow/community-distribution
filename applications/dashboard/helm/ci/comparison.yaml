@@ -1,0 +1,34 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: kubeflow-dashboard
+releaseName: kubeflow-dashboard
+namespace: kubeflow
+includeCustomResourceDefinitions: false
+# The chart names its ConfigMaps without Kustomize's content-hash suffix, so
+# the hash must be stripped from the Kustomize side only; stripping it from
+# the Helm side too would truncate a legitimate ten-character name segment.
+helmUsesKustomizeNameHashes: false
+knownDifferences:
+- resource: Deployment/kubeflow/dashboard
+  ignorePodTemplateAnnotations: [checksum/config]
+  reason: >
+    The chart triggers a rollout on configuration changes with a checksum
+    annotation; Kustomize achieves the same effect through the content-hashed
+    ConfigMap name and renders no annotation.
+- resource: Deployment/kubeflow/profiles-deployment
+  ignorePodTemplateAnnotations: [checksum/config]
+  reason: >
+    Same rollout mechanism as the dashboard Deployment: a checksum annotation
+    replaces Kustomize's content-hashed ConfigMap name.
+retainedCustomResourceDefinitions:
+  reason: >
+    helm uninstall must leave the PodDefault and Profile definitions, and
+    with them every user's profile, behind.
+  names:
+  - poddefaults.kubeflow.org
+  - profiles.kubeflow.org
+scenarios:
+  platform:
+    kustomize:
+    - applications/dashboard/overlays/istio
+    values: ci/values-platform.yaml

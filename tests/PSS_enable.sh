@@ -8,7 +8,7 @@ PSS_LEVEL="${1:-restricted}"
     exit 1
 }
 
-NAMESPACES=("istio-system" "auth" "cert-manager" "oauth2-proxy" "kubeflow" "knative-serving" "kubeflow-system" "kubeflow-workspaces")
+NAMESPACES=("istio-system" "auth" "cert-manager" "oauth2-proxy" "kubeflow" "kserve" "knative-serving" "kubeflow-system" "kubeflow-workspaces")
 [[ "$PSS_LEVEL" == "baseline" ]] && NAMESPACES+=("kubeflow-user-example-com")
 
 echo "Applying PSS $PSS_LEVEL to: ${NAMESPACES[*]}"

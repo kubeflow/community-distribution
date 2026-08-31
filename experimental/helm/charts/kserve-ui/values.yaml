@@ -62,28 +62,28 @@ app:
     env:
       - name: GUNICORN_CMD_ARGS
         value: "--limit-request-field_size 32000"
-    
+
   # -- Application container port
   containerPort: 5000
-  
+
   # -- Application resource requests and limits
   resources: {}
-    
+
   # -- Node selector for application pods
   nodeSelector: {}
-  
+
   # -- Tolerations for application pods
   tolerations: []
-  
+
   # -- Affinity rules for application pods
   affinity: {}
-  
+
   # -- Security context for application pods
   podSecurityContext:
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
-    
+
   # -- Security context for application containers
   securityContext:
     allowPrivilegeEscalation: false
@@ -91,19 +91,19 @@ app:
       drop:
       - ALL
     runAsUser: 1000
-    
+
   # -- Extra labels for application pods
   labels: {}
-  
+
   # -- Extra annotations for application pods
   annotations: {}
-  
+
   # -- Volume mounts for application containers
   volumeMounts: []
-  
+
   # -- Volumes for application pods
   volumes: []
-  
+
   # Liveness probe configuration
   livenessProbe:
     # -- Enable liveness probe
@@ -120,7 +120,7 @@ app:
     failureThreshold: 3
     # -- Liveness probe success threshold
     successThreshold: 1
-    
+
   # Readiness probe configuration
   readinessProbe:
     # -- Enable readiness probe
@@ -159,7 +159,7 @@ service:
 rbac:
   # -- Create RBAC resources
   create: true
-  
+
   serviceAccount:
     # -- Create service account
     create: true
@@ -169,7 +169,7 @@ rbac:
     annotations: {}
     # -- Whether to automount service account token
     automountServiceAccountToken: true
-    
+
   clusterRole:
     # -- Create cluster role
     create: true
@@ -177,7 +177,7 @@ rbac:
     name: ""
     # -- Additional rules for cluster role
     rules: []
-    
+
   clusterRoleBinding:
     # -- Create cluster role binding
     create: true
@@ -188,11 +188,11 @@ rbac:
 istio:
   # -- Enable Istio integration
   enabled: true
-  
+
   # -- Enable Istio sidecar injection
   sidecarInjection:
     enabled: true
-    
+
   virtualService:
     # -- Enable VirtualService
     enabled: true
@@ -210,7 +210,7 @@ istio:
     annotations: {}
     # -- VirtualService labels
     labels: {}
-    
+
   authorizationPolicy:
     # -- Enable AuthorizationPolicy
     enabled: true

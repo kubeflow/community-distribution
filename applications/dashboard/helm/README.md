@@ -138,8 +138,9 @@ upstream document from `manifests/documents/` byte for byte. Set it to replace
 the document entirely.
 
 Changing any value that feeds a ConfigMap updates a checksum annotation on the
-consuming Deployment, so `helm upgrade` restarts the workload. Kustomize achieves
-the same result through content-hashed ConfigMap names.
+consuming Deployment, so `helm upgrade` restarts the workload. Kustomize hashes
+its generated ConfigMap names for the same effect; `dashboard-config` is the
+exception and keeps a stable name on both sides.
 
 ## Caveats
 
@@ -201,8 +202,13 @@ an administrator or another release already owns both definitions.
 
 ```bash
 helm lint applications/dashboard/helm --namespace kubeflow
-./tests/helm_kustomize_compare.sh kubeflow-dashboard platform
-./tests/helm_kustomize_compare_all.sh kubeflow-dashboard
-python3 tests/test_dashboard_helm_chart.py
-python3 tests/test_generate_dashboard_helm_manifests.py
+python3 tests/run_helm_kustomize_comparison.py kubeflow-dashboard platform
+python3 tests/run_helm_kustomize_comparison.py kubeflow-dashboard --all-scenarios
+python3 tests/dashboard_helm_chart_test.py
+python3 tests/dashboard_helm_manifest_generator_test.py
 ```
+
+How this chart is compared, including every declared allowance, is in
+[`ci/comparison.yaml`](ci/comparison.yaml); the descriptor format is documented in
+[`tests/README.md`](../../../tests/README.md).
+

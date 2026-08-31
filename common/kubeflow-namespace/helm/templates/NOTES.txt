@@ -5,6 +5,7 @@
   (dict "name" "istio-system" "enabled" .Values.platformNamespaces.istioSystem.enabled)
   (dict "name" "oauth2-proxy" "enabled" .Values.platformNamespaces.oauth2Proxy.enabled)
   (dict "name" "auth" "enabled" .Values.platformNamespaces.auth.enabled)
+  (dict "name" "kserve" "enabled" .Values.platformNamespaces.kserve.enabled)
 -}}
 {{- $skippedNamespaces := list -}}
 Kubeflow namespace foundation status:

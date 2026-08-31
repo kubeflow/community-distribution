@@ -3,6 +3,7 @@ kind: Component
 
 resources:
 - monitor.yaml
+- network-policy.yaml
 - service.yaml
 
 patches:
