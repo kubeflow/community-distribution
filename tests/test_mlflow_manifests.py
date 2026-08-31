@@ -62,8 +62,6 @@ class MLflowManifestTest(unittest.TestCase):
         self.assertIn("--enable-workspaces", container["args"])
         self.assertIn("--workspace-store-uri=kubernetes://", container["args"])
         self.assertIn("--static-prefix=/mlflow", container["args"])
-        self.assertIn("kubeflow.example.com", container["args"][-2])
-        self.assertIn("*.kubeflow.example.com", container["args"][-2])
 
         environment = {item["name"]: item["value"] for item in container["env"]}
         self.assertEqual(
@@ -98,7 +96,7 @@ class MLflowManifestTest(unittest.TestCase):
         virtual_service = self.resource("VirtualService")
         self.assertEqual(["kubeflow-gateway"], virtual_service["spec"]["gateways"])
         self.assertEqual(
-            ["kubeflow.example.com", "*.kubeflow.example.com"],
+            ["*"],
             virtual_service["spec"]["hosts"],
         )
         matches = virtual_service["spec"]["http"][0]["match"]

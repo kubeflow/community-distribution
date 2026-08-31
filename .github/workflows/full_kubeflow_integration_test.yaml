@@ -106,6 +106,9 @@ jobs:
     - name: Port-forward the istio-ingress gateway
       run: ./tests/port_forward_gateway.sh
 
+    - name: Test MLflow through the Kubeflow gateway
+      run: ./tests/mlflow_test.sh "${KF_PROFILE}"
+
     #  name: Setup OAuth2 and Dex Credentials
     #  run: chmod +x tests/oauth2_dex_credentials.sh && ./tests/oauth2_dex_credentials.sh
 

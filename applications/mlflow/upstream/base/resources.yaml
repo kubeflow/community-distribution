@@ -351,8 +351,7 @@ spec:
   gateways:
     - kubeflow-gateway
   hosts:
-    - kubeflow.example.com
-    - "*.kubeflow.example.com"
+    - "*"
   http:
     - match:
         - uri:

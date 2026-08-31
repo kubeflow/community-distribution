@@ -9,7 +9,6 @@ mlflow:
   workspaceStoreUri: kubernetes://
   workspaceLabelSelector: app.kubernetes.io/part-of=kubeflow-profile
   authorizationMode: subject_access_review
-  # Keep this list aligned with the Kubeflow gateway host configuration.
   allowedHosts:
     - kubeflow.example.com
     - "*.kubeflow.example.com"
@@ -41,8 +40,7 @@ istio:
     gateways:
       - kubeflow-gateway
     hosts:
-      - kubeflow.example.com
-      - "*.kubeflow.example.com"
+      - "*"
   authorizationPolicy:
     enabled: true
     action: ALLOW
