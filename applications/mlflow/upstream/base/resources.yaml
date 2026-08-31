@@ -1,0 +1,365 @@
+---
+# Source: mlflow/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: mlflow
+      app.kubernetes.io/instance: mlflow
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 5000
+        - protocol: TCP
+          port: 15020
+        - protocol: TCP
+          port: 15021
+        - protocol: TCP
+          port: 15090
+      from:
+        - podSelector: {}
+        - namespaceSelector: {}
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 5000
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 5353
+        - protocol: TCP
+          port: 5353
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443
+        - protocol: TCP
+          port: 8443
+    - ports:
+        - protocol: TCP
+          port: 15012
+        - protocol: TCP
+          port: 15014
+    - ports:
+        - protocol: TCP
+          port: 5432
+    - ports:
+        - protocol: TCP
+          port: 3306
+    - ports:
+        - protocol: TCP
+          port: 9000
+        - protocol: TCP
+          port: 8333
+        - protocol: TCP
+          port: 8334
+---
+# Source: mlflow/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: mlflow/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+# Source: mlflow/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mlflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["mlflow-artifact-connection"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["mlflow.kubeflow.org"]
+    resources: ["mlflowconfigs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+---
+# Source: mlflow/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: mlflow
+subjects:
+  - kind: ServiceAccount
+    name: mlflow
+    namespace: kubeflow
+---
+# Source: mlflow/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/component: server
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: http
+  type: ClusterIP
+---
+# Source: mlflow/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mlflow
+      app.kubernetes.io/instance: mlflow
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mlflow
+        app.kubernetes.io/instance: mlflow
+        app.kubernetes.io/component: server
+    spec:
+      serviceAccountName: mlflow
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi
+        - name: mlflow-storage
+          persistentVolumeClaim:
+            claimName: mlflow
+
+      containers:
+        - name: mlflow
+          image: ghcr.io/kubeflow/mlflow-integration:v1.6.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - mlflow
+          args:
+            - server
+            - --serve-artifacts
+            - --artifacts-destination=file:///mlflow/artifacts
+            - --app-name=kubernetes-auth
+            - --enable-workspaces
+            - --workspace-store-uri=kubernetes://
+            - --host=0.0.0.0
+            - --port=5000
+            - --workers=1
+            - --allowed-hosts
+            - "localhost,127.0.0.1,[::1],0.0.0.0,localhost:*,127.0.0.1:*,[[]::1]:*,0.0.0.0:*,192.168.*,10.*,172.16.*,172.17.*,172.18.*,172.19.*,172.20.*,172.21.*,172.22.*,172.23.*,172.24.*,172.25.*,172.26.*,172.27.*,172.28.*,172.29.*,172.30.*,172.31.*,fc00:*,fd00:*,kubeflow.example.com,*.kubeflow.example.com,mlflow,mlflow:*,mlflow.kubeflow,mlflow.kubeflow:*,mlflow.kubeflow.svc,mlflow.kubeflow.svc:*,mlflow.kubeflow.svc.cluster.local,mlflow.kubeflow.svc.cluster.local:*"
+            - --static-prefix=/mlflow
+          env:
+            - name: MLFLOW_DISABLE_TELEMETRY
+              value: "true"
+            - name: MLFLOW_SERVER_ENABLE_JOB_EXECUTION
+              value: "false"
+            - name: MLFLOW_BACKEND_STORE_URI
+              value: "sqlite:////mlflow/mlflow.db"
+            - name: MLFLOW_K8S_AUTH_AUTHORIZATION_MODE
+              value: "subject_access_review"
+            - name: MLFLOW_K8S_WORKSPACE_LABEL_SELECTOR
+              value: "app.kubernetes.io/part-of=kubeflow-profile"
+            - name: MLFLOW_SERVER_DISABLE_SECURITY_MIDDLEWARE
+              value: "false"
+            - name: MLFLOW_K8S_AUTH_REMOTE_USER_HEADER
+              value: "kubeflow-userid"
+            - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_HEADER
+              value: "kubeflow-groups"
+            - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_SEPARATOR
+              value: ","
+          ports:
+            - name: http
+              containerPort: 5000
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: mlflow-storage
+              mountPath: /mlflow
+          livenessProbe:
+            httpGet:
+              path: /mlflow/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /mlflow/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+---
+# Source: mlflow/templates/istio/authorizationpolicy.yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mlflow
+      app.kubernetes.io/instance: mlflow
+      app.kubernetes.io/component: server
+  rules:
+    - from:
+      - source:
+          principals:
+          - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
+---
+# Source: mlflow/templates/istio/destinationrule.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  host: mlflow.kubeflow.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+# Source: mlflow/templates/istio/virtualservice.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: mlflow
+  namespace: kubeflow
+  labels:
+    helm.sh/chart: mlflow-0.1.0
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/instance: mlflow
+    app.kubernetes.io/version: "3.13.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  gateways:
+    - kubeflow-gateway
+  hosts:
+    - "*"
+  http:
+    - match:
+        - uri:
+            prefix: /mlflow/
+        - uri:
+            exact: /mlflow
+      route:
+        - destination:
+            host: mlflow.kubeflow.svc.cluster.local
+            port:
+              number: 5000

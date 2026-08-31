@@ -1,0 +1,68 @@
+image:
+  repository: ghcr.io/kubeflow/mlflow-integration
+  tag: v1.6.0
+  pullPolicy: IfNotPresent
+
+mlflow:
+  backendStoreUri: sqlite:////mlflow/mlflow.db
+  artifactsDestination: file:///mlflow/artifacts
+  workspaceStoreUri: kubernetes://
+  workspaceLabelSelector: app.kubernetes.io/part-of=kubeflow-profile
+  authorizationMode: subject_access_review
+  allowedHosts:
+    - kubeflow.example.com
+    - "*.kubeflow.example.com"
+  staticPrefix: /mlflow
+  port: 5000
+
+env:
+  - name: MLFLOW_K8S_AUTH_REMOTE_USER_HEADER
+    value: kubeflow-userid
+  - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_HEADER
+    value: kubeflow-groups
+  - name: MLFLOW_K8S_AUTH_REMOTE_GROUPS_SEPARATOR
+    value: ","
+
+service:
+  port: 5000
+
+storage:
+  enabled: true
+  size: 2Gi
+
+tls:
+  enabled: false
+
+istio:
+  enabled: true
+  virtualService:
+    enabled: true
+    gateways:
+      - kubeflow-gateway
+    hosts:
+      - "*"
+  authorizationPolicy:
+    enabled: true
+    action: ALLOW
+    rules:
+      - from:
+          - source:
+              principals:
+                - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
+  destinationRule:
+    enabled: true
+    trafficPolicy:
+      tls:
+        mode: ISTIO_MUTUAL
+
+networkPolicy:
+  enabled: true
+
+metrics:
+  enabled: false
+
+garbageCollection:
+  enabled: false
+
+traceArchival:
+  enabled: false
