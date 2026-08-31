@@ -54,6 +54,24 @@ agent_catalogs:
     labels:
       - Enterprise
 
+# skill_catalogs are git-backed (type: git-skills-plugin): the listed repositories
+# are resolved at sync time by a temporary, discarded clone — no skill content is
+# vendored into this repo. refs must be immutable (tags/SHAs); branches and HEAD
+# are refused by the resolver.
+skill_catalogs:
+  - name: "Matt Pocock's Skills"
+    id: mattpocock_skills
+    type: git-skills-plugin
+    enabled: true
+    properties:
+      repositories:
+        - url: https://github.com/mattpocock/skills
+          refs: [v1.2.3]
+          trustTier: communityContributed
+          provider: Matt Pocock
+    labels:
+      - Community
+
 # namedQueries define reusable server-side filter presets that clients can
 # reference by name via the `namedQuery` API parameter. Multiple config files
 # can contribute queries; later files override individual fields within a query

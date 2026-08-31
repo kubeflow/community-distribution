@@ -20,6 +20,12 @@ configMapGenerator:
   name: mcp-catalog-sources
   options:
     disableNameSuffixHash: true
+- behavior: create
+  files:
+  - sources.yaml=skill-sources.yaml
+  name: skill-catalog-sources
+  options:
+    disableNameSuffixHash: true
 
 secretGenerator:
 - envs:
@@ -35,4 +41,4 @@ secretGenerator:
 images:
 - name: ghcr.io/kubeflow/hub/server
   newName: ghcr.io/kubeflow/hub/server
-  newTag: v0.3.14
+  newTag: v0.3.16

@@ -32,6 +32,13 @@ spec:
       - name: mcp-sources
         configMap:
           name: mcp-catalog-sources
+      - name: skill-sources
+        configMap:
+          name: skill-catalog-sources
+      - name: skill-git-credentials
+        secret:
+          secretName: skill-catalog-git-credentials
+          optional: true
       containers:
         - name: catalog
           env:
@@ -60,6 +67,7 @@ spec:
             - --listen=0.0.0.0:8080
             - --catalogs-path=/catalog/sources.yaml
             - --catalogs-path=/mcp-catalog/sources.yaml
+            - --catalogs-path=/skill-catalog/sources.yaml
           image: ghcr.io/kubeflow/hub/server:latest
           ports:
             - name: http-api
@@ -86,3 +94,8 @@ spec:
             mountPath: /catalog
           - name: mcp-sources
             mountPath: /mcp-catalog
+          - name: skill-sources
+            mountPath: /skill-catalog
+          - name: skill-git-credentials
+            mountPath: /etc/skill-catalog/git-credentials
+            readOnly: true

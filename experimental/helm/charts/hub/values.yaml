@@ -18,7 +18,7 @@ global:
   # -- Image registry for Model Registry images
   imageRegistry: ghcr.io/kubeflow/hub
   # -- Global image tag for all Model Registry components
-  imageTag: v0.3.14
+  imageTag: v0.3.16
   # -- Global image pull policy
   imagePullPolicy: IfNotPresent
   # -- Global image pull secrets

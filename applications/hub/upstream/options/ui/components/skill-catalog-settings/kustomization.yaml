@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+# Opt-in only - required to support PRIVATE git repositories as skill catalog
+# sources. It grants the UI ServiceAccount write access to the skill catalog
+# source config and its git credentials, so it is not enabled by default.
+#
+# Enable it by uncommenting the components block in options/ui/base/kustomization.yaml,
+# or add it directly to an overlay:
+#
+#   components:
+#   - ../../components/skill-catalog-settings
+#
+# Public skill sources need none of this - the catalog mounts the credentials
+# Secret with optional: true.
+#
+resources:
+- skill-catalog-settings-rbac.yaml

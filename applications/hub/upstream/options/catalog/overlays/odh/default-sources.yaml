@@ -1,39 +1,91 @@
 catalogs:
   - name: Red Hat AI
-    id: redhat_ai
+    id: redhat_ai_models
     enabled: true
     type: yaml
     properties:
-      yamlCatalogPath: /shared-data/catalog/models-catalog.yaml
+      yamlCatalogPath: /shared-data/models-catalog.yaml
     labels:
       - Red Hat AI
   - name: Red Hat AI validated
-    id: redhat_ai_validated
+    id: redhat_ai_validated_models
     enabled: true
     type: yaml
     properties:
-      yamlCatalogPath: /shared-data/catalog/validated-models-catalog.yaml
+      yamlCatalogPath: /shared-data/validated-models-catalog.yaml
     labels:
       - Red Hat AI validated
+  - name: Other
+    id: other_models
+    enabled: true
+    type: yaml
+    properties:
+      yamlCatalogPath: /shared-data/other-models-catalog.yaml
 labels:
   - name: Red Hat AI validated
     displayName: Red Hat AI - validated models
     description: Third-party models verified by Red Hat to ensure reliable performance and compatibility. Some of these include validated runtime arguments for enabling additional capabilities.
+    assetType: models
   - name: Red Hat AI
+    assetType: models
     description: Red Hat models with full support and legal indemnification.
   - name: null
-    displayName: Community and custom
+    assetType: models
+    displayName: Other models
     description: A broad collection of third-party, community, and admin-configured models.
+  - name: Red Hat
+    assetType: mcp_servers
+    displayName: Red Hat MCP servers
+    description: Official Red Hat MCP servers with support.
+  - name: Red Hat Partners
+    assetType: mcp_servers
+    displayName: Red Hat Partner MCP servers
+    description: A collection of Red Hat Partner MCP servers.
+  - name: Red Hat Agents
+    assetType: agents
+    displayName: Agent templates
+    description: Browse templates from the Red Hat agentic starter kits collection. An agent template is a pre-built starting point for deploying agents.
 namedQueries:
   default-performance-filters:
-    assetType: models
-    filters:
-      "artifacts.use_case.string_value":
-        operator: "="
-        value: chatbot
-      "artifacts.requests_per_second.double_value":
-        operator: "<="
-        value: 1
-      "artifacts.ttft_p90.double_value":
-        operator: "<="
-        value: max
+    "artifacts.use_case.string_value":
+      operator: "="
+      value: chatbot
+    "artifacts.requests_per_second.double_value":
+      operator: "<="
+      value: 1
+    "artifacts.ttft_p90.double_value":
+      operator: "<="
+      value: max
+mcp_catalogs:
+  - name: Red Hat MCP Servers
+    id: rh_mcp_servers
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: /shared-data/redhat-mcp-servers-catalog.yaml
+    labels:
+      - Red Hat
+  - name: Red Hat Partner MCP Servers
+    id: rh_partner_mcp_servers
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: /shared-data/partner-mcp-servers-catalog.yaml
+    labels:
+      - Red Hat Partners
+  - name: Community MCP Servers
+    id: community_mcp_servers
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: /shared-data/community-mcp-servers-catalog.yaml
+agent_catalogs:
+  - name: Red Hat Agents
+    id: rh_agents
+    type: yaml
+    enabled: true
+    properties:
+      yamlCatalogPath: /shared-data/redhat-agents-catalog.yaml
+    labels:
+      - Red Hat Agents
+skill_catalogs: []

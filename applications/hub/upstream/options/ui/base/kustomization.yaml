@@ -7,7 +7,22 @@ resources:
 - model-registry-ui-deployment.yaml
 - model-registry-ui-service-account.yaml
 
+# Uncomment to support PRIVATE git repositories as skill catalog sources.
+#
+# Private repos need a per-repository token, and the skill catalog settings page
+# stores those tokens in the skill-catalog-git-credentials Secret. This component
+# creates that Secret and grants the model-registry-ui ServiceAccount the
+# namespaced get/update it needs to manage the Secret and the skill source
+# ConfigMaps. Leave it commented out if all your skill sources are public - the
+# catalog mounts the Secret with optional: true, so public repos work without it.
+#
+# Enabling this lets anyone who can reach the settings page write git credentials
+# and change which repositories the catalog clones, so turn it on deliberately.
+#
+# components:
+# - ../components/skill-catalog-settings
+
 images:
 - name: model-registry-ui
   newName: ghcr.io/kubeflow/hub/ui
-  newTag: v0.3.14
+  newTag: v0.3.16

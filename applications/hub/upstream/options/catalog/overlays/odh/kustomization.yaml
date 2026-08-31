@@ -51,7 +51,7 @@ patches:
           command:
             - /bin/sh
             - -c
-            - mkdir /shared-data/catalog && cp /app/data/models-catalog.yaml /app/data/validated-models-catalog.yaml /shared-data/catalog/
+            - cp /app/data/*.yaml /shared-data/
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data

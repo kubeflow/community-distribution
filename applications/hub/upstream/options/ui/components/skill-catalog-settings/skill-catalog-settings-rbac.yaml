@@ -1,0 +1,95 @@
+---
+# The skill catalog settings page lets an admin manage skill sources and their git
+# tokens. The BFF runs with --auth-method=internal, so these calls are made as the
+# model-registry-ui ServiceAccount rather than as the signed-in user, and the
+# catalog runs in the same namespace as the UI. A namespaced Role keeps this off
+# every other namespace's Secrets.
+#
+# Every rule below is pinned with resourceNames, and no rule grants `create`.
+# That is deliberate: Kubernetes does not evaluate resourceNames for `create`
+# (the object name is not known at authorization time), so an unnamed
+# `create` on secrets would let this ServiceAccount mint a
+# kubernetes.io/service-account-token Secret for any ServiceAccount in the
+# namespace and then read the resulting token back through the named `get` rule.
+# Instead, every object the settings page writes is pre-created:
+#   - skill-catalog-sources comes from the catalog's configMapGenerator
+#     (disableNameSuffixHash: true, so the name is stable)
+#   - skill-catalog-git-credentials is the empty Secret created below
+#
+# If the Secret name changes, update the catalog Deployment's volume to match.
+#
+# default-catalog-sources only ever needs `get`: the BFF reads it to merge
+# platform-shipped defaults with user sources but never writes to it (see
+# GetAllSkillCatalogSourceConfigs in shared_k8s_client.go). Granting `update`
+# there would let this ServiceAccount overwrite platform-managed defaults for
+# every catalog type (model/mcp/skill all share this one ConfigMap) for no
+# functional benefit, so it is deliberately excluded.
+#
+# skill-catalog-sources IS the ConfigMap the settings page writes to, and it
+# is also configMapGenerator-owned. On a GitOps deployment (kubectl apply -k /
+# ArgoCD), the next sync regenerates its data from skill-sources.yaml and
+# silently reverts any source an admin added through the UI. Models and MCP
+# have this same exposure once their own settings pages gain write RBAC;
+# skills need a genuinely user-managed (non-generated) ConfigMap before this
+# Role is safe to enable anywhere GitOps reconciles the catalog manifests.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: skill-catalog-git-credentials
+  annotations:
+    # Created empty so the settings page can populate it with `update` alone and
+    # never needs the `create` verb. The catalog Deployment mounts it with
+    # optional: true, so an empty Secret simply yields no token files.
+    kubeflow.org/description: >-
+      Per-repository git tokens for private skill catalog sources, keyed by each
+      repository's credentialRef. Managed by the skill catalog settings page.
+type: Opaque
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: model-registry-ui-skill-catalog-settings
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - default-catalog-sources
+  verbs:
+  - get
+# TODO: skill-catalog-sources is kustomize-generated, so a source an admin adds
+# through the settings page is reverted on the next GitOps sync. Models and MCP
+# will hit this same issue once their own settings pages gain write RBAC; skills
+# need a genuinely user-managed (non-generated) ConfigMap before this rule is
+# safe to enable by default anywhere.
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - skill-catalog-sources
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  resourceNames:
+  - skill-catalog-git-credentials
+  verbs:
+  - get
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: model-registry-ui-skill-catalog-settings-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: model-registry-ui-skill-catalog-settings
+subjects:
+- kind: ServiceAccount
+  name: model-registry-ui
