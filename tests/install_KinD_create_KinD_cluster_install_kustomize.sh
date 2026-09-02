@@ -4,6 +4,20 @@ set -euxo pipefail
 KIND_VERSION="v0.32.0"
 KIND_NODE_IMAGE="kindest/node:v1.36.1@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5"
 KUSTOMIZE_VERSION="v5.8.1"
+
+case "$(uname -m)" in
+    x86_64)
+        ARCH="amd64"
+        ;;
+    aarch64|arm64)
+        ARCH="arm64"
+        ;;
+    *)
+        echo "Unsupported architecture: $(uname -m)"
+        exit 1
+        ;;
+esac
+
 USER_BINARY_DIRECTORY="$HOME/.local/bin"
 
 if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
@@ -28,14 +42,14 @@ if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
 fi
 
 {
-    curl -Lo ./kind-linux-amd64 https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-linux-amd64
-    curl -Lo ./kind-linux-amd64.sha256sum https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-linux-amd64.sha256sum
-    if ! sha256sum --check kind-linux-amd64.sha256sum; then
+    curl -Lo "./kind-linux-${ARCH}" "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-${ARCH}"
+    curl -Lo "./kind-linux-${ARCH}.sha256sum" "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-${ARCH}.sha256sum"
+    if ! sha256sum --check "kind-linux-${ARCH}.sha256sum"; then
        echo "Failed to verify KinD checksums"
        exit 1
     fi
-    chmod +x ./kind-linux-amd64
-    mv kind-linux-amd64 "${USER_BINARY_DIRECTORY}/kind"
+    chmod +x "./kind-linux-${ARCH}"
+    mv "./kind-linux-${ARCH}" "${USER_BINARY_DIRECTORY}/kind"
 } || { echo "Failed to install KinD"; exit 1; }
 
 
@@ -68,7 +82,7 @@ nodes:
 
 echo "Install kubectl ..."
 {
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
     chmod +x ./kubectl
     mv kubectl "${USER_BINARY_DIRECTORY}/kubectl"
 } || { echo "Failed to install kubectl"; exit 1; }
@@ -77,7 +91,7 @@ kubectl cluster-info
 
 echo "Install Kustomize ..."
 {
-    KUSTOMIZE_ASSET="kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"
+    KUSTOMIZE_ASSET="kustomize_${KUSTOMIZE_VERSION}_linux_${ARCH}.tar.gz"
     curl --fail --show-error --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/${KUSTOMIZE_ASSET}"
     curl --fail --show-error --silent --location "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/checksums.txt" | grep "  ${KUSTOMIZE_ASSET}$" > checksums.txt
     if [ "$(wc -l < checksums.txt)" -ne 1 ]; then

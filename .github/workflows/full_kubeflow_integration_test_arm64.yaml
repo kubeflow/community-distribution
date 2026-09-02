@@ -1,0 +1,250 @@
+name: Test Full Kubeflow Integration on ARM64
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  KF_PROFILE: kubeflow-user-example-com
+
+jobs:
+  full_kubeflow_integration_test_arm64:
+    name: Kubeflow Installation and Testing on ARM64
+    runs-on:
+      labels: ubuntu-24.04-arm
+      # labels: ubuntu-latest-16-cores
+    timeout-minutes: 45
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Verify ARM64 runner
+      run: |
+        test "$(uname -m)" = "aarch64"
+        echo "Running on ARM64: $(uname -m)"
+        docker version
+
+    - name: Install KinD, Create KinD cluster and Install kustomize
+      run: ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+
+    - name: Verify Kubernetes tooling
+      run: |
+        uname -m
+        kind version
+        kubectl version --client
+        kustomize version
+
+    - name: Create Kubeflow Namespace
+      run: kustomize build common/kubeflow-namespace/base | kubectl apply -f -
+
+    - name: Install Certificate Manager
+      run: ./tests/cert_manager_install.sh
+
+    - name: Install Istio CNI
+      run: ./tests/istio-cni_install.sh
+
+    - name: Install OAuth2 Proxy
+      run: ./tests/oauth2-proxy_install.sh
+
+    - name: Install Kubeflow Istio Resources
+      run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install Multi-Tenancy
+      run: ./tests/multi_tenancy_install.sh
+
+    - name: Install Dex
+      run: ./tests/dex_install.sh
+
+    - name: Install Dashboard
+      run: ./tests/dashboard_install.sh
+
+    - name: Install Knative Serving
+      run: ./tests/knative_serving_install.sh
+
+    - name: Install Knative Eventing
+      run: ./tests/knative_eventing_install.sh
+
+    - name: Install KServe
+      run: ./tests/kserve_install.sh
+
+    - name: Install Pipelines with SeaweedFS
+      run: ./tests/pipelines_install_arm64.sh
+
+    - name: Create KF Profile
+      run: ./tests/kubeflow_profile_install.sh
+
+    - name: Install Notebooks v1
+      run: ./tests/notebooks_install.sh
+
+    - name: Install Katib
+      run: ./tests/katib_install.sh
+
+    - name: Install Trainer
+      run: ./tests/trainer_install.sh
+
+    - name: Install Ray
+      run: |
+        cd experimental/ray/
+        kustomize build kuberay-operator/overlays/kubeflow | kubectl -n kubeflow apply --server-side -f -
+        kubectl -n kubeflow wait --for=condition=available --timeout=60s deploy/kuberay-operator
+
+    - name: Install Model Registry
+      run: ./tests/model_registry_install.sh
+
+    - name: Install Model Catalog
+      run: ./tests/model_catalog_install.sh
+
+    - name: Install Spark
+      run: chmod u+x tests/*.sh && ./tests/spark_install.sh
+
+    - name: Install Kubeflow Workspaces
+      run: ./tests/workspaces_install.sh
+
+    - name: Wait for All Pods to be Ready
+      run: kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 90s --field-selector=status.phase!=Succeeded
+
+    - name: Port-forward the istio-ingress gateway
+      run: ./tests/port_forward_gateway.sh
+
+    - name: Run Trainer Test
+      run: ./tests/trainer_test.sh "${KF_PROFILE}"
+
+    - name: Test Dex Login
+      run: |
+        pip3 install -q requests
+        python3 tests/dex_login_test.py
+        echo "Dex login test completed successfully."
+
+    - name: Verify Pipeline Integration
+      run: |
+        if ! kubectl get secret mlpipeline-minio-artifact -n "$KF_PROFILE" > /dev/null 2>&1; then
+          echo "Error: Secret mlpipeline-minio-artifact not found in namespace $KF_PROFILE"
+          exit 1
+        fi
+        kubectl get secret mlpipeline-minio-artifact -n "$KF_PROFILE" -o json | jq -r '.data | keys[] as $k | "\($k): \(. | .[$k] | @base64d)"' | tr '\n' ' '
+
+    - name: Install lib2to3 for KFP V1 SDK with Python3.12
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-lib2to3
+
+    - name: V1 Pipeline Test
+      run: |
+        pip3 install "kfp>=1.8.24,<2.0.0"
+        TOKEN="$(kubectl -n "$KF_PROFILE" create token default-editor)"
+        python3 tests/pipeline_v1_test.py "${TOKEN}" "${KF_PROFILE}"
+
+    - name: V2 Pipeline Test
+      run: |
+        pip3 install -U "kfp>=2.17.0" kfp-kubernetes
+        TOKEN="$(kubectl -n "$KF_PROFILE" create token default-editor)"
+        python3 tests/pipeline_v2_test.py run_pipeline "${TOKEN}" "${KF_PROFILE}"
+
+    - name: Test Pipeline Access with Unauthorized Token
+      run: |
+        kubectl create namespace test-unauthorized
+        kubectl create serviceaccount test-unauthorized -n test-unauthorized
+        UNAUTHORIZED_TOKEN="$(kubectl -n test-unauthorized create token test-unauthorized)"
+        python3 tests/pipeline_v2_test.py test_unauthorized_access "$UNAUTHORIZED_TOKEN" "${KF_PROFILE}"
+
+    - name: Test SeaweedFS Namespace Isolation
+      run: ./tests/swfs_namespace_isolation_test.sh
+
+    - name: Test Volumes Web Application API
+      run: ./tests/volumes_web_application_test.sh "${KF_PROFILE}"
+
+    - name: Apply PodDefault for Pipeline Access Token
+      run: sed "s/kubeflow-user-example-com/$KF_PROFILE/g" tests/poddefaults.access-ml-pipeline.kubeflow-user-example-com.yaml | kubectl apply -f -
+
+    - name: Create Test Notebook
+      run: |
+        sed "s/kubeflow-user-example-com/$KF_PROFILE/g" tests/notebook.test.kubeflow-user-example.com.yaml | kubectl apply -f -
+        kubectl wait --for=condition=Ready pod -l app=test -n "$KF_PROFILE" --timeout=180s
+
+    - name: Copy and execute the pipeline run script in KF Notebook
+      run: |
+        cp tests/pipeline_run_and_wait_kubeflow.py /tmp/run_pipeline_temp.py
+        sed -i "s/experiment_namespace = \"kubeflow-user-example-com\"/experiment_namespace = \"$KF_PROFILE\"/g" /tmp/run_pipeline_temp.py
+        sed -i 's/except Exception:/except Exception as e:/g' /tmp/run_pipeline_temp.py
+        sed -i 's/logger.info("Experiment not found, trying to create experiment.")/logger.info("Experiment not found, trying to create experiment. Error: " + str(e))/g' /tmp/run_pipeline_temp.py
+        kubectl -n "$KF_PROFILE" cp /tmp/run_pipeline_temp.py test-0:/home/jovyan/pipeline_run_and_wait_kubeflow.py
+        kubectl -n "$KF_PROFILE" exec test-0 -- python /home/jovyan/pipeline_run_and_wait_kubeflow.py
+
+    - name: Run Katib Test
+      run: ./tests/katib_test.sh "${KF_PROFILE}"
+
+    - name: Run KServe Test
+      run: ./tests/kserve_test.sh "${KF_PROFILE}"
+
+    - name: Run Spark Test
+      run: chmod u+x tests/*.sh && ./tests/spark_test.sh "${KF_PROFILE}"
+
+    - name: Test Kubeflow Workspaces API
+      run: ./tests/workspaces_test.sh "${KF_PROFILE}"
+
+    - name: Run Ray Test
+      run: |
+        cd experimental/ray/
+        ./test.sh "${KF_PROFILE}"
+
+    - name: Run Model Registry Tests
+      run: ./tests/model_registry_test.sh
+
+    - name: Run Model Catalog API Tests
+      run: ./tests/model_catalog_test.sh
+
+    - name: Apply Pod Security Standards Restricted
+      run: ./tests/PSS_enable.sh restricted
+
+    - name: Fail if there are resources in the "default" namespace
+      run: |
+        echo "==== Checking for resources in the default namespace ===="
+        DEFAULT_PODS=$(kubectl get pods -n default --no-headers --ignore-not-found 2>/dev/null | grep -v "^$" | wc -l)
+        if [ "${DEFAULT_PODS}" -gt 0 ]; then
+          echo "ERROR: Found ${DEFAULT_PODS} pods in the default namespace."
+          kubectl get all -n default
+          kubectl get pods -n default -o wide
+          exit 1
+        fi
+        echo "PASSED: The default namespace does not contain pods."
+
+    - name: Verify Components
+      run: kubectl get pods --all-namespaces | grep -E '(Error|CrashLoopBackOff)' && exit 1 || true
+
+    - name: Install Metrics Server
+      run: ./tests/metrics-server_install.sh
+
+    - name: Check Pod Resource Usage
+      run: |
+        echo "==== Resource Usage Table ===="
+        pip3 install -q PyYAML
+        python3 tests/metrics-server_resource_table.py
+
+    - name: Collect Logs on Failure
+      if: failure()
+      timeout-minutes: 5
+      run: |
+        mkdir -p logs
+        kubectl get all --all-namespaces > logs/resources.txt
+        kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
+        for namespace in kubeflow kubeflow-system istio-system cert-manager auth kubeflow-user-example-com; do
+          kubectl describe pods -n "$namespace" > "logs/$namespace-pods.txt" || true
+          for pod in $(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+            kubectl logs -n "$namespace" "$pod" --tail=100 > "logs/$namespace-$pod.txt" 2>&1 || true
+          done
+        done
+
+    - name: Upload Diagnostic Logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a0 # v7.0.1
+      with:
+        name: kubeflow-test-logs
+        path: logs/
