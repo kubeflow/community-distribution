@@ -12,7 +12,12 @@ kubectl wait --for=condition=Available deployment/kubeflow-trainer-controller-ma
 kubectl get crd jobsets.jobset.x-k8s.io
 kubectl wait --for=condition=Available deployment/jobset-controller-manager -n kubeflow-system --timeout=120s
 
-kustomize build upstream/overlays/runtimes | kubectl apply --server-side --force-conflicts -f -
+TRAINER_RUNTIMES_OVERLAY=upstream/overlays/runtimes
+if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
+  TRAINER_RUNTIMES_OVERLAY=overlays/runtimes-restricted
+fi
+
+kustomize build "$TRAINER_RUNTIMES_OVERLAY" | kubectl apply --server-side --force-conflicts -f -
 
 kubectl apply -f upstream/overlays/kubeflow-platform/kubeflow-trainer-roles.yaml
 

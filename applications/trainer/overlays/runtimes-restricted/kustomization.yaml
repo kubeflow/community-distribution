@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../upstream/overlays/runtimes
+
+patches:
+- path: patches/torch-distributed-restricted-pss.yaml
+  target:
+    group: trainer.kubeflow.org
+    version: v1alpha1
+    kind: ClusterTrainingRuntime
+    name: torch-distributed

@@ -8,7 +8,11 @@ kubectl wait --for condition=established --timeout=30s crd/compositecontrollers.
 kubectl apply -f upstream/third-party/application/cluster-scoped/application-crd.yaml
 echo "Waiting for crd/applications.app.k8s.io to be available ..."
 kubectl wait --for condition=established --timeout=30s crd/applications.app.k8s.io
-kustomize build overlays | kubectl apply -f -
+if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
+  kustomize build restricted-pss | kubectl apply -f -
+else
+  kustomize build overlays | kubectl apply -f -
+fi
 sleep 60
 kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=600s \
   --field-selector=status.phase!=Succeeded

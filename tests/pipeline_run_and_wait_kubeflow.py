@@ -2,11 +2,10 @@
 
 from kfp import dsl
 import kfp
-from time import sleep
+from time import monotonic, sleep
 import subprocess
 import logging
 import sys
-from datetime import datetime, timezone
 
 logger = logging.getLogger("run_and_wait_for_pipeline")
 logging.basicConfig(
@@ -19,6 +18,11 @@ logging.basicConfig(
 client = kfp.Client()
 experiment_name = "my-experiment"
 experiment_namespace = "kubeflow-user-example-com"
+RUN_TIMEOUT_SECONDS = 5 * 60
+POLL_INTERVAL_SECONDS = 10
+DIAGNOSTIC_TIMEOUT_SECONDS = 30
+RUNNING_STATES = {"PENDING", "RUNNING", "QUEUED"}
+FAILED_STATES = {"FAILED", "ERROR", "CANCELED", "CANCELLED", "SKIPPED"}
 
 
 @dsl.component
@@ -37,6 +41,100 @@ def add_pipeline(
 ):
     first_add_task = add(a=a, b=4.0)
     add(a=first_add_task.output, b=b)
+
+
+def normalize_state(state):
+    if state is None:
+        return "UNKNOWN"
+    return str(state).split(".")[-1].upper()
+
+
+def get_run_state(live_run):
+    state = getattr(live_run, "state", None)
+    if state is not None:
+        return normalize_state(state)
+
+    run = getattr(live_run, "run", None)
+    if run is not None:
+        status = getattr(run, "status", None)
+        if status is not None:
+            return normalize_state(status)
+
+    return "UNKNOWN"
+
+
+def dump_pipeline_diagnostics():
+    diagnostic_commands = [
+        [
+            "kubectl",
+            "-n",
+            experiment_namespace,
+            "get",
+            "workflows.argoproj.io,pods",
+            "-o",
+            "wide",
+        ],
+        ["kubectl", "-n", experiment_namespace, "describe", "workflows.argoproj.io"],
+        [
+            "kubectl",
+            "-n",
+            experiment_namespace,
+            "get",
+            "events",
+            "--sort-by=.lastTimestamp",
+        ],
+    ]
+
+    for command in diagnostic_commands:
+        logger.warning("Running diagnostic command: %s", " ".join(command))
+        try:
+            subprocess.run(
+                command,
+                check=False,
+                timeout=DIAGNOSTIC_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            logger.warning(
+                "Diagnostic command timed out after %s seconds.",
+                DIAGNOSTIC_TIMEOUT_SECONDS,
+            )
+        except FileNotFoundError:
+            logger.warning(
+                "Unable to run diagnostics because kubectl is not available."
+            )
+            return
+        except Exception as e:
+            logger.warning(
+                "Unable to run diagnostic command. Exception: %s: %s",
+                e.__class__.__name__,
+                str(e),
+            )
+
+
+def fail_pipeline_run(message, live_run=None):
+    logger.error(message)
+    if live_run is not None:
+        try:
+            logger.error("Pipeline Run State: %s.", get_run_state(live_run))
+        except Exception as e:
+            logger.error(
+                "Unable to extract Pipeline Run State. Exception: %s: %s",
+                e.__class__.__name__,
+                str(e),
+            )
+        try:
+            run_error = getattr(live_run, "error", None)
+        except Exception as e:
+            logger.error(
+                "Unable to extract Pipeline Run error. Exception: %s: %s",
+                e.__class__.__name__,
+                str(e),
+            )
+            run_error = None
+        if run_error:
+            logger.error("Pipeline Run error: %s.", run_error)
+    dump_pipeline_diagnostics()
+    raise SystemExit(1)
 
 
 try:
@@ -68,41 +166,41 @@ except Exception as e:
     )
     raise SystemExit(1)
 
-# For now being able to start a pipeline is enough.
-# while True:
-#     live_run = client.get_run(run_id=run.run_id)
-#     logger.info(f"Pipeline Run State: {live_run.state}.")
+deadline = monotonic() + RUN_TIMEOUT_SECONDS
+last_live_run = None
+while monotonic() < deadline:
+    try:
+        live_run = client.get_run(run_id=run.run_id)
+    except Exception as e:
+        fail_pipeline_run(
+            "Failed to get Pipeline Run. "
+            f"Exception: {e.__class__.__name__}: {str(e)}"
+        )
+    last_live_run = live_run
 
-#     minutes_from_pipeline_run_start = (
-#         datetime.now(timezone.utc) - live_run.created_at
-#     ).seconds / 60
+    try:
+        run_state = get_run_state(live_run)
+    except Exception as e:
+        fail_pipeline_run(
+            "Failed to extract Pipeline Run state. "
+            f"Exception: {e.__class__.__name__}: {str(e)}",
+            live_run,
+        )
+    logger.info("Pipeline Run State: %s.", run_state)
 
-#     if minutes_from_pipeline_run_start > 5:
-#         logger.debug(
-#             "Pipeline is running for more than 5 minutes, "
-#             f"showing pod states in {experiment_namespace=}."
-#         )
-#         subprocess.run(["kubectl", "get", "pods"])
+    if run_state == "SUCCEEDED":
+        logger.info("Finished Pipeline Run successfully.")
+        break
 
-#     if live_run.finished_at > live_run.created_at:
-#         logger.info("Finished Pipeline Run!")
-#         logger.info(
-#             f"Pipeline was running for {minutes_from_pipeline_run_start:0.2} minutes."
-#         )
-#         logger.info(f"Pipeline Run finished in state: {live_run.state}.")
-#         logger.info(f"Pipeline Run finished with error: {live_run.error}.")
+    if run_state in FAILED_STATES or run_state not in RUNNING_STATES:
+        fail_pipeline_run("Pipeline Run finished but did not succeed.", live_run)
 
-#         if live_run.state != "SUCCEEDED":
-#             logger.warn("The Pipeline Run finished but has failed...")
-
-#             logger.warn("Running 'kubectl get pods':")
-#             subprocess.run(["kubectl", "get", "pods"])
-
-#             logger.warn("Running 'kubectl describe wf':")
-#             subprocess.run(["kubectl", "describe", "wf"])
-
-#             raise SystemExit(1)
-#         break
-#     else:
-#         logger.info("Waiting for pipeline to finish...")
-#     sleep(5)
+    logger.info("Waiting for pipeline to finish...")
+    remaining_seconds = deadline - monotonic()
+    if remaining_seconds > 0:
+        sleep(min(POLL_INTERVAL_SECONDS, remaining_seconds))
+else:
+    fail_pipeline_run(
+        f"Pipeline Run did not finish within {RUN_TIMEOUT_SECONDS} seconds.",
+        last_live_run,
+    )
