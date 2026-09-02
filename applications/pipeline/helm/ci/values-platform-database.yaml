@@ -1,0 +1,5 @@
+scenario: platform-database
+crds:
+  enabled: true
+install:
+  enabled: true

@@ -1,0 +1,22 @@
+apiVersion: v2
+name: kubeflow-pipelines
+description: A Helm parity chart for Kubeflow Pipelines platform resources
+type: application
+version: 0.1.0
+appVersion: "2.17.1"
+
+keywords:
+- kubeflow
+- pipelines
+- machine-learning
+- workflows
+
+home: https://github.com/kubeflow/community-distribution
+
+sources:
+- https://github.com/kubeflow/community-distribution/tree/master/applications/pipeline
+- https://github.com/kubeflow/pipelines
+
+annotations:
+  category: Machine Learning
+  licenses: Apache-2.0

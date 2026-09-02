@@ -1,0 +1,3 @@
+{{- if and .Values.install.enabled (eq (default "platform-database" .Values.scenario) "platform-database") }}
+{{ include "kubeflow-pipelines.payload" (dict "root" . "path" "manifests/platform-database-resources.yaml") }}
+{{- end }}

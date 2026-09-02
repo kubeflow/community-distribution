@@ -1,0 +1,14 @@
+# Default values for the Kubeflow Pipelines Helm chart.
+
+# -- Rendered Kustomize parity scenario.
+# Supported values: platform-database, platform-k8s-native.
+scenario: platform-database
+
+crds:
+  # -- Render the CustomResourceDefinition resources for the selected scenario.
+  enabled: true
+
+install:
+  # -- Render the non-CRD resources for the selected scenario.
+  # Install CRDs first, wait for establishment, then enable this value.
+  enabled: false

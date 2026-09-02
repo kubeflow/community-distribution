@@ -1,0 +1,345 @@
+#!/usr/bin/env python3
+
+import argparse
+import copy
+import shutil
+import subprocess
+import tempfile
+
+import yaml
+
+from pathlib import Path
+from typing import Any
+
+PLATFORM_DATABASE_KUSTOMIZE_PATH = Path("applications/pipeline/overlays")
+PLATFORM_KUBERNETES_NATIVE_KUSTOMIZE_PATH = Path(
+    "applications/pipeline/upstream/env/cert-manager/"
+    "platform-agnostic-multi-user-k8s-native"
+)
+
+
+def resource_identity(resource: dict[str, Any]) -> tuple[str, str, str, str]:
+    api_version = resource.get("apiVersion")
+    kind = resource.get("kind")
+    metadata = resource.get("metadata")
+
+    if not isinstance(api_version, str) or not api_version:
+        raise ValueError("Resource must contain apiVersion")
+    if not isinstance(kind, str) or not kind:
+        raise ValueError("Resource must contain kind")
+    if not isinstance(metadata, dict):
+        raise ValueError("Resource must contain metadata")
+
+    name = metadata.get("name")
+    if not isinstance(name, str) or not name:
+        raise ValueError("Resource must contain metadata.name")
+
+    namespace = metadata.get("namespace", "")
+    if not isinstance(namespace, str):
+        raise ValueError("Resource metadata.namespace must be a string")
+
+    return api_version, kind, namespace, name
+
+
+def index_resources(
+    resources: list[dict[str, Any]],
+    scenario_name: str,
+) -> dict[tuple[str, str, str, str], dict[str, Any]]:
+    indexed_resources = {}
+
+    for resource in resources:
+        identity = resource_identity(resource)
+        if identity in indexed_resources:
+            raise ValueError(
+                f"Duplicate resource identity in {scenario_name}: {identity}"
+            )
+        indexed_resources[identity] = resource
+
+    return indexed_resources
+
+
+def partition_scenarios(
+    platform_database_resources: list[dict[str, Any]],
+    platform_kubernetes_native_resources: list[dict[str, Any]],
+) -> dict[str, list[dict[str, Any]]]:
+    database_index = index_resources(
+        platform_database_resources,
+        "platform-database",
+    )
+    kubernetes_native_index = index_resources(
+        platform_kubernetes_native_resources,
+        "platform-k8s-native",
+    )
+    identical_identities = {
+        identity
+        for identity in database_index.keys() & kubernetes_native_index.keys()
+        if database_index[identity] == kubernetes_native_index[identity]
+    }
+
+    partitions = {
+        "common_crds": [],
+        "common_resources": [],
+        "platform_database_crds": [],
+        "platform_database_resources": [],
+        "platform_kubernetes_native_crds": [],
+        "platform_kubernetes_native_resources": [],
+    }
+
+    for resource in platform_database_resources:
+        identity = resource_identity(resource)
+        if identity in identical_identities:
+            partition_name = (
+                "common_crds"
+                if resource["kind"] == "CustomResourceDefinition"
+                else "common_resources"
+            )
+        else:
+            partition_name = (
+                "platform_database_crds"
+                if resource["kind"] == "CustomResourceDefinition"
+                else "platform_database_resources"
+            )
+        partitions[partition_name].append(resource)
+
+    for resource in platform_kubernetes_native_resources:
+        identity = resource_identity(resource)
+        if identity in identical_identities:
+            continue
+        partition_name = (
+            "platform_kubernetes_native_crds"
+            if resource["kind"] == "CustomResourceDefinition"
+            else "platform_kubernetes_native_resources"
+        )
+        partitions[partition_name].append(resource)
+
+    return partitions
+
+
+def add_crd_retention_annotation(
+    resource: dict[str, Any],
+) -> dict[str, Any]:
+    rendered_resource = copy.deepcopy(resource)
+    metadata = rendered_resource.setdefault("metadata", {})
+    annotations = metadata.setdefault("annotations", {})
+    annotations["helm.sh/resource-policy"] = "keep"
+    return rendered_resource
+
+
+def render_partition_payload(
+    resources: list[dict[str, Any]],
+    source_kustomize_path: str,
+) -> str:
+    """Render a payload file.
+
+    The payload is plain YAML read with .Files.Get, so Helm never evaluates it
+    and Go template delimiters inside upstream manifests survive verbatim.
+    Which payload applies is decided by the chart, not written in here.
+    """
+    rendered_resources = [
+        (
+            add_crd_retention_annotation(resource)
+            if resource["kind"] == "CustomResourceDefinition"
+            else copy.deepcopy(resource)
+        )
+        for resource in resources
+    ]
+    manifest_text = yaml.safe_dump_all(
+        rendered_resources,
+        default_flow_style=False,
+        explicit_start=False,
+        explicit_end=False,
+        sort_keys=False,
+        width=100,
+    )
+
+    return (
+        "# Code generated by scripts/generate-pipelines-helm-manifests.py.\n"
+        "# Do not edit. Refresh with scripts/synchronize-pipelines-manifests.sh.\n"
+        f"# Source Kustomize path: {source_kustomize_path}\n"
+        f"{manifest_text}"
+    )
+
+
+def write_generated_payloads(
+    generated_payloads: dict[str, str],
+    output_directory: Path,
+) -> None:
+    for file_name, file_content in generated_payloads.items():
+        if Path(file_name).name != file_name:
+            raise ValueError(
+                f"Generated payload file name must not contain a path: {file_name}"
+            )
+        if not isinstance(file_content, str):
+            raise TypeError(f"Generated payload content must be a string: {file_name}")
+
+    output_directory.parent.mkdir(parents=True, exist_ok=True)
+    staging_directory = Path(
+        tempfile.mkdtemp(
+            prefix=f".{output_directory.name}.new.",
+            dir=output_directory.parent,
+        )
+    )
+    backup_directory = output_directory.with_name(f".{output_directory.name}.backup")
+
+    try:
+        for file_name, file_content in generated_payloads.items():
+            (staging_directory / file_name).write_text(file_content)
+
+        if backup_directory.exists():
+            raise FileExistsError(
+                f"Generated payload backup directory already exists: {backup_directory}"
+            )
+
+        if output_directory.exists():
+            output_directory.rename(backup_directory)
+
+        try:
+            staging_directory.rename(output_directory)
+        except Exception:
+            if backup_directory.exists() and not output_directory.exists():
+                backup_directory.rename(output_directory)
+            raise
+        else:
+            if backup_directory.exists():
+                shutil.rmtree(backup_directory)
+    finally:
+        if staging_directory.exists():
+            shutil.rmtree(staging_directory)
+
+
+def build_generated_payloads(
+    platform_database_resources: list[dict[str, Any]],
+    platform_kubernetes_native_resources: list[dict[str, Any]],
+) -> dict[str, str]:
+    partitions = partition_scenarios(
+        platform_database_resources,
+        platform_kubernetes_native_resources,
+    )
+    common_source_description = (
+        "applications/pipeline/overlays and "
+        "applications/pipeline/upstream/env/cert-manager/"
+        "platform-agnostic-multi-user-k8s-native"
+    )
+    database_source = "applications/pipeline/overlays"
+    kubernetes_native_source = (
+        "applications/pipeline/upstream/env/cert-manager/"
+        "platform-agnostic-multi-user-k8s-native"
+    )
+
+    return {
+        "common-crds.yaml": render_partition_payload(
+            partitions["common_crds"], common_source_description
+        ),
+        "common-resources.yaml": render_partition_payload(
+            partitions["common_resources"], common_source_description
+        ),
+        "platform-database-crds.yaml": render_partition_payload(
+            partitions["platform_database_crds"], database_source
+        ),
+        "platform-database-resources.yaml": render_partition_payload(
+            partitions["platform_database_resources"], database_source
+        ),
+        "platform-kubernetes-native-crds.yaml": render_partition_payload(
+            partitions["platform_kubernetes_native_crds"], kubernetes_native_source
+        ),
+        "platform-kubernetes-native-resources.yaml": render_partition_payload(
+            partitions["platform_kubernetes_native_resources"],
+            kubernetes_native_source,
+        ),
+    }
+
+
+def load_yaml_resources(rendered_yaml: str, source_name: str) -> list[dict[str, Any]]:
+    resources = []
+    for document_number, document in enumerate(
+        yaml.safe_load_all(rendered_yaml),
+        start=1,
+    ):
+        if document is None:
+            continue
+        if not isinstance(document, dict):
+            raise ValueError(
+                f"YAML document {document_number} from {source_name} "
+                "must be a mapping"
+            )
+        resource_identity(document)
+        resources.append(document)
+    return resources
+
+
+def render_kustomize_path(
+    repository_root: Path,
+    kustomize_path: Path,
+    kustomize_binary: str,
+) -> list[dict[str, Any]]:
+    result = subprocess.run(
+        [kustomize_binary, "build", str(kustomize_path)],
+        cwd=repository_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Kustomize rendering failed for {kustomize_path}:\n{result.stderr}"
+        )
+    return load_yaml_resources(result.stdout, str(kustomize_path))
+
+
+def parse_arguments() -> argparse.Namespace:
+    default_repository_root = Path(__file__).resolve().parents[1]
+    argument_parser = argparse.ArgumentParser(
+        description=(
+            "Generate deduplicated Kubeflow Pipelines Helm manifest templates "
+            "from the supported Kustomize scenarios."
+        )
+    )
+    argument_parser.add_argument(
+        "--repository-root",
+        type=Path,
+        default=default_repository_root,
+        help="Path to the Kubeflow community distribution repository root.",
+    )
+    argument_parser.add_argument(
+        "--output-directory",
+        type=Path,
+        help=(
+            "Generated payload directory. Defaults to "
+            "applications/pipeline/helm/manifests."
+        ),
+    )
+    argument_parser.add_argument(
+        "--kustomize-binary",
+        default="kustomize",
+        help="Kustomize executable name or path.",
+    )
+    return argument_parser.parse_args()
+
+
+def main() -> None:
+    arguments = parse_arguments()
+    repository_root = arguments.repository_root.resolve()
+    output_directory = (
+        arguments.output_directory.resolve()
+        if arguments.output_directory
+        else repository_root / "applications/pipeline/helm/manifests"
+    )
+    platform_database_resources = render_kustomize_path(
+        repository_root,
+        PLATFORM_DATABASE_KUSTOMIZE_PATH,
+        arguments.kustomize_binary,
+    )
+    platform_kubernetes_native_resources = render_kustomize_path(
+        repository_root,
+        PLATFORM_KUBERNETES_NATIVE_KUSTOMIZE_PATH,
+        arguments.kustomize_binary,
+    )
+    generated_payloads = build_generated_payloads(
+        platform_database_resources,
+        platform_kubernetes_native_resources,
+    )
+    write_generated_payloads(generated_payloads, output_directory)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,101 @@
+name: Test Kubeflow Pipelines Helm Installation
+
+on:
+  pull_request:
+    paths:
+    - applications/pipeline/helm/**
+    - applications/pipeline/overlays/**
+    - applications/pipeline/upstream/**
+    - common/cert-manager/**
+    - common/kubeflow-namespace/**
+    - common/kubeflow-roles/**
+    - scripts/generate-pipelines-helm-manifests.py
+    - scripts/synchronize-pipelines-manifests.sh
+    - tests/pipelines_helm_install.sh
+    - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+    - tests/istio-cni_install.sh
+    - tests/oauth2-proxy_install.sh
+    - tests/profile_controller_install.sh
+    - .github/workflows/helm-pipelines-test.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  kubeflow_pipelines_helm_installation:
+    name: Install ${{ matrix.scenario }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+        - platform-database
+        - platform-k8s-native
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+    - name: Install KinD, create the cluster, and install Kustomize
+      run: |
+        ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
+
+    - name: Install Helm
+      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+      with:
+        version: v4.2.2
+
+    - name: Install Kubeflow foundation charts
+      run: |
+        helm install kubeflow-namespaces ./common/kubeflow-namespace/helm \
+          --namespace default \
+          --wait \
+          --timeout 5m
+        helm install kubeflow-platform ./common/kubeflow-roles/helm \
+          --namespace kubeflow-system \
+          --wait \
+          --timeout 5m
+
+    - name: Install cert-manager with Helm
+      run: |
+        helm repo add jetstack https://charts.jetstack.io || helm repo update jetstack
+        helm dependency build ./common/cert-manager/helm
+        helm install cert-manager ./common/cert-manager/helm \
+          --namespace cert-manager \
+          --values ./common/cert-manager/helm/ci/values-base.yaml \
+          --wait \
+          --timeout 5m
+        helm upgrade cert-manager ./common/cert-manager/helm \
+          --namespace cert-manager \
+          --values ./common/cert-manager/helm/ci/values-kubeflow.yaml \
+          --wait \
+          --timeout 5m
+
+    - name: Install Istio
+      run: ./tests/istio-cni_install.sh
+
+    - name: Install OAuth2-Proxy
+      run: ./tests/oauth2-proxy_install.sh
+
+    - name: Install Kubeflow Istio resources
+      run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install Profile Controller
+      run: ./tests/profile_controller_install.sh
+
+    - name: Install Kubeflow Pipelines with Helm
+      run: ./tests/pipelines_helm_install.sh "${{ matrix.scenario }}"
+
+    - name: Collect failure diagnostics
+      if: failure()
+      continue-on-error: true
+      run: |
+        set +e
+        helm list --all-namespaces
+        kubectl get pods,services,deployments,statefulsets -A -o wide
+        kubectl get customresourcedefinitions
+        kubectl get events -A --sort-by=.lastTimestamp

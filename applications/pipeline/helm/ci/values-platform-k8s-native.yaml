@@ -1,0 +1,5 @@
+scenario: platform-k8s-native
+crds:
+  enabled: true
+install:
+  enabled: true

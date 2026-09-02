@@ -1,0 +1,37 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: kubeflow-pipelines
+releaseName: kubeflow-pipelines
+namespace: kubeflow
+defaultScenario: platform-database
+retainedCustomResourceDefinitions:
+  reason: >
+    The generator annotates every CustomResourceDefinition payload with
+    helm.sh/resource-policy: keep, so helm uninstall leaves the definitions
+    and the stored pipelines, runs, and workflows behind.
+  names:
+  - applications.app.k8s.io
+  - clusterworkflowtemplates.argoproj.io
+  - compositecontrollers.metacontroller.k8s.io
+  - controllerrevisions.metacontroller.k8s.io
+  - cronworkflows.argoproj.io
+  - decoratorcontrollers.metacontroller.k8s.io
+  - pipelines.pipelines.kubeflow.org
+  - pipelineversions.pipelines.kubeflow.org
+  - scheduledworkflows.kubeflow.org
+  - viewers.kubeflow.org
+  - workflowartifactgctasks.argoproj.io
+  - workfloweventbindings.argoproj.io
+  - workflows.argoproj.io
+  - workflowtaskresults.argoproj.io
+  - workflowtasksets.argoproj.io
+  - workflowtemplates.argoproj.io
+scenarios:
+  platform-database:
+    kustomize:
+    - applications/pipeline/overlays
+    values: ci/values-platform-database.yaml
+  platform-k8s-native:
+    kustomize:
+    - applications/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user-k8s-native
+    values: ci/values-platform-k8s-native.yaml
