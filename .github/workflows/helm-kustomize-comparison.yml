@@ -96,7 +96,9 @@ jobs:
         ./tests/kustomize_install.sh
         echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
     - name: Test Dex Helm behavior
-      run: python tests/dex_helm_rollout_checksums_test.py
+      run: |
+        python tests/dex_helm_rollout_checksums_test.py
+        python tests/dex_helm_crd_lifecycle_test.py
     - name: Test Istio Helm behavior
       run: python tests/istio_helm_chart_test.py
     - name: Test Dashboard Helm behavior
