@@ -12,6 +12,12 @@ import yaml
 ROOT_DIRECTORY = Path(__file__).resolve().parents[1]
 CHART_DIRECTORY = ROOT_DIRECTORY / "common" / "dex" / "helm"
 HELM_BINARY = os.environ.get("HELM_BINARY", "helm")
+# Real-shaped credentials. The chart rejects the REPLACE_ME placeholders, so
+# every render in this file has to supply something valid first.
+VALID_OIDC_CLIENT_SECRET = "pUBnBOY80SnXgjibTYM9ZWNzY2xreNGQok"
+VALID_STATIC_PASSWORD_HASH = (
+    "$2y$12$4K/VkmDd1q1Orb3xAt82zu8gk7Ad6ReFR4LCP9UeYE90NLiN9Df72"
+)
 CHECKSUM_KEYS = {
     "checksum/config",
     "checksum/oidc-client",
@@ -37,6 +43,13 @@ class DexRolloutChecksumTest(unittest.TestCase):
             "--namespace",
             "auth",
         ]
+        # The chart refuses to render while the placeholder credentials are in
+        # place, so supply real-shaped ones before any test override.
+        for value in (
+            f"oidcClient.secret={VALID_OIDC_CLIENT_SECRET}",
+            f"staticPassword.hash={VALID_STATIC_PASSWORD_HASH}",
+        ):
+            command.extend(["--set-string", value])
         for value in values:
             command.extend(["--set-string", value])
 
@@ -111,7 +124,12 @@ class DexRolloutChecksumTest(unittest.TestCase):
         self.assertEqual(
             self.changed_keys(
                 baseline,
-                self.render_checksums("staticPassword.hash=changed-password-hash"),
+                # A different bcrypt hash, because the chart now rejects any
+                # value that no password could ever match.
+                self.render_checksums(
+                    "staticPassword.hash="
+                    "$2y$12$k0k8DCLYJm6ByQ6nCsWfE.dQdyBTvOZk3.wPxT/RQ6bDlYnJXtxHi"
+                ),
             ),
             {"checksum/passwords"},
         )
