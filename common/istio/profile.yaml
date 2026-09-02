@@ -16,7 +16,7 @@ spec:
         env:
         - name: ENABLE_NATIVE_SIDECARS
           value: "true"
-  hub: registry.istio.io/release
+  hub: docker.io/istio
   profile: default
   tag: 1.31.0
   values:

@@ -27,7 +27,7 @@ data:
           }
         },
         "externalIstiod": false,
-        "hub": "registry.istio.io/release",
+        "hub": "docker.io/istio",
         "imagePullPolicy": "",
         "imagePullSecrets": [],
         "istioNamespace": "istio-system",

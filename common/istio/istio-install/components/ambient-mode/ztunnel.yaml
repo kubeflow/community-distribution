@@ -95,7 +95,7 @@ spec:
             resourceFieldRef:
               divisor: '1'
               resource: requests.cpu
-        image: registry.istio.io/release/ztunnel:1.31.0
+        image: docker.io/istio/ztunnel:1.31.0
         name: istio-proxy
         ports:
         - containerPort: 15020

@@ -193,6 +193,16 @@ class IstioHelmChartTest(unittest.TestCase):
             synchronization_script,
         )
 
+    def test_manifests_use_supported_image_registry(self):
+        istio_directory = REPOSITORY_ROOT / "common/istio"
+        manifests = "\n".join(
+            manifest.read_text() for manifest in istio_directory.rglob("*.yaml")
+        )
+
+        self.assertNotIn("registry.istio.io/release", manifests)
+        for image in ["install-cni", "pilot", "proxyv2", "ztunnel"]:
+            self.assertIn(f"docker.io/istio/{image}:1.31.0", manifests)
+
 
 if __name__ == "__main__":
     unittest.main()
