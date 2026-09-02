@@ -113,7 +113,7 @@ data:
         "sts": {
           "servicePort": 0
         },
-        "tag": "1.30.3",
+        "tag": "1.31.0",
         "variant": "",
         "waypoint": {
           "affinity": {},
