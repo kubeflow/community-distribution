@@ -27,7 +27,8 @@ $ISTIOCTL manifest generate -f profile.yaml -f profile-overlay.yaml \
   --set components.cni.enabled=true \
   --set components.cni.namespace=kube-system > dump.yaml
 ./split-istio-packages -f dump.yaml
-sed -i 's/[[:space:]]\+$//' crd.yaml install.yaml cluster-local-gateway.yaml
+sed -i -e 's/[[:space:]]\+$//' -e '${/^$/d;}' \
+  crd.yaml install.yaml cluster-local-gateway.yaml
 mv $ISTIO_DIRECTORY/crd.yaml $ISTIO_DIRECTORY/istio-crds/base/
 mv $ISTIO_DIRECTORY/install.yaml $ISTIO_DIRECTORY/istio-install/base/
 mv $ISTIO_DIRECTORY/cluster-local-gateway.yaml $ISTIO_DIRECTORY/cluster-local-gateway/base/
@@ -36,7 +37,8 @@ $ISTIOCTL manifest generate -f profile.yaml -f profile-overlay.yaml \
   --set components.cni.enabled=true \
   --set components.ztunnel.enabled=true > dump-ztunnel.yaml
 ./split-istio-packages -f dump-ztunnel.yaml
-sed -i 's/[[:space:]]\+$//' crd.yaml install.yaml cluster-local-gateway.yaml ztunnel.yaml
+sed -i -e 's/[[:space:]]\+$//' -e '${/^$/d;}' \
+  crd.yaml install.yaml cluster-local-gateway.yaml ztunnel.yaml
 mv $ISTIO_DIRECTORY/ztunnel.yaml $ISTIO_DIRECTORY/istio-install/components/ambient-mode/
 rm dump-ztunnel.yaml crd.yaml install.yaml cluster-local-gateway.yaml
 sed -i "s/\"tag\": \".*\"/\"tag\": \"$COMMIT\"/" "$ISTIO_DIRECTORY/istio-install/base/patches/istio-sidecar-injector-patch.yaml"

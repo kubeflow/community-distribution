@@ -20073,4 +20073,3 @@ spec:
     storage: false
     subresources:
       status: {}
-
