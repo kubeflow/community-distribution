@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-KIND_VERSION="v0.32.0"
-KIND_NODE_IMAGE="kindest/node:v1.36.1@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5"
+KIND_VERSION="v0.33.0"
+KIND_NODE_IMAGE="kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5"
 KUSTOMIZE_VERSION="v5.8.1"
 USER_BINARY_DIRECTORY="$HOME/.local/bin"
 
