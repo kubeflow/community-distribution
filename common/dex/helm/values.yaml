@@ -17,8 +17,16 @@ config:
   logLevel: info
   # -- Skip Dex approval screen.
   skipApprovalScreen: true
-  # -- Enable Dex password database.
+  # -- Enable Dex password database. Set this to false once a connector
+  # authenticates real users, so the built-in static account is removed. The
+  # chart refuses to render if this is false and no connector is configured.
   enablePasswordDB: true
+  # -- Dex connectors, as a list, each entry exactly as the Dex documentation
+  # describes it. Empty keeps the built-in static password login as the only way
+  # in. Configure a connector to authenticate against a real identity provider.
+  # Secret material belongs in a Secret named by extraEnvironmentSecrets and is
+  # referenced from here as $VARIABLE.
+  connectors: []
   # -- Static user email.
   staticUserEmail: user@example.com
   # -- Static user username.
@@ -37,6 +45,34 @@ oidcClient:
 staticPassword:
   # -- Bcrypt hash for the default Dex static user password.
   hash: REPLACE_ME_STATIC_PASSWORD_HASH
+
+# -- Names of existing Secrets in the auth namespace whose keys are exposed to
+# Dex as environment variables. Connector configuration references them as
+# $VARIABLE, so credentials never appear in values.yaml. The Secrets must exist
+# before the release is installed; this chart does not create them.
+extraEnvironmentSecrets: []
+
+# -- Name of an existing Secret in the auth namespace holding certificate
+# authority certificates, mounted read-only at
+# /etc/dex/certificate-authorities. Set this when the identity provider serves
+# a certificate issued by a private authority, and list the mounted files in the
+# connector's rootCAs. Without it the only way to reach such a provider is
+# insecureSkipVerify, which disables certificate verification entirely.
+#
+#   connectorCertificateAuthoritySecret: corporate-certificate-authority
+#   config:
+#     connectors:
+#     - type: oidc
+#       id: keycloak
+#       name: Keycloak
+#       config:
+#         issuer: https://keycloak.example.com/realms/kubeflow
+#         rootCAs:
+#         - /etc/dex/certificate-authorities/ca.crt
+#
+# The Secret must exist before the release is installed; this chart does not
+# create it.
+connectorCertificateAuthoritySecret: ""
 
 istio:
   # -- Render Dex VirtualService.
