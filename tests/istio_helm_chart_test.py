@@ -12,6 +12,10 @@ import yaml
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 CHART_DIRECTORY = REPOSITORY_ROOT / "common/istio/helm"
 OAUTH2_PROXY_VALUES = CHART_DIRECTORY / "ci/values-oauth2-proxy.yaml"
+GKE_VALUES = CHART_DIRECTORY / "ci/values-gke.yaml"
+# Both payloads embed the oauth2-proxy extension provider, so both take the
+# substitution path in kubeflow-istio.renderFile.
+SUBSTITUTED_PROFILE_VALUES = (OAUTH2_PROXY_VALUES, GKE_VALUES)
 SYNCHRONIZATION_SCRIPT = REPOSITORY_ROOT / "scripts/synchronize-istio-manifests.sh"
 HELM_BINARY = os.environ.get("HELM_BINARY", "helm")
 
@@ -25,7 +29,7 @@ class IstioHelmChartTest(unittest.TestCase):
     def tearDownClass(cls):
         cls.helm_plugins.cleanup()
 
-    def render_chart(self, *arguments):
+    def render_chart(self, *arguments, values=OAUTH2_PROXY_VALUES):
         environment = os.environ.copy()
         environment["HELM_PLUGINS"] = self.helm_plugins.name
         return subprocess.run(
@@ -37,7 +41,7 @@ class IstioHelmChartTest(unittest.TestCase):
                 "--namespace",
                 "istio-system",
                 "--values",
-                str(OAUTH2_PROXY_VALUES),
+                str(values),
                 *arguments,
             ],
             capture_output=True,
@@ -64,20 +68,23 @@ class IstioHelmChartTest(unittest.TestCase):
         )
 
     def test_custom_oauth2_proxy_service_and_port_are_rendered(self):
-        result = self.render_chart(
-            "--set-string",
-            "oauth2Proxy.service=custom-auth.oauth2-proxy.svc.cluster.local",
-            "--set-string",
-            "oauth2Proxy.port=18443",
-        )
+        for values in SUBSTITUTED_PROFILE_VALUES:
+            with self.subTest(values=values.name):
+                result = self.render_chart(
+                    "--set-string",
+                    "oauth2Proxy.service=custom-auth.oauth2-proxy.svc.cluster.local",
+                    "--set-string",
+                    "oauth2Proxy.port=18443",
+                    values=values,
+                )
 
-        self.assertEqual(result.returncode, 0, result.stderr)
-        provider = self.oauth2_proxy_provider(result.stdout)
-        self.assertEqual(
-            provider["service"],
-            "custom-auth.oauth2-proxy.svc.cluster.local",
-        )
-        self.assertEqual(provider["port"], 18443)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                provider = self.oauth2_proxy_provider(result.stdout)
+                self.assertEqual(
+                    provider["service"],
+                    "custom-auth.oauth2-proxy.svc.cluster.local",
+                )
+                self.assertEqual(provider["port"], 18443)
 
     def test_supported_oauth2_proxy_service_names_are_rendered(self):
         supported_service_names = [

@@ -1,3 +1,7 @@
 {{- if .Values.clusterLocalGateway.enabled }}
+{{- if .Values.clusterLocalGateway.machineToMachineAuthentication.enabled }}
+{{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/cluster-local-gateway-m2m-auth.yaml") }}
+{{- else }}
 {{ include "kubeflow-istio.renderFile" (dict "root" . "path" "manifests/cluster-local-gateway.yaml") }}
+{{- end }}
 {{- end }}

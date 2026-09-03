@@ -5,11 +5,6 @@ releaseName: istio
 namespace: istio-system
 includeCustomResourceDefinitions: true
 defaultScenario: base
-knownDifferences:
-- skip: Namespace/istio-system
-  reason: >
-    The istio-namespace Kustomize base creates the namespace; the chart is
-    installed into an existing namespace and renders none.
 retainedCustomResourceDefinitions:
   reason: >
     Upstream Istio annotates every CustomResourceDefinition with
@@ -67,6 +62,6 @@ scenarios:
     - common/istio/istio-crds/base
     - common/istio/istio-namespace/base
     - common/istio/istio-install/overlays/oauth2-proxy
-    - common/istio/cluster-local-gateway/base
+    - common/istio/cluster-local-gateway/overlays/m2m-auth
     - common/istio/kubeflow-istio-resources/base
     values: ci/values-platform-full.yaml

@@ -98,7 +98,9 @@ jobs:
     - name: Test Dex Helm behavior
       run: python tests/dex_helm_rollout_checksums_test.py
     - name: Test Istio Helm behavior
-      run: python tests/istio_helm_chart_test.py
+      run: |
+        python tests/istio_helm_chart_test.py
+        python tests/istio_document_selection_test.py
     - name: Test Dashboard Helm behavior
       run: python tests/dashboard_helm_chart_test.py
     - name: Test Notebooks Helm behavior

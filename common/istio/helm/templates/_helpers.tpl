@@ -22,8 +22,16 @@ templates embedded in Istio injector ConfigMaps.
 {{- if or (lt $port 1) (gt $port 65535) -}}
 {{- fail "oauth2Proxy.port must be a decimal integer between 1 and 65535" -}}
 {{- end -}}
-{{- $content = replace "service: oauth2-proxy.oauth2-proxy.svc.cluster.local" (printf "service: %s" $service) $content -}}
-{{- $content = regexReplaceAll "(service: [^\\n]+\\n[[:space:]]*port: )[0-9]+(\\n[[:space:]]*name: oauth2-proxy)" $content (printf "${1}%d${2}" $port) -}}
+{{- $serviceLiteral := "service: oauth2-proxy.oauth2-proxy.svc.cluster.local" -}}
+{{- if not (contains $serviceLiteral $content) -}}
+{{- fail (printf "%s does not contain %q, so oauth2Proxy.service cannot be applied; regenerate the chart with scripts/synchronize-istio-manifests.sh" .path $serviceLiteral) -}}
+{{- end -}}
+{{- $content = replace $serviceLiteral (printf "service: %s" $service) $content -}}
+{{- $portPattern := "(service: [^\\n]+\\n[[:space:]]*port: )[0-9]+(\\n[[:space:]]*name: oauth2-proxy)" -}}
+{{- if not (regexMatch $portPattern $content) -}}
+{{- fail (printf "%s does not match the oauth2-proxy port pattern, so oauth2Proxy.port cannot be applied; regenerate the chart with scripts/synchronize-istio-manifests.sh" .path) -}}
+{{- end -}}
+{{- $content = regexReplaceAll $portPattern $content (printf "${1}%d${2}" $port) -}}
 {{- end -}}
 {{- $content -}}
 {{- end -}}

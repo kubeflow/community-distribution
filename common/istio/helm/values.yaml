@@ -11,6 +11,14 @@ crds:
   # -- Render Istio CustomResourceDefinition resources.
   enabled: true
 
+namespaces:
+  # -- Render the istio-system Namespace. Leave this disabled for a Kubeflow
+  # platform installation, where the kubeflow-namespaces chart owns every
+  # platform namespace. A Kubernetes resource belongs to a single Helm release,
+  # so two releases must not both render it. Enable it only when installing this
+  # chart standalone, without the kubeflow-namespaces chart.
+  create: false
+
 networkPolicies:
   # -- Render Istio namespace NetworkPolicy resources.
   enabled: false
@@ -28,6 +36,11 @@ oauth2Proxy:
 clusterLocalGateway:
   # -- Render the Kubeflow cluster-local gateway resources.
   enabled: false
+  machineToMachineAuthentication:
+    # -- Require valid JWT principals on the cluster-local gateway, rendering
+    # the cluster-local-gateway/overlays/m2m-auth payload instead of the base
+    # payload. The managed platform installation enables this.
+    enabled: false
 
 kubeflowIstioResources:
   # -- Render Kubeflow-specific Istio gateway and RBAC resources.

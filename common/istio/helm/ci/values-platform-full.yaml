@@ -8,5 +8,11 @@ install:
   enabled: true
 clusterLocalGateway:
   enabled: true
+  machineToMachineAuthentication:
+    enabled: true
 kubeflowIstioResources:
   enabled: true
+namespaces:
+  # The Kustomize side of this scenario builds istio-namespace/base, so the
+  # comparison covers the Namespace here.
+  create: true

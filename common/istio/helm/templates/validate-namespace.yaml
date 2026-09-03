@@ -1,0 +1,3 @@
+{{- if ne .Release.Namespace "istio-system" }}
+{{- fail "Istio wrapper chart must be installed into the istio-system namespace" }}
+{{- end }}
