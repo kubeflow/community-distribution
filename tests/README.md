@@ -41,6 +41,7 @@ chart's directory, and a chart without a descriptor fails
 | `includeCustomResourceDefinitions` | adds `--include-crds` to the render |
 | `dependencyRepositories` | `name: url` map of Helm repositories to add before `helm dependency build` |
 | `defaultScenario` | the scenario compared when none is named; may be omitted when the chart declares exactly one |
+| `helmUsesReleaseNamespace` | default `false`. Set `true` when the chart's templates omit `metadata.namespace` and rely on the release namespace instead; the comparison then keys the Helm side under the descriptor's `namespace`, except for cluster-scoped kinds. Kustomize always writes the field through its namespace transformer. |
 | `helmUsesKustomizeNameHashes` | default `true`. Set `false` when the chart names ConfigMaps and Secrets without Kustomize's ten-character content-hash suffix, so the hash is stripped from the Kustomize side only. Stripping it from both sides would truncate a legitimate name segment such as `dashboard-parameters`. |
 
 ### Scenarios

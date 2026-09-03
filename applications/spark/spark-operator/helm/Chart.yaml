@@ -1,0 +1,20 @@
+apiVersion: v2
+name: spark-operator
+description: A Helm wrapper chart for the Kubeflow Spark Operator
+version: 0.1.0
+appVersion: "2.5.2"
+keywords:
+- kubeflow
+- spark
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/kubeflow/community-distribution/tree/master/applications/spark/spark-operator
+- https://github.com/kubeflow/spark-operator
+dependencies:
+- name: spark-operator
+  version: "2.5.2"
+  repository: https://kubeflow.github.io/spark-operator
+  condition: spark-operator.enabled
+annotations:
+  category: Analytics
+  licenses: Apache-2.0

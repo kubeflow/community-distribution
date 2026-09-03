@@ -1,0 +1,23 @@
+# CI values for Kubeflow Spark Operator parity.
+# Mirrors values.yaml explicitly so the compared scenario does not depend on
+# chart defaults.
+spark-operator:
+  enabled: true
+  spark:
+    # A list containing the empty string, matching --set "spark.jobNamespaces={}"
+    # in scripts/synchronize-spark-operator-manifests.sh. An empty list is not
+    # the same configuration.
+    jobNamespaces:
+    - ""
+  controller:
+    labels:
+      sidecar.istio.io/inject: "false"
+  webhook:
+    enable: true
+    port: 9443
+    labels:
+      sidecar.istio.io/inject: "false"
+
+kubeflow:
+  aggregatedRoles:
+    enabled: true

@@ -65,6 +65,26 @@ def resource_matches(pattern: str, kind: str, namespace: str, name: str) -> bool
     )
 
 
+# Kinds that never carry a namespace, so a release namespace must not be
+# applied to them.
+CLUSTER_SCOPED_KINDS = {
+    "APIService",
+    "ClusterIssuer",
+    "ClusterRole",
+    "ClusterRoleBinding",
+    "CustomResourceDefinition",
+    "IngressClass",
+    "MutatingWebhookConfiguration",
+    "Namespace",
+    "PersistentVolume",
+    "PriorityClass",
+    "StorageClass",
+    "ValidatingAdmissionPolicy",
+    "ValidatingAdmissionPolicyBinding",
+    "ValidatingWebhookConfiguration",
+}
+
+
 class ChartComparisonRules:
     """Interpret one chart's declared comparison allowances.
 
@@ -85,6 +105,11 @@ class ChartComparisonRules:
         self.helm_only_resources = descriptor.get("helmOnlyResources") or []
         self.helm_uses_kustomize_name_hashes = descriptor.get(
             "helmUsesKustomizeNameHashes", True
+        )
+        self.helm_release_namespace = (
+            descriptor.get("namespace", "")
+            if descriptor.get("helmUsesReleaseNamespace")
+            else ""
         )
         self._fired = set()
 
@@ -130,6 +155,20 @@ class ChartComparisonRules:
                     normalized["metadata"]["name"] = KUSTOMIZE_HASH_SUFFIX.sub(
                         "", name_value
                     )
+
+        # A chart that declares helmUsesReleaseNamespace omits
+        # metadata.namespace and relies on the release namespace instead; the
+        # resource still lands there. Kustomize writes the field through its
+        # namespace transformer, so without this the two sides key the same
+        # object differently and each reports the other's copy as missing.
+        if (
+            is_helm_manifest
+            and self.helm_release_namespace
+            and kind not in CLUSTER_SCOPED_KINDS
+        ):
+            normalized.setdefault("metadata", {}).setdefault(
+                "namespace", self.helm_release_namespace
+            )
 
         return remove_empty_values(normalized)
 
