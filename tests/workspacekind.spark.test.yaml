@@ -1,7 +1,8 @@
 # Test-only copy of the upstream JupyterLab WorkspaceKind sample
 # (applications/workspaces/upstream/controller/samples/jupyterlab_v1beta1_workspacekind.yaml),
-# trimmed to what the Spark Connect test needs. The only functional difference
-# from the upstream sample is the `serviceAccount.clusterRoles` grant below.
+# trimmed to what the Spark Connect test needs. It uses a distinct resource name
+# to avoid colliding with other tests and grants `kubeflow-spark-edit` through
+# `serviceAccount.clusterRoles`.
 apiVersion: kubeflow.org/v1beta1
 kind: WorkspaceKind
 metadata:
