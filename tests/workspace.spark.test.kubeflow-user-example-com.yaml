@@ -22,5 +22,5 @@ spec:
     volumes:
       home: "spark-workspace-home-pvc"
     options:
-      imageConfig: "jupyter-scipy:v1.10.0"
+      imageConfig: "jupyter-scipy:v1.11.0"
       podConfig: "tiny_cpu"

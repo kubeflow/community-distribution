@@ -72,9 +72,9 @@ def main() -> None:
 
         # The shell script pins the client to the SDK's default server version. Assert it
         # held, so a drift shows up as a clear failure rather than an odd protocol error.
-        client_minor = pyspark.__version__.rsplit(".", 1)[0]
+        client_major_minor = pyspark.__version__.rsplit(".", 1)[0]
         assert spark.version.startswith(
-            client_minor
+            client_major_minor
         ), f"client {pyspark.__version__} and server {spark.version} major.minor differ"
 
         # A grouped aggregation rather than a plain count, so the work is distributed
@@ -96,7 +96,15 @@ def main() -> None:
         if spark is not None:
             spark.stop()
         logger.info("Deleting Spark Connect session %s", SESSION_NAME)
-        client.delete_session(SESSION_NAME)
+        try:
+            client.delete_session(SESSION_NAME)
+        except RuntimeError:
+            # If the test body already failed, that exception is the useful one and is
+            # re-raised on exit from this block. Only surface a cleanup failure when it
+            # is the only thing that went wrong.
+            if sys.exc_info()[0] is None:
+                raise
+            logger.warning("Could not delete session %s during cleanup", SESSION_NAME)
 
     logger.info("Spark Connect session from Workspace verified.")
 

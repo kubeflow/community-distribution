@@ -76,17 +76,17 @@ spec:
     options:
       imageConfig:
         spawner:
-          default: "jupyter-scipy:v1.10.0"
+          default: "jupyter-scipy:v1.11.0"
         values:
-          - id: "jupyter-scipy:v1.10.0"
+          - id: "jupyter-scipy:v1.11.0"
             spawner:
-              displayName: "jupyter-scipy:v1.10.0"
+              displayName: "jupyter-scipy:v1.11.0"
               description: "JupyterLab, with SciPy Packages"
               labels:
                 - key: "python_version"
-                  value: "3.11.11"
+                  value: "3.12.13"
             spec:
-              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.10.0"
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.0"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "jupyterlab"
