@@ -21,6 +21,18 @@ spec:
       jsonPath: .status.state
       name: State
       type: string
+    - description: The WorkspaceKind of the Workspace
+      jsonPath: .spec.kind
+      name: Kind
+      type: string
+    - description: The imageConfig option of the Workspace
+      jsonPath: .spec.podTemplate.options.imageConfig
+      name: Image Config
+      type: string
+    - description: The podConfig option of the Workspace
+      jsonPath: .spec.podTemplate.options.podConfig
+      name: Pod Config
+      type: string
     name: v1beta1
     schema:
       openAPIV3Schema:

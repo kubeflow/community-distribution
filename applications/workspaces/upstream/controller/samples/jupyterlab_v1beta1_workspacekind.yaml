@@ -151,6 +151,19 @@ spec:
       annotations:
         my-workspace-kind-annotation: "my-value"
 
+    ## metadata for the Workspace StatefulSet (MUTABLE)
+    ##  - labels and annotations applied to the StatefulSet object itself,
+    ##    unlike `podMetadata` which applies to the Workspace Pods
+    ##  - this is an admin-only default for all Workspaces of this WorkspaceKind
+    ##  - the controller-managed `notebooks.kubeflow.org/workspace-name` label
+    ##    always takes precedence and cannot be overridden here
+    ##
+    statefulSetMetadata:
+      labels:
+        my-workspace-kind-sts-label: "my-value"
+      annotations:
+        my-workspace-kind-sts-annotation: "my-value"
+
     ## service account configs for Workspace Pods
     ##  - each Workspace runs as its own ServiceAccount named "ws-{WORKSPACE_NAME}",
     ##    which the controller creates, owns, and deletes along with the Workspace
@@ -315,6 +328,15 @@ spec:
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
+
+    ## the name of the scheduler to use for Workspace Pods (MUTABLE)
+    ##  - https://kubernetes.io/docs/tasks/extend-kubernetes/configure-multiple-schedulers/
+    ##  - this is the default for all Workspaces of this WorkspaceKind,
+    ##    it may be overridden by the `schedulerName` of a pod config value
+    ##  - if not set here, or on the pod config value, the Kubernetes API
+    ##    server will default to the "default-scheduler"
+    ##
+    #schedulerName: "default-scheduler"
 
     ## ==============================================================
     ## WORKSPACE OPTIONS
@@ -492,7 +514,7 @@ spec:
 
       ## ============================================================
       ## POD CONFIG OPTIONS
-      ##  - SETS: affinity, nodeSelector, tolerations, resources
+      ##  - SETS: affinity, nodeSelector, tolerations, resources, schedulerName
       ## ============================================================
       podConfig:
 
@@ -544,6 +566,14 @@ spec:
                 requests:
                   cpu: 100m
                   memory: 128Mi
+
+              ## the name of the scheduler to use for the pod
+              ##  - https://kubernetes.io/docs/tasks/extend-kubernetes/configure-multiple-schedulers/
+              ##  - this takes precedence over the `schedulerName` of the pod template
+              ##  - set this to "default-scheduler" to have this pod config use the
+              ##    default Kubernetes scheduler, even if the pod template sets another one
+              ##
+              #schedulerName: "default-scheduler"
 
           ## ================================================================
           ## EXAMPLE 2: a small CPU pod
