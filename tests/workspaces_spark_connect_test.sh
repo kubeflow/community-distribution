@@ -24,12 +24,12 @@ kubectl auth can-i create sparkconnects \
 # than baking a dedicated image keeps this test self-contained. The resolver reports
 # protobuf conflicts against the pre-installed kfp packages; they do not affect Spark.
 kubectl -n "${KF_PROFILE}" exec "${WORKSPACE_POD}" -- \
-  python -m pip install --quiet "kubeflow-spark-api" "pyspark-connect"
+  python -m pip install --quiet "kubeflow[spark]"
 
-# Pin the Spark Connect client to the server version the SDK will provision, so the two
-# cannot drift when either the SDK default or the PyPI resolution changes. If this
-# constant moves in a future SDK release the test fails here, which is the right place
-# to find out.
+# Pin the Spark Connect client to the server version the SDK will provision. The spark
+# extra installs pyspark-connect 4.2.0 while constants.DEFAULT_SPARK_VERSION is 4.0.4, so
+# the extra alone leaves client and server mismatched. If either value moves in a future
+# SDK release the test fails here, which is the right place to find out.
 SPARK_VERSION="$(kubectl -n "${KF_PROFILE}" exec "${WORKSPACE_POD}" -- python -c \
   'from kubeflow.spark.backends.kubernetes import constants; print(constants.DEFAULT_SPARK_VERSION)')"
 echo "SDK default Spark version: ${SPARK_VERSION}"
