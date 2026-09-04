@@ -93,6 +93,7 @@ def main() -> None:
         assert len(rows) == 8, f"expected 8 buckets, got {len(rows)}"
         assert total == 100_000, f"expected 100000 rows, got {total}"
     finally:
+        test_failed = sys.exc_info()[0] is not None
         if spark is not None:
             spark.stop()
         logger.info("Deleting Spark Connect session %s", SESSION_NAME)
@@ -102,7 +103,7 @@ def main() -> None:
             # If the test body already failed, that exception is the useful one and is
             # re-raised on exit from this block. Only surface a cleanup failure when it
             # is the only thing that went wrong.
-            if sys.exc_info()[0] is None:
+            if not test_failed:
                 raise
             logger.warning("Could not delete session %s during cleanup", SESSION_NAME)
 
