@@ -30,8 +30,15 @@ Namespace names are fixed to match the Kustomize baseline and `kubeflow-namespac
 ## Caveats
 
 The CI values contain the static user, OIDC client secret, and password hash
-needed to match the current Kustomize manifests. Chart defaults use placeholders
-and are not production credential guidance.
+needed to match the current Kustomize manifests. They are fixtures, not
+production credential guidance.
+
+Chart defaults are `REPLACE_ME` placeholders and **the chart refuses to render
+while they are in place**. Installing with the defaults would otherwise create a
+Secret holding a publicly known OIDC client secret. `staticPassword.hash` is also
+checked for the complete bcrypt format, because a truncated hash silently rejects
+every password. Neither is checked when `dex.enabled=false`, since no Secret is
+rendered.
 
 The Dex `AuthCode` CRD is installed from the chart `crds/` directory. Helm
 installs CRDs before templates, but CRDs have special upgrade and deletion

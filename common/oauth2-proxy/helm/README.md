@@ -14,6 +14,30 @@ The `kubeflow-namespaces` foundation chart creates
 `Namespace/oauth2-proxy`; this chart stores Helm release metadata in that same
 workload namespace.
 
+## Credentials
+
+`credentials.clientSecret` and `credentials.cookieSecret` ship as `REPLACE_ME`
+placeholders and **the chart refuses to render while they are in place**. The
+cookie secret signs session cookies, so a publicly known value lets anyone forge
+a session.
+
+```bash
+openssl rand -base64 32 | tr -- '+/' '-_'
+```
+
+The cookie secret must be 16, 24 or 32 bytes, either raw or **URL-safe** base64.
+oauth2-proxy decodes with unpadded URL-safe base64 and uses the decoded bytes
+only when they are a valid key length, falling back to the raw string otherwise.
+The chart applies the same rule, so a value containing `+` or `/` is treated as
+raw rather than decoded — which is why the command above pipes through `tr`. Any other length is accepted by Kubernetes and
+then crash-loops oauth2-proxy, so the chart checks it before rendering.
+
+Nothing is checked when `oauth2Proxy.enabled=false`, since no Secret is
+rendered.
+
+Use the same `clientSecret` here and in the `dex` chart, or the OIDC client
+credentials will not match.
+
 ## Namespace names
 
 Namespace names are fixed to match the Kustomize baseline and `kubeflow-namespaces` foundation chart. oauth2-proxy workloads use `oauth2-proxy`, Istio authentication and authorization resources use `istio-system`, and gateway references use `kubeflow`. These names are not configurable.
