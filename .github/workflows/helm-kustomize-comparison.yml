@@ -115,7 +115,11 @@ jobs:
       run: python tests/dashboard_helm_chart_test.py
     - name: Test Notebooks Helm behavior
       run: python tests/notebooks_helm_chart_test.py
+    - name: Test KServe Helm behavior
+      run: python tests/kserve_helm_chart_test.py
     - name: Test Dashboard manifest generation
       run: |
         python tests/helm_manifest_generator_test.py
         python tests/dashboard_helm_manifest_generator_test.py
+    - name: Test KServe manifest generation
+      run: python tests/kserve_helm_manifest_generator_test.py

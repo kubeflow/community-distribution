@@ -1,0 +1,8 @@
+# CI values for the KServe platform scenario. Mirrors the defaults explicitly
+# so the compared scenario, and the second installation revision, do not depend
+# on chart defaults.
+scenario: platform
+customResourceDefinitions:
+  enabled: true
+resources:
+  enabled: true

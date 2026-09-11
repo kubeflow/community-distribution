@@ -1,0 +1,17 @@
+{{- if eq .Values.scenario "platform" }}
+{{- if .Values.customResourceDefinitions.enabled }}
+{{- /* One file per definition: Helm refuses chart files above 5 MiB, and the
+       sixteen definitions together exceed that. Glob results are ranged in
+       sorted order, so the render is deterministic. */}}
+{{- $definitions := .Files.Glob "manifests/custom-resource-definitions/*.yaml" }}
+{{- if not $definitions }}
+{{- fail "no generated custom resource definition payloads were found under manifests/custom-resource-definitions; regenerate the chart payloads" }}
+{{- end }}
+{{- range $path, $_ := $definitions }}
+{{ include "kserve.generatedPayload" (dict "root" $ "path" $path) }}
+{{- end }}
+{{- end }}
+{{- if .Values.resources.enabled }}
+{{ include "kserve.generatedPayload" (dict "root" . "path" "manifests/platform-resources.yaml") }}
+{{- end }}
+{{- end }}

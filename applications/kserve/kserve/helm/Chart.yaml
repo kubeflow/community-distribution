@@ -1,0 +1,16 @@
+apiVersion: v2
+name: kserve
+description: A Helm chart for the KServe platform resources of the Kubeflow Community Distribution
+version: 0.1.0
+appVersion: "v0.20.0"
+keywords:
+- kubeflow
+- kserve
+- serving
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/kubeflow/community-distribution/tree/master/applications/kserve/kserve
+- https://github.com/kserve/kserve
+annotations:
+  category: Serving
+  licenses: Apache-2.0

@@ -45,11 +45,19 @@ class GeneratorConfiguration:
     generator_script: str
     synchronize_script: str
     crds_payload_filename: str = "platform-crds.yaml"
+    # When set, every custom resource definition is written to its own file,
+    # <directory>/<definition name>.yaml, instead of crds_payload_filename.
+    # Helm refuses to load any chart file above 5 MiB, and one component's
+    # definitions together can exceed that.
+    crds_payload_directory: str = ""
     resources_payload_filename: str = "platform-resources.yaml"
     # (kind, name or name prefix, name_is_prefix)
     hand_written_resources: tuple = ()
     # (kind, name or name prefix, name_is_prefix, data key, output filename)
     extracted_documents: tuple = ()
+    # (kind, name): rendered by Kustomize but owned by another Helm release, so
+    # left out of every payload and rendered by no template either.
+    excluded_resources: tuple = ()
 
     def generated_header(self):
         return (
@@ -178,6 +186,7 @@ def generate_payload_contents(resources, configuration):
     documents = {}
     object_identities = set()
     matched_selectors = {}
+    matched_exclusions = set()
 
     for resource in resources:
         identity = resource_identity(resource)
@@ -185,6 +194,11 @@ def generate_payload_contents(resources, configuration):
         if object_identity in object_identities:
             raise ValueError(f"duplicate resource identity: {identity}")
         object_identities.add(object_identity)
+
+        exclusion = (identity[1], identity[3])
+        if exclusion in configuration.excluded_resources:
+            matched_exclusions.add(exclusion)
+            continue
 
         hand_written_selector = next(
             (
@@ -222,6 +236,18 @@ def generate_payload_contents(resources, configuration):
             + ", ".join(f"{kind}/{name}" for kind, name, _ in unmatched_selectors)
         )
 
+    stale_exclusions = [
+        exclusion
+        for exclusion in configuration.excluded_resources
+        if exclusion not in matched_exclusions
+    ]
+    if stale_exclusions:
+        raise ValueError(
+            "excluded resources are no longer rendered by Kustomize; "
+            "the exclusions are stale: "
+            + ", ".join(f"{kind}/{name}" for kind, name in stale_exclusions)
+        )
+
     missing_documents = [
         f"{DOCUMENTS_DIRECTORY}/{filename}"
         for *_, filename in configuration.extracted_documents
@@ -233,11 +259,26 @@ def generate_payload_contents(resources, configuration):
             + ", ".join(missing_documents)
         )
 
+    if configuration.crds_payload_directory:
+        crds_payload_name = configuration.crds_payload_directory + "/"
+        crd_payloads = [
+            (
+                f"{configuration.crds_payload_directory}/"
+                f"{resource_identity(resource)[3]}.yaml",
+                [resource],
+            )
+            for resource in crd_resources
+        ]
+    else:
+        crds_payload_name = configuration.crds_payload_filename
+        crd_payloads = [(configuration.crds_payload_filename, crd_resources)]
     payloads = (
-        (configuration.crds_payload_filename, crd_resources),
+        *crd_payloads,
         (configuration.resources_payload_filename, payload_resources),
     )
     empty_payloads = [filename for filename, entries in payloads if not entries]
+    if not crd_resources:
+        empty_payloads.insert(0, crds_payload_name)
     if empty_payloads:
         raise ValueError(
             "required generated payloads are empty: " + ", ".join(empty_payloads)

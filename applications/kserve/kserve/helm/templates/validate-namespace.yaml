@@ -1,0 +1,3 @@
+{{- if ne .Release.Namespace "kserve" }}
+{{- fail "KServe chart must be installed into the kserve namespace" }}
+{{- end }}

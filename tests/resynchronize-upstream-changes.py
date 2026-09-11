@@ -15,7 +15,10 @@ path_to_synchronization_script = {
     "applications/dashboard/helm/manifests": "scripts/synchronize-dashboard-manifests.sh",
     "applications/hub/upstream": "scripts/synchronize-hub-manifests.sh",
     "applications/katib/upstream": "scripts/synchronize-katib-manifests.sh",
-    "applications/kserve/kserve/upstream": "scripts/synchronize-kserve-kserve-manifests.sh",
+    # The KServe chart payloads are generated from the whole component, so any
+    # change under it regenerates them.
+    "applications/kserve/kserve": "scripts/synchronize-kserve-kserve-manifests.sh",
+    "scripts/generate-kserve-helm-manifests.py": "scripts/synchronize-kserve-kserve-manifests.sh",
     "applications/kserve/kserve-ui/upstream": "scripts/synchronize-kserve-ui-manifests.sh",
     "applications/notebooks-v1/upstream": "scripts/synchronize-notebooks-v1-manifests.sh",
     "applications/notebooks-v1/helm/Chart.yaml": "scripts/synchronize-notebooks-v1-manifests.sh",
@@ -36,6 +39,7 @@ path_to_synchronization_script = {
     # so a change to it must resynchronize all of them.
     "scripts/helm_manifest_generator.py": (
         "scripts/synchronize-dashboard-manifests.sh",
+        "scripts/synchronize-kserve-kserve-manifests.sh",
         "scripts/synchronize-notebooks-v1-manifests.sh",
     ),
 }
