@@ -1,0 +1,65 @@
+{{- /*
+Only checked when the workload is rendered. With dex.enabled=false there is no
+ConfigMap and no Deployment, so none of these values are used.
+*/ -}}
+{{- if .Values.dex.enabled }}
+{{- if not (or (kindIs "slice" .Values.config.connectors) (kindIs "invalid" .Values.config.connectors)) }}
+{{- fail (printf "config.connectors must be a list of Dex connectors; got %s" (kindOf .Values.config.connectors)) }}
+{{- end }}
+{{- range $index, $connector := .Values.config.connectors }}
+{{- if not (kindIs "map" $connector) }}
+{{- fail (printf "config.connectors[%d] must be a map; got %s" $index (kindOf $connector)) }}
+{{- end }}
+{{- range $field := list "type" "id" "name" }}
+{{- if not (hasKey $connector $field) }}
+{{- fail (printf "config.connectors[%d] is missing the required field %q" $index $field) }}
+{{- end }}
+{{- $value := index $connector $field }}
+{{- if not (kindIs "string" $value) }}
+{{- fail (printf "config.connectors[%d].%s must be a string; got %s. Quote the value if it looks like a number or a boolean" $index $field (kindOf $value)) }}
+{{- end }}
+{{- if not $value }}
+{{- fail (printf "config.connectors[%d].%s is empty; Dex cannot use a connector without it" $index $field) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if and (not .Values.config.enablePasswordDB) (not .Values.config.connectors) }}
+{{- fail "config.enablePasswordDB is false and config.connectors is empty, so Dex would have no way to authenticate anyone; configure a connector or keep the password database enabled" }}
+{{- end }}
+{{- if not (kindIs "slice" .Values.extraEnvironmentSecrets) }}
+{{- fail (printf "extraEnvironmentSecrets must be a list of Secret names; got %s" (kindOf .Values.extraEnvironmentSecrets)) }}
+{{- end }}
+{{- range $index, $secretName := .Values.extraEnvironmentSecrets }}
+{{- if not (kindIs "string" $secretName) }}
+{{- fail (printf "extraEnvironmentSecrets[%d] must be a Secret name; got %s" $index (kindOf $secretName)) }}
+{{- end }}
+{{- if not $secretName }}
+{{- fail (printf "extraEnvironmentSecrets[%d] is empty" $index) }}
+{{- end }}
+{{- end }}
+{{- /*
+A rootCAs path is served by the mounted Secret when it sits inside the mount
+directory. This is a lint on what was written, not a filesystem boundary: Helm
+sees strings and cannot resolve symbolic links. Collapse repeated separators and
+compare against the directory plus a separator, so a sibling such as
+/etc/dex/certificate-authorities-elsewhere is not mistaken for it while
+/etc/dex//certificate-authorities still is, and reject . or .. segments rather
+than trying to resolve them.
+*/ -}}
+{{- $certificateAuthorityDirectory := include "dex.certificateAuthorityDirectory" . }}
+{{- $mountPrefix := printf "%s/" $certificateAuthorityDirectory }}
+{{- range $index, $connector := .Values.config.connectors }}
+{{- range $certificate := (default (list) (dig "config" "rootCAs" (list) $connector)) }}
+{{- if not (kindIs "string" $certificate) }}
+{{- fail (printf "config.connectors[%d] rootCAs entries must be file paths; got %s" $index (kindOf $certificate)) }}
+{{- end }}
+{{- if or (contains "/./" $certificate) (contains "/../" $certificate) }}
+{{- fail (printf "config.connectors[%d] rootCAs entry %s is not a normalized path; write it without . or .. segments" $index $certificate) }}
+{{- end }}
+{{- $collapsed := regexReplaceAll "/+" $certificate "/" }}
+{{- if and (hasPrefix $mountPrefix $collapsed) (not $.Values.connectorCertificateAuthoritySecret) }}
+{{- fail (printf "config.connectors[%d] reads %s but connectorCertificateAuthoritySecret is not set, so nothing is mounted there" $index $certificate) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

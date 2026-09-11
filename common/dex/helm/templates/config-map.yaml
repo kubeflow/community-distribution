@@ -15,17 +15,23 @@ data:
     oauth2:
       skipApprovalScreen: {{ .Values.config.skipApprovalScreen }}
     enablePasswordDB: {{ .Values.config.enablePasswordDB }}
+{{- if .Values.config.enablePasswordDB }}
     staticPasswords:
     - email: {{ .Values.config.staticUserEmail }}
       hashFromEnv: DEX_USER_PASSWORD
       username: {{ .Values.config.staticUsername | quote }}
       userID: {{ .Values.config.staticUserID | quote }}
+{{- end }}
     staticClients:
     # https://github.com/dexidp/dex/pull/1664
     - idEnv: OIDC_CLIENT_ID
       redirectURIs: [{{ .Values.config.redirectURI | quote }}]
       name: 'Dex Login Application'
       secretEnv: OIDC_CLIENT_SECRET
+{{- with .Values.config.connectors }}
+    connectors:
+{{ toYaml . | indent 4 }}
+{{- end }}
 kind: ConfigMap
 metadata:
   name: dex
