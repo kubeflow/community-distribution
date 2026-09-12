@@ -24,6 +24,14 @@ knownDifferences:
     The chart templates the Dex configuration with different YAML quoting
     than the baseline; parsing both sides compares the configuration's value
     instead of its quote style.
+retainedCustomResourceDefinitions:
+  reason: >
+    The chart renders the authcodes CustomResourceDefinition from templates
+    with helm.sh/resource-policy: keep, so helm upgrade updates the schema
+    while helm uninstall leaves the definition and the stored authorization
+    codes behind.
+  names:
+  - authcodes.dex.coreos.com
 scenarios:
   oauth2-proxy:
     kustomize:

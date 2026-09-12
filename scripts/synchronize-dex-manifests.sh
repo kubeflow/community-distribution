@@ -26,11 +26,18 @@ sed -i "s|ghcr.io/dexidp/dex:v[0-9.]*|ghcr.io/dexidp/dex:${COMMIT}|g" \
   "$CHART_DIRECTORY/values.yaml"
 
 mkdir -p "$UPSTREAM_DIRECTORY"
-mkdir -p "$CHART_DIRECTORY/crds"
 cp \
   "$SOURCE_DIRECTORY/$REPOSITORY_DIRECTORY/scripts/manifests/crds/authcodes.yaml" \
   "$UPSTREAM_DIRECTORY/crds.yaml"
-cp "$UPSTREAM_DIRECTORY/crds.yaml" "$CHART_DIRECTORY/crds/authcodes.yaml"
+
+# The chart renders the CustomResourceDefinition from templates/crds.yaml rather
+# than from a crds directory, so that helm upgrade updates the schema. Helm never
+# upgrades a crds directory. The chart copy is therefore hand-written and cannot
+# be overwritten here; fail loudly when upstream changes it so it is updated
+# deliberately. tests/dex_helm_crd_lifecycle_test.py performs the same check in
+# continuous integration.
+python3 "${MANIFESTS_DIRECTORY}/tests/dex_helm_crd_lifecycle_test.py" \
+  ChartCustomResourceDefinitionMatchesUpstreamTest
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/releases/tag/v.*)"
 DESTINATION_TEXT="\[${COMMIT#v}\](https://github.com/${REPOSITORY_NAME}/releases/tag/${COMMIT})"
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"

@@ -1,5 +1,10 @@
 # Default values for the Kubeflow Dex chart.
 
+crds:
+  # -- Render the Dex authcodes CustomResourceDefinition. Disable when the
+  # cluster administrator manages CustomResourceDefinitions separately.
+  enabled: true
+
 rbac:
   # -- Render Dex RBAC resources.
   enabled: true
