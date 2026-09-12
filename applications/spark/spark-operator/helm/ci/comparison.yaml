@@ -1,0 +1,14 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: spark-operator
+releaseName: spark-operator
+namespace: kubeflow
+includeCustomResourceDefinitions: true
+helmUsesReleaseNamespace: true
+dependencyRepositories:
+  spark-operator: https://kubeflow.github.io/spark-operator
+scenarios:
+  kubeflow:
+    kustomize:
+    - applications/spark/spark-operator/overlays/kubeflow
+    values: ci/values-kubeflow.yaml
