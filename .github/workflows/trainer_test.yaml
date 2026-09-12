@@ -14,7 +14,8 @@ on:
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**
-    - experimental/security/PSS/*
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
 
 permissions:
   contents: read

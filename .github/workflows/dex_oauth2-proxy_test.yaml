@@ -7,7 +7,8 @@ on:
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**
-    - experimental/security/PSS/*
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
     - common/dex/base/**
     - tests/istio*
     - tests/dex_login_test.py
