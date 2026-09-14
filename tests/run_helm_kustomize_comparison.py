@@ -9,6 +9,8 @@ that component's directory and never a shared list.
 import argparse
 import importlib.util
 import json
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -23,13 +25,17 @@ _COMPARATOR_SPEC = importlib.util.spec_from_file_location(
 )
 comparator = importlib.util.module_from_spec(_COMPARATOR_SPEC)
 _COMPARATOR_SPEC.loader.exec_module(comparator)
+# A component may ship sibling charts named helm-<purpose> when its resources
+# form more than one release; a chart's own charts/ directory is never a
+# component chart of its own.
 CHART_GLOBS = (
-    "common/*/helm",
-    "applications/*/helm",
-    "applications/*/*/helm",
+    "common/*/helm*",
+    "applications/*/helm*",
+    "applications/*/*/helm*",
     "experimental/helm/charts/*",
 )
 DOCUMENT_SEPARATOR = "\n---\n"
+HOOK_ANNOTATION = "helm.sh/hook"
 
 
 class _StrictLoader(yaml.SafeLoader):
@@ -180,12 +186,15 @@ def load_descriptor(path):
             "knownDifferences",
             "helmOnlyResources",
             "retainedCustomResourceDefinitions",
+            "partition",
         },
     )
     for field in ("component", "releaseName", "namespace", "scenarios"):
         if not descriptor.get(field):
             raise ValueError(f"{path}: missing {field!r}")
     _validate_allowances(path, descriptor)
+    if "partition" in descriptor:
+        _validate_partition(path, descriptor)
 
     scenarios = descriptor["scenarios"]
     if not isinstance(scenarios, dict):
@@ -236,11 +245,53 @@ def load_descriptor(path):
     return descriptor
 
 
-def discover():
+def _validate_partition(path, descriptor):
+    """A chart in a partition group owns exactly a subset of a shared baseline.
+
+    Ownership is proven from the complete rendered output of every member, so
+    the allowances that remove or excuse whole objects from an ordinary
+    comparison are not available to a member: a skipped or Helm-only object
+    would be exactly the unowned or doubly owned object the group must reject.
+    """
+    group = descriptor["partition"]
+    if not isinstance(group, str) or not group.strip():
+        raise ValueError(f"{path}: 'partition' must be a non-empty group name")
+    if any("skip" in entry for entry in descriptor.get("knownDifferences") or []):
+        raise ValueError(
+            f"{path}: a partition member cannot skip objects; every baseline "
+            "object must be owned by exactly one member"
+        )
+    if descriptor.get("helmOnlyResources"):
+        raise ValueError(
+            f"{path}: a partition member cannot declare helmOnlyResources; "
+            "its release must render exactly its owned baseline subset"
+        )
+
+
+def chart_directories(root=ROOT_DIRECTORY):
+    """Every directory the globs name that holds a Chart.yaml."""
+    return [
+        chart
+        for pattern in CHART_GLOBS
+        for chart in sorted(root.glob(pattern))
+        if (chart / "Chart.yaml").is_file()
+    ]
+
+
+def charts_without_descriptor(root=ROOT_DIRECTORY):
+    """Discovery skips a chart with no descriptor, so this guard must not."""
+    return [
+        chart
+        for chart in chart_directories(root)
+        if not (chart / "ci" / "comparison.yaml").is_file()
+    ]
+
+
+def discover(root=ROOT_DIRECTORY):
     """Return {component: (chart directory, descriptor)} for every chart."""
     descriptors = {}
     for pattern in CHART_GLOBS:
-        for chart in sorted(ROOT_DIRECTORY.glob(pattern)):
+        for chart in sorted(root.glob(pattern)):
             path = chart / "ci" / "comparison.yaml"
             if not path.is_file():
                 continue
@@ -252,11 +303,11 @@ def discover():
     return descriptors
 
 
-def render_kustomize(scenario, destination):
+def render_kustomize(scenario, destination, root=ROOT_DIRECTORY):
     """Concatenate every Kustomize target this scenario compares against."""
     documents = [
         subprocess.run(
-            ["kustomize", "build", str(ROOT_DIRECTORY / path)],
+            ["kustomize", "build", str(root / path)],
             check=True,
             capture_output=True,
             text=True,
@@ -322,6 +373,280 @@ def compare(component, name, descriptors, rules):
         return False
 
 
+def partition_groups(descriptors):
+    """{group: {component: (chart, descriptor)}} for every declared group."""
+    groups = {}
+    for component, (chart, descriptor) in sorted(descriptors.items()):
+        group = descriptor.get("partition")
+        if group is not None:
+            groups.setdefault(group, {})[component] = (chart, descriptor)
+    return groups
+
+
+def object_identity(manifest, cluster_scoped):
+    """(API group, kind, namespace, name); the namespace is dropped for a kind
+    the baseline's own CustomResourceDefinitions declare cluster-scoped, so a
+    stray metadata.namespace on such an object cannot split one identity in
+    two or hide a duplicate."""
+    api_version = manifest.get("apiVersion") or ""
+    group = api_version.split("/", maxsplit=1)[0] if "/" in api_version else ""
+    kind = manifest.get("kind") or ""
+    metadata = manifest.get("metadata") or {}
+    name = metadata.get("name") or ""
+    if not kind or not name:
+        raise ValueError(f"object without kind or metadata.name: {manifest!r:.200}")
+    namespace = (
+        "" if (group, kind) in cluster_scoped else metadata.get("namespace") or ""
+    )
+    return group, kind, namespace, name
+
+
+def cluster_scoped_kinds(manifests):
+    """(group, kind) of every custom resource the manifests define as cluster-scoped."""
+    return {
+        (manifest["spec"]["group"], manifest["spec"]["names"]["kind"])
+        for manifest in manifests
+        if manifest.get("kind") == "CustomResourceDefinition"
+        and (manifest.get("spec") or {}).get("scope") == "Cluster"
+    }
+
+
+def format_identity(identity):
+    group, kind, namespace, name = identity
+    kind = f"{kind}.{group}" if group else kind
+    return f"{kind}/{namespace}/{name}" if namespace else f"{kind}/{name}"
+
+
+def inventory(manifests, cluster_scoped, source):
+    """{identity: manifest}; a repeated identity is an error, never a merge."""
+    objects = {}
+    problems = []
+    for manifest in manifests:
+        identity = object_identity(manifest, cluster_scoped)
+        if identity in objects:
+            problems.append(f"{source} renders {format_identity(identity)} twice")
+        objects[identity] = manifest
+    return objects, problems
+
+
+def helm_environment(home):
+    """Helm directories under `home`, so dependency builds touch no user state."""
+    environment = dict(os.environ)
+    for variable in ("HELM_CACHE_HOME", "HELM_CONFIG_HOME", "HELM_DATA_HOME"):
+        directory = Path(home) / variable.lower()
+        directory.mkdir(parents=True, exist_ok=True)
+        environment[variable] = str(directory)
+    return environment
+
+
+def prepare_member(chart, descriptor, work, environment):
+    """Copy a member chart once and build its dependencies in the copy.
+
+    The copy is what every scenario renders and what the install-once
+    inspection reads, so dependencies are resolved exactly once and the
+    checkout is never modified; the isolated Helm directories keep repository
+    indexes and downloaded archives out of the developer's Helm home.
+    """
+    copy = Path(work) / chart.name
+    shutil.copytree(chart, copy, symlinks=True)
+    chart_yaml = yaml.safe_load((copy / "Chart.yaml").read_text()) or {}
+    if chart_yaml.get("dependencies"):
+        for repository, url in (descriptor.get("dependencyRepositories") or {}).items():
+            subprocess.run(
+                ["helm", "repo", "add", repository, url],
+                check=True,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+        subprocess.run(
+            ["helm", "dependency", "build", str(copy)],
+            check=True,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+    return copy
+
+
+def install_once_definitions(prepared_chart, environment):
+    """Names of the crds/ definitions Helm would install once, at any depth.
+
+    `helm show crds` walks the prepared chart and every dependency, packaged or
+    unpacked, and lists only crds/ content, never template-managed definitions.
+    """
+    shown = subprocess.run(
+        ["helm", "show", "crds", str(prepared_chart)],
+        check=True,
+        capture_output=True,
+        text=True,
+        env=environment,
+    ).stdout
+    return sorted(
+        (document.get("metadata") or {}).get("name") or "<unnamed>"
+        for document in yaml.safe_load_all(shown)
+        if document
+    )
+
+
+def render_member(prepared_chart, descriptor, scenario, environment):
+    """A member release's complete output: nothing filtered, crds/ included.
+
+    Ownership is a property of the release, not of the comparison subset.
+    """
+    command = ["helm", "template", descriptor["releaseName"], str(prepared_chart)]
+    command += ["--namespace", descriptor["namespace"], "--include-crds"]
+    if scenario.get("values"):
+        command += ["--values", str(prepared_chart / scenario["values"])]
+    rendered = subprocess.run(
+        command, check=True, capture_output=True, text=True, env=environment
+    ).stdout
+    return [document for document in yaml.safe_load_all(rendered) if document]
+
+
+def verify_partition(group, members, root, work):
+    """Prove that the members' releases partition their shared baseline.
+
+    The members must declare the same scenarios over the same Kustomize
+    targets. For every scenario, each baseline object must be selected by
+    exactly one member's kind selection, and each member's complete rendered
+    output must be exactly the objects it selects: nothing missing, nothing
+    extra, nothing twice. Install-once crds/ content, at any dependency depth,
+    and hook-created objects are outside what this contract can prove, so
+    they are rejected.
+    """
+    problems = []
+    if len(members) < 2:
+        return [f"{group}: a partition group needs at least two charts"]
+
+    scenario_sets = {
+        component: frozenset(descriptor["scenarios"])
+        for component, (_, descriptor) in members.items()
+    }
+    if len(set(scenario_sets.values())) != 1:
+        return [
+            f"{group}: members declare different scenarios: "
+            + "; ".join(
+                f"{component} {sorted(names)}"
+                for component, names in sorted(scenario_sets.items())
+            )
+        ]
+
+    environment = helm_environment(Path(work) / "helm")
+    prepared = {}
+    for component, (chart, descriptor) in sorted(members.items()):
+        prepared[component] = prepare_member(
+            chart, descriptor, Path(work) / component, environment
+        )
+        definitions = install_once_definitions(prepared[component], environment)
+        if definitions:
+            problems.append(
+                f"{group} {component}: install-once crds/ content is not supported "
+                "in a partition group; render definitions from templates: "
+                + ", ".join(definitions)
+            )
+
+    for scenario_name in sorted(next(iter(scenario_sets.values()))):
+        targets = {
+            component: tuple(descriptor["scenarios"][scenario_name]["kustomize"])
+            for component, (_, descriptor) in members.items()
+        }
+        if len(set(targets.values())) != 1:
+            problems.append(
+                f"{group}/{scenario_name}: members compare against different "
+                "Kustomize targets: "
+                + "; ".join(
+                    f"{component} {list(paths)}"
+                    for component, paths in sorted(targets.items())
+                )
+            )
+            continue
+
+        baseline_path = Path(work) / f"{group}-{scenario_name}-baseline.yaml"
+        try:
+            render_kustomize(
+                next(iter(members.values()))[1]["scenarios"][scenario_name],
+                baseline_path,
+                root,
+            )
+        except subprocess.CalledProcessError as error:
+            problems.append(
+                f"{group}/{scenario_name}: {' '.join(error.cmd)} exited "
+                f"{error.returncode}: {error.stderr.strip()}"
+            )
+            continue
+        baseline_manifests = comparator.load_manifests(str(baseline_path))
+        cluster_scoped = cluster_scoped_kinds(baseline_manifests)
+        baseline, baseline_problems = inventory(
+            baseline_manifests, cluster_scoped, f"{group}/{scenario_name} baseline"
+        )
+        problems.extend(baseline_problems)
+
+        owners = {identity: [] for identity in baseline}
+        for component, (chart, descriptor) in sorted(members.items()):
+            scenario = descriptor["scenarios"][scenario_name]
+            source = f"{group}/{scenario_name} {component}"
+            expected = {
+                identity
+                for identity in baseline
+                if comparator.ChartComparisonRules.selects(scenario, identity[1])
+            }
+            for identity in expected:
+                owners[identity].append(component)
+
+            rendered, rendered_problems = inventory(
+                render_member(prepared[component], descriptor, scenario, environment),
+                cluster_scoped,
+                source,
+            )
+            problems.extend(rendered_problems)
+            for identity, manifest in sorted(rendered.items()):
+                annotations = (manifest.get("metadata") or {}).get("annotations") or {}
+                if HOOK_ANNOTATION in annotations:
+                    problems.append(
+                        f"{source}: {format_identity(identity)} is a Helm hook; "
+                        "hook-created objects are not supported in a partition group"
+                    )
+            for identity in sorted(expected - set(rendered)):
+                problems.append(
+                    f"{source}: does not render {format_identity(identity)}, "
+                    "which its selection owns"
+                )
+            for identity in sorted(set(rendered) - expected):
+                if identity in baseline:
+                    problems.append(
+                        f"{source}: renders {format_identity(identity)}, which its "
+                        "selection does not own"
+                    )
+                else:
+                    problems.append(
+                        f"{source}: renders {format_identity(identity)}, which is "
+                        "not in the baseline"
+                    )
+
+        for identity, components in sorted(owners.items()):
+            if not components:
+                problems.append(
+                    f"{group}/{scenario_name}: {format_identity(identity)} is owned "
+                    "by no member"
+                )
+            elif len(components) > 1:
+                problems.append(
+                    f"{group}/{scenario_name}: {format_identity(identity)} is owned "
+                    f"by {', '.join(components)}"
+                )
+    return problems
+
+
+def verify_partitions(descriptors, root=ROOT_DIRECTORY):
+    """Verify every declared partition group; returns the problem lines."""
+    problems = []
+    with tempfile.TemporaryDirectory() as work:
+        for group, members in sorted(partition_groups(descriptors).items()):
+            problems.extend(verify_partition(group, members, root, Path(work) / group))
+    return problems
+
+
 def main():
     descriptors = discover()
     parser = argparse.ArgumentParser(description=__doc__)
@@ -340,7 +665,30 @@ def main():
         action="store_true",
         help="with --list, print the component names as JSON for the CI matrix",
     )
+    parser.add_argument(
+        "--partitions",
+        action="store_true",
+        help="verify that every partition group's releases own their shared "
+        "baseline exactly once, from their complete rendered output",
+    )
     arguments = parser.parse_args()
+
+    if arguments.partitions:
+        groups = partition_groups(descriptors)
+        if not groups:
+            print("No partition groups declared; nothing to verify.")
+            return 0
+        problems = verify_partitions(descriptors)
+        for line in problems:
+            print(f"  {line}")
+        if problems:
+            print(f"FAILED: partition groups {', '.join(sorted(groups))}")
+            return 1
+        print(
+            f"SUCCESS: {len(groups)} partition groups own their baselines exactly "
+            f"once: {', '.join(sorted(groups))}"
+        )
+        return 0
 
     if arguments.list:
         if arguments.json:

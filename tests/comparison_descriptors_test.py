@@ -26,17 +26,11 @@ class DescriptorTest(unittest.TestCase):
         Without this, a contributor can add a chart, omit one file, and get a
         green build with no parity coverage at all.
         """
-        for pattern in comparison.CHART_GLOBS:
-            for chart in comparison.ROOT_DIRECTORY.glob(pattern):
-                if not (chart / "Chart.yaml").is_file():
-                    continue
-                with self.subTest(
-                    chart=str(chart.relative_to(comparison.ROOT_DIRECTORY))
-                ):
-                    self.assertTrue(
-                        (chart / "ci" / "comparison.yaml").is_file(),
-                        "every chart must declare ci/comparison.yaml so it is compared",
-                    )
+        self.assertEqual(
+            comparison.charts_without_descriptor(),
+            [],
+            "every chart must declare ci/comparison.yaml so it is compared",
+        )
 
     def test_declared_paths_exist(self):
         """A typo would otherwise surface as an opaque kustomize build error."""
@@ -49,6 +43,61 @@ class DescriptorTest(unittest.TestCase):
                         )
                     if scenario.get("values"):
                         self.assertTrue((chart / scenario["values"]).is_file())
+
+
+class SiblingChartDiscoveryTest(unittest.TestCase):
+    """A component may ship several charts named helm*; each is one release."""
+
+    def write_chart(self, root, relative, descriptor=True):
+        chart = root / relative
+        chart.mkdir(parents=True)
+        (chart / "Chart.yaml").write_text(
+            f"apiVersion: v2\nname: {chart.name}\nversion: 0.1.0\n"
+        )
+        if descriptor:
+            (chart / "ci").mkdir()
+            (chart / "ci" / "comparison.yaml").write_text(
+                f"component: {chart.parent.name}-{chart.name}\n"
+                f"releaseName: {chart.name}\nnamespace: n\n"
+                "scenarios:\n  a:\n    kustomize: [x]\n"
+            )
+        return chart
+
+    def test_sibling_charts_are_discovered_and_dependencies_are_not(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_chart(root, "applications/x/helm")
+            self.write_chart(root, "applications/x/helm-crds")
+            self.write_chart(root, "common/y/helm-runtimes")
+            self.write_chart(root, "applications/x/helm/charts/payload")
+            (root / "applications/x/helm-notes.md").write_text("not a chart\n")
+
+            self.assertEqual(
+                sorted(comparison.discover(root)),
+                ["x-helm", "x-helm-crds", "y-helm-runtimes"],
+            )
+            self.assertEqual(
+                [
+                    str(chart.relative_to(root))
+                    for chart in comparison.chart_directories(root)
+                ],
+                [
+                    "common/y/helm-runtimes",
+                    "applications/x/helm",
+                    "applications/x/helm-crds",
+                ],
+            )
+
+    def test_a_sibling_chart_without_a_descriptor_fails_the_coverage_guard(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_chart(root, "applications/x/helm")
+            missing = self.write_chart(
+                root, "applications/x/helm-crds", descriptor=False
+            )
+
+            self.assertEqual(comparison.charts_without_descriptor(root), [missing])
+            self.assertEqual(sorted(comparison.discover(root)), ["x-helm"])
 
 
 class MalformedDescriptorTest(unittest.TestCase):
@@ -222,6 +271,26 @@ class MalformedAllowanceTest(unittest.TestCase):
         """Every rejection above must be attributable to the malformed
         allowance, not to the shared boilerplate."""
         self.load("")
+
+    def test_a_partition_group_name_must_be_a_non_empty_string(self):
+        for value in ('""', "3", "[a]"):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "partition"):
+                    self.load(f"partition: {value}\n")
+        descriptor = self.load("partition: x\n")
+        self.assertEqual(descriptor["partition"], "x")
+
+    def test_a_partition_member_cannot_skip_or_add_whole_objects(self):
+        """Ownership is proven from complete rendered output; a skip or a
+        Helm-only object would be exactly the unowned object the group rejects."""
+        with self.assertRaisesRegex(ValueError, "cannot skip"):
+            self.load(
+                "partition: x\nknownDifferences:\n- skip: Namespace/n\n  reason: r\n"
+            )
+        with self.assertRaisesRegex(ValueError, "cannot declare helmOnlyResources"):
+            self.load(
+                "partition: x\nhelmOnlyResources:\n- resource: ConfigMap/n/c\n  reason: r\n"
+            )
 
     def test_an_empty_only_kinds_list_is_rejected(self):
         """An empty onlyKinds would compare nothing and still report success."""
