@@ -1,0 +1,27 @@
+# Default values for the KServe chart.
+#
+# The chart vendors the Kustomize component applications/kserve/kserve verbatim,
+# including every restricted Pod Security Standard and Kubeflow integration
+# patch that component carries. Kustomize remains the source of truth.
+
+# -- Rendered Kustomize parity scenario.
+# Supported value: platform
+scenario: platform
+
+customResourceDefinitions:
+  # -- Render the sixteen KServe custom resource definitions.
+  # They are rendered as ordinary templates rather than from crds/, because Helm
+  # never upgrades or deletes anything in crds/, and they carry
+  # helm.sh/resource-policy: keep so uninstalling the release cannot delete
+  # existing InferenceServices and runtimes. Helm's --skip-crds does not apply
+  # to templates; set this to false instead when an administrator or another
+  # release already owns them.
+  enabled: true
+
+resources:
+  # -- Render the KServe control plane: controllers, webhooks, certificates,
+  # the inference service configuration, cluster serving runtimes and the
+  # Kubeflow integration resources. Set this to false for the first release
+  # revision, so the custom resource definitions are established before the
+  # cluster serving runtimes that need them are applied.
+  enabled: true

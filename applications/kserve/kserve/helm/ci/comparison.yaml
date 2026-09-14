@@ -1,0 +1,35 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: kserve
+releaseName: kserve
+namespace: kserve
+includeCustomResourceDefinitions: false
+retainedCustomResourceDefinitions:
+  reason: >
+    helm uninstall must leave the KServe definitions, and with them every
+    InferenceService, runtime and cache, behind.
+  names:
+  - clusterservingruntimes.serving.kserve.io
+  - clusterstoragecontainers.serving.kserve.io
+  - inferencegraphs.serving.kserve.io
+  - inferencemodelrewrites.llm-d.ai
+  - inferenceobjectives.llm-d.ai
+  - inferencepools.inference.networking.k8s.io
+  - inferencepools.inference.networking.x-k8s.io
+  - inferenceservices.serving.kserve.io
+  - llminferenceserviceconfigs.serving.kserve.io
+  - llminferenceservices.serving.kserve.io
+  - localmodelcaches.serving.kserve.io
+  - localmodelnamespacecaches.serving.kserve.io
+  - localmodelnodegroups.serving.kserve.io
+  - localmodelnodes.serving.kserve.io
+  - servingruntimes.serving.kserve.io
+  - trainedmodels.serving.kserve.io
+scenarios:
+  platform:
+    kustomize:
+    - applications/kserve/kserve
+    values: ci/values-platform.yaml
+    # The Kustomize component creates Namespace/kserve; the kubeflow-namespaces
+    # foundation chart owns it on the Helm side, so it is compared there.
+    excludeKinds: [Namespace]

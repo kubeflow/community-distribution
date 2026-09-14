@@ -92,8 +92,8 @@ jobs:
     - name: Install Knative Eventing
       run: ./tests/knative_eventing_install.sh
 
-    - name: Install KServe
-      run: ./tests/kserve_install.sh
+    - name: Install KServe with Helm
+      run: ./tests/kserve_helm_install.sh
 
     - name: Install Pipelines with SeaweedFS
       run: ./tests/pipelines_install.sh

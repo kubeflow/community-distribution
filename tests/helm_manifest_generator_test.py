@@ -123,9 +123,89 @@ class HelmManifestGeneratorTest(unittest.TestCase):
         self.assertNotIn("example-parameters-", rendered)
 
     def test_orphaned_hand_written_resource_fails(self):
-        resources = [r for r in self.resources() if r["metadata"]["name"] != "example"]
+        resources = [
+            resource
+            for resource in self.resources()
+            if resource["metadata"]["name"] != "example"
+        ]
         with self.assertRaisesRegex(ValueError, "orphaned"):
             engine.generate_payload_contents(resources, configuration())
+
+    def test_custom_resource_definitions_can_be_written_one_per_file(self):
+        resources = self.resources()
+        resources.append(
+            self.resource(
+                "samples.kubeflow.org",
+                kind="CustomResourceDefinition",
+                api_version="apiextensions.k8s.io/v1",
+                namespace=None,
+            )
+        )
+        per_definition = engine.GeneratorConfiguration(
+            **{
+                **configuration().__dict__,
+                "crds_payload_directory": "custom-resource-definitions",
+            }
+        )
+
+        payloads = engine.generate_payload_contents(resources, per_definition)
+
+        self.assertEqual(
+            set(payloads),
+            {
+                "custom-resource-definitions/examples.kubeflow.org.yaml",
+                "custom-resource-definitions/samples.kubeflow.org.yaml",
+                RESOURCES_PAYLOAD,
+                DOCUMENT,
+            },
+        )
+        for filename in payloads:
+            if filename.startswith("custom-resource-definitions/"):
+                self.assertEqual(payloads[filename].count("\nkind: "), 1)
+                self.assertIn("helm.sh/resource-policy: keep", payloads[filename])
+
+    def test_missing_definitions_fail_the_per_file_layout_too(self):
+        resources = [
+            resource
+            for resource in self.resources()
+            if resource["kind"] != "CustomResourceDefinition"
+        ]
+        per_definition = engine.GeneratorConfiguration(
+            **{
+                **configuration().__dict__,
+                "crds_payload_directory": "custom-resource-definitions",
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "custom-resource-definitions/"):
+            engine.generate_payload_contents(resources, per_definition)
+
+    def test_excluded_resources_are_left_out_of_every_payload(self):
+        resources = self.resources()
+        resources.append(
+            self.resource("kserve", kind="Namespace", api_version="v1", namespace=None)
+        )
+        excluding = engine.GeneratorConfiguration(
+            **{
+                **configuration().__dict__,
+                "excluded_resources": (("Namespace", "kserve"),),
+            }
+        )
+
+        payloads = engine.generate_payload_contents(resources, excluding)
+
+        rendered = payloads[CRDS_PAYLOAD] + payloads[RESOURCES_PAYLOAD]
+        self.assertNotIn("kind: Namespace", rendered)
+        self.assertIn("name: example-service\n", rendered)
+
+    def test_stale_exclusion_fails(self):
+        excluding = engine.GeneratorConfiguration(
+            **{
+                **configuration().__dict__,
+                "excluded_resources": (("Namespace", "kserve"),),
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "stale"):
+            engine.generate_payload_contents(self.resources(), excluding)
 
     def test_generated_name_prefix_requires_a_valid_kustomize_hash(self):
         resources = self.resources()
@@ -137,10 +217,13 @@ class HelmManifestGeneratorTest(unittest.TestCase):
 
     def test_empty_payload_fails(self):
         resources = [
-            r for r in self.resources() if r["kind"] != "CustomResourceDefinition"
+            resource
+            for resource in self.resources()
+            if resource["kind"] != "CustomResourceDefinition"
         ]
-        with self.assertRaisesRegex(ValueError, "empty"):
+        with self.assertRaisesRegex(ValueError, "empty") as raised:
             engine.generate_payload_contents(resources, configuration())
+        self.assertEqual(str(raised.exception).count(CRDS_PAYLOAD), 1)
 
     # --- content --------------------------------------------------------
 
