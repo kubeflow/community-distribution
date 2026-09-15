@@ -10,6 +10,7 @@ import argparse
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,7 @@ CHART_GLOBS = (
 )
 DOCUMENT_SEPARATOR = "\n---\n"
 HOOK_ANNOTATION = "helm.sh/hook"
+PARTITION_GROUP_NAME = re.compile(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?")
 
 
 class _StrictLoader(yaml.SafeLoader):
@@ -254,8 +256,12 @@ def _validate_partition(path, descriptor):
     would be exactly the unowned or doubly owned object the group must reject.
     """
     group = descriptor["partition"]
-    if not isinstance(group, str) or not group.strip():
-        raise ValueError(f"{path}: 'partition' must be a non-empty group name")
+    if not isinstance(group, str) or not PARTITION_GROUP_NAME.fullmatch(group):
+        # The name also names a working directory, so it is a plain label.
+        raise ValueError(
+            f"{path}: 'partition' must be a group name of lowercase letters, "
+            f"digits and inner hyphens, got {group!r}"
+        )
     if any("skip" in entry for entry in descriptor.get("knownDifferences") or []):
         raise ValueError(
             f"{path}: a partition member cannot skip objects; every baseline "
@@ -452,8 +458,13 @@ def prepare_member(chart, descriptor, work, environment):
     chart_yaml = yaml.safe_load((copy / "Chart.yaml").read_text()) or {}
     if chart_yaml.get("dependencies"):
         for repository, url in (descriptor.get("dependencyRepositories") or {}).items():
+            # Members of one group share the isolated Helm home. Helm 4 accepts
+            # a repeated add of the same name and URL, but refuses the same
+            # name with another URL; --force-update rewrites the entry and
+            # refreshes its index either way, so preparation never aborts on
+            # a repository a sibling already added.
             subprocess.run(
-                ["helm", "repo", "add", repository, url],
+                ["helm", "repo", "add", repository, url, "--force-update"],
                 check=True,
                 capture_output=True,
                 text=True,

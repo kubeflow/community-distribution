@@ -16,10 +16,13 @@ command uses.
 """
 
 import copy
+import functools
+import http.server
 import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 
 from pathlib import Path
@@ -105,11 +108,35 @@ def write_member(
     thin_parent=False,
     declared_dependency=False,
     dependency_crds_directory=False,
+    dependency_repository=None,
 ):
-    """A chart under applications/example/<directory> rendering `objects`."""
+    """A chart under applications/example/<directory> rendering `objects`.
+
+    With `dependency_repository`, the objects come from a chart named
+    payload-<directory> that the member declares from that Helm repository URL
+    through `dependencyRepositories`; nothing is vendored under charts/.
+    """
     chart = root / "applications/example" / directory
     # A rewritten member starts from an empty chart tree.
     shutil.rmtree(chart, ignore_errors=True)
+    if dependency_repository:
+        (chart / "templates").mkdir(parents=True)
+        (chart / "Chart.yaml").write_text(
+            f"apiVersion: v2\nname: {directory}\nversion: 0.1.0\n"
+            f"dependencies:\n- name: payload-{directory}\n  version: 0.1.0\n"
+            f"  repository: {dependency_repository}\n"
+        )
+        (chart / "ci").mkdir()
+        descriptor = {
+            "component": f"example-{directory}",
+            "releaseName": f"example-{directory}",
+            "namespace": "kubeflow",
+            "partition": group,
+            "dependencyRepositories": {"shared": dependency_repository},
+            "scenarios": {scenario: {"kustomize": list(kustomize), **selection}},
+        }
+        (chart / "ci" / "comparison.yaml").write_text(yaml.safe_dump(descriptor))
+        return chart
     payload_chart = chart / "charts" / "payload" if thin_parent else chart
     (payload_chart / "templates").mkdir(parents=True, exist_ok=True)
     (payload_chart / "manifests").mkdir(exist_ok=True)
@@ -156,6 +183,47 @@ def write_group(root, rendered=None, **member_overrides):
             root, directory, selection, objects, **member_overrides
         )
     return charts
+
+
+class QuietRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *arguments):
+        """Request lines are noise in a test report."""
+
+
+def package_chart_repository(directory, charts):
+    """Package `charts` ({name: objects}) into a served Helm repository.
+
+    Returns (url, server); stop the server with server.shutdown().
+    """
+    directory.mkdir(parents=True)
+    for name, objects in charts.items():
+        source = directory / "source" / name
+        (source / "templates").mkdir(parents=True)
+        (source / "manifests").mkdir()
+        (source / "Chart.yaml").write_text(
+            f"apiVersion: v2\nname: {name}\nversion: 0.1.0\n"
+        )
+        (source / "manifests" / "objects.yaml").write_text(dump(objects))
+        (source / "templates" / "objects.yaml").write_text(
+            '{{ .Files.Get "manifests/objects.yaml" }}\n'
+        )
+        subprocess.run(
+            ["helm", "package", str(source), "--destination", str(directory)],
+            check=True,
+            capture_output=True,
+        )
+    server = http.server.ThreadingHTTPServer(
+        ("127.0.0.1", 0),
+        functools.partial(QuietRequestHandler, directory=str(directory)),
+    )
+    url = f"http://127.0.0.1:{server.server_address[1]}"
+    subprocess.run(
+        ["helm", "repo", "index", str(directory), "--url", url],
+        check=True,
+        capture_output=True,
+    )
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return url, server
 
 
 class PartitionGroupTest(unittest.TestCase):
@@ -350,6 +418,37 @@ class PartitionGroupTest(unittest.TestCase):
 
         self.assertEqual(self.verify(), [])
         self.assertEqual(sorted(str(path) for path in chart.rglob("*")), before)
+
+    def test_members_sharing_a_dependency_repository_are_all_prepared(self):
+        """Two members declare the same repository name and URL; adding it a
+        second time into the group's shared Helm home must not abort the run."""
+        repository = self.root / "repository"
+        url, server = package_chart_repository(
+            repository,
+            {
+                "payload-helm-crds": MEMBERS["helm-crds"][1],
+                "payload-helm-runtimes": MEMBERS["helm-runtimes"][1],
+            },
+        )
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        write_group(self.root)
+        for directory in ("helm-crds", "helm-runtimes"):
+            selection, owned = MEMBERS[directory]
+            write_member(
+                self.root, directory, selection, owned, dependency_repository=url
+            )
+
+        self.assertEqual(self.verify(), [])
+        self.assertEqual(
+            sorted(path.name for path in repository.iterdir()),
+            [
+                "index.yaml",
+                "payload-helm-crds-0.1.0.tgz",
+                "payload-helm-runtimes-0.1.0.tgz",
+                "source",
+            ],
+        )
 
     def test_every_scenario_of_a_group_is_verified(self):
         """Two valid scenarios pass; a defect present only in the second one

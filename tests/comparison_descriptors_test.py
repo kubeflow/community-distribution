@@ -272,13 +272,15 @@ class MalformedAllowanceTest(unittest.TestCase):
         allowance, not to the shared boilerplate."""
         self.load("")
 
-    def test_a_partition_group_name_must_be_a_non_empty_string(self):
-        for value in ('""', "3", "[a]"):
+    def test_a_partition_group_name_is_a_plain_lowercase_label(self):
+        """The name also names a working directory, so path syntax, absolute
+        names, dots and uppercase are rejected, not just emptiness."""
+        for value in ('""', "3", "[a]", "../outside", "/tmp/x", "a/b", ".", "Trainer"):
             with self.subTest(value=value):
                 with self.assertRaisesRegex(ValueError, "partition"):
                     self.load(f"partition: {value}\n")
-        descriptor = self.load("partition: x\n")
-        self.assertEqual(descriptor["partition"], "x")
+        descriptor = self.load("partition: trainer-2\n")
+        self.assertEqual(descriptor["partition"], "trainer-2")
 
     def test_a_partition_member_cannot_skip_or_add_whole_objects(self):
         """Ownership is proven from complete rendered output; a skip or a
