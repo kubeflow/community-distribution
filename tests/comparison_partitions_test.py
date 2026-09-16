@@ -18,6 +18,7 @@ command uses.
 import copy
 import functools
 import http.server
+import os
 import shutil
 import subprocess
 import sys
@@ -513,6 +514,46 @@ class PartitionGroupTest(unittest.TestCase):
         write_group(self.root, rendered={"helm-runtimes": [unnamespaced]})
 
         self.assertEqual(self.verify(), [])
+
+    def test_an_empty_baseline_is_rejected(self):
+        """Members that render nothing own nothing; that must not pass."""
+        write_group(self.root, rendered={name: [] for name in MEMBERS})
+        (self.root / BASELINE_PATH / "resources.yaml").write_text("")
+
+        self.assertEqual(
+            self.verify(),
+            [
+                "example/platform: the Kustomize baseline rendered no objects; "
+                "nothing to partition"
+            ],
+        )
+
+    def test_inherited_helm_repository_variables_are_dropped(self):
+        """HELM_REPOSITORY_CONFIG, HELM_REPOSITORY_CACHE and HELM_PLUGINS
+        override the home directories, so the caller's values must not leak in."""
+        variables = ("HELM_REPOSITORY_CONFIG", "HELM_REPOSITORY_CACHE", "HELM_PLUGINS")
+        previous = {name: os.environ.get(name) for name in variables}
+        for name in variables:
+            os.environ[name] = "/elsewhere"
+        self.addCleanup(
+            lambda: [
+                (
+                    os.environ.pop(name)
+                    if value is None
+                    else os.environ.__setitem__(name, value)
+                )
+                for name, value in previous.items()
+            ]
+        )
+
+        environment = comparison.helm_environment(self.root / "helm")
+
+        for name in variables:
+            self.assertNotIn(name, environment)
+        for name in ("HELM_CACHE_HOME", "HELM_CONFIG_HOME", "HELM_DATA_HOME"):
+            self.assertTrue(
+                Path(environment[name]).is_relative_to(self.root / "helm"), name
+            )
 
     def test_a_repository_without_groups_has_nothing_to_verify(self):
         write_baseline(self.root)

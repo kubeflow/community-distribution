@@ -442,6 +442,11 @@ def helm_environment(home):
         directory = Path(home) / variable.lower()
         directory.mkdir(parents=True, exist_ok=True)
         environment[variable] = str(directory)
+    # These override or extend the home directories, so an inherited value
+    # would let the run read or modify the caller's Helm state after all; the
+    # storage guard drops the same three.
+    for variable in ("HELM_REPOSITORY_CONFIG", "HELM_REPOSITORY_CACHE", "HELM_PLUGINS"):
+        environment.pop(variable, None)
     return environment
 
 
@@ -544,10 +549,12 @@ def verify_partition(group, members, root, work):
         ]
 
     environment = helm_environment(Path(work) / "helm")
+    # Descriptor values name charts and scenarios, never files: working paths
+    # are numbered so no descriptor content can reach outside `work`.
     prepared = {}
-    for component, (chart, descriptor) in sorted(members.items()):
+    for index, (component, (chart, descriptor)) in enumerate(sorted(members.items())):
         prepared[component] = prepare_member(
-            chart, descriptor, Path(work) / component, environment
+            chart, descriptor, Path(work) / f"member-{index}", environment
         )
         definitions = install_once_definitions(prepared[component], environment)
         if definitions:
@@ -557,7 +564,7 @@ def verify_partition(group, members, root, work):
                 + ", ".join(definitions)
             )
 
-    for scenario_name in sorted(next(iter(scenario_sets.values()))):
+    for index, scenario_name in enumerate(sorted(next(iter(scenario_sets.values())))):
         targets = {
             component: tuple(descriptor["scenarios"][scenario_name]["kustomize"])
             for component, (_, descriptor) in members.items()
@@ -573,7 +580,7 @@ def verify_partition(group, members, root, work):
             )
             continue
 
-        baseline_path = Path(work) / f"{group}-{scenario_name}-baseline.yaml"
+        baseline_path = Path(work) / f"baseline-{index}.yaml"
         try:
             render_kustomize(
                 next(iter(members.values()))[1]["scenarios"][scenario_name],
@@ -592,6 +599,14 @@ def verify_partition(group, members, root, work):
             baseline_manifests, cluster_scoped, f"{group}/{scenario_name} baseline"
         )
         problems.extend(baseline_problems)
+        if not baseline:
+            # Members that render nothing would own nothing and pass; the
+            # ordinary comparison rejects an empty selection for the same reason.
+            problems.append(
+                f"{group}/{scenario_name}: the Kustomize baseline rendered no "
+                "objects; nothing to partition"
+            )
+            continue
 
         owners = {identity: [] for identity in baseline}
         for component, (chart, descriptor) in sorted(members.items()):
