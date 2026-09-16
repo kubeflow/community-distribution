@@ -227,6 +227,9 @@ jobs:
     - name: Run Spark Test
       run: chmod u+x tests/*.sh && ./tests/spark_test.sh "${KF_PROFILE}"
 
+    - name: Run Spark Connect from Workspace Test
+      run: ./tests/workspaces_spark_connect_test.sh
+
     - name: Test Kubeflow Workspaces API
       run: ./tests/workspaces_test.sh "${KF_PROFILE}"
 
