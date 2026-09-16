@@ -20,28 +20,8 @@ python -m pytest "${SCRIPT_DIRECTORY}/kserve_sklearn_test.py" -vs --log-cli-leve
 # ============================================================
 # Test 2: Ingress Gateway -- Path-based & Host-based Routing (curl)
 # ============================================================
-# Re-deploy the InferenceService for bash/curl tests (pytest deleted it).
-cat <<EOF | kubectl apply -f -
-apiVersion: "serving.kserve.io/v1beta1"
-kind: "InferenceService"
-metadata:
-  name: "isvc-sklearn"
-  namespace: ${NAMESPACE}
-spec:
-  predictor:
-    sklearn:
-      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
-      resources:
-        requests:
-          cpu: "50m"
-          memory: "128Mi"
-        limits:
-          cpu: "100m"
-          memory: "256Mi"
-EOF
-
-kubectl wait --for=condition=Ready inferenceservice/isvc-sklearn -n ${NAMESPACE} --timeout=300s
-
+# Re-create the AuthorizationPolicy before the InferenceService so the predictor
+# sidecar receives the allow rule during startup.
 # WARNING: allow-all rule -- the predictor sidecar has no RequestAuthentication,
 # so requestPrincipals: ["*"] cannot work here. Security is enforced at the
 # ingress gateway, which validates the JWT before forwarding traffic.
@@ -60,10 +40,42 @@ spec:
       serving.knative.dev/service: isvc-sklearn-predictor
 EOF
 
+# Re-deploy the InferenceService for bash/curl tests (pytest deleted it).
+cat <<EOF | kubectl apply -f -
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "isvc-sklearn"
+  namespace: ${NAMESPACE}
+spec:
+  predictor:
+    sklearn:
+      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "128Mi"
+        limits:
+          cpu: "100m"
+          memory: "256Mi"
+EOF
+
+kubectl wait --for=condition=Ready inferenceservice/isvc-sklearn -n ${NAMESPACE} --timeout=300s
+
 # Wait for AuthorizationPolicy to propagate through Envoy by polling
 # the host-based route (path-based may return 404 before the route is
 # configured, which would false-positive exit the loop).
 echo "Waiting for AuthorizationPolicy to propagate..."
+STABLE_POLL_COUNT=0
 for attempt in $(seq 1 24); do
   POLL_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
     -H "Authorization: Bearer ${KSERVE_M2M_TOKEN}" \
@@ -72,8 +84,13 @@ for attempt in $(seq 1 24); do
     "http://${KSERVE_INGRESS_HOST_PORT}/v1/models/isvc-sklearn:predict" \
     -d '{"instances": [[6.8, 2.8, 4.8, 1.4]]}')
   if [ "$POLL_CODE" != "403" ]; then
-    echo "AuthorizationPolicy propagated after $((attempt * 5)) seconds (HTTP ${POLL_CODE})"
-    break
+    STABLE_POLL_COUNT=$((STABLE_POLL_COUNT + 1))
+    if [ "$STABLE_POLL_COUNT" -eq 2 ]; then
+      echo "AuthorizationPolicy propagated after $((attempt * 5)) seconds (HTTP ${POLL_CODE})"
+      break
+    fi
+  else
+    STABLE_POLL_COUNT=0
   fi
   if [ "$attempt" -eq 24 ]; then
     echo "FAIL: AuthorizationPolicy did not propagate within 120 seconds"
@@ -174,6 +191,15 @@ spec:
   predictor:
     sklearn:
       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       resources:
         requests:
           cpu: "50m"
@@ -363,30 +389,6 @@ kubectl delete namespace ${ATTACKER_NAMESPACE}
 # Path-based routing for raw deployment requires ingressPathTemplate
 # (kserve/kserve#5090, not yet merged), so this test uses host-based
 # routing only.
-cat <<EOF | kubectl apply -f -
-apiVersion: "serving.kserve.io/v1beta1"
-kind: "InferenceService"
-metadata:
-  name: "isvc-sklearn-raw"
-  namespace: ${NAMESPACE}
-  annotations:
-    serving.kserve.io/deploymentMode: Standard
-spec:
-  predictor:
-    sklearn:
-      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
-      resources:
-        requests:
-          cpu: "50m"
-          memory: "128Mi"
-        limits:
-          cpu: "100m"
-          memory: "256Mi"
-EOF
-
-kubectl wait --for=condition=Ready inferenceservice/isvc-sklearn-raw \
-  -n ${NAMESPACE} --timeout=300s
-
 # WARNING: allow-all rule -- same rationale as Test 2.
 # Uses serving.kserve.io/inferenceservice label (works for both
 # serverless and raw deployment modes).
@@ -405,11 +407,45 @@ spec:
       serving.kserve.io/inferenceservice: isvc-sklearn-raw
 EOF
 
+cat <<EOF | kubectl apply -f -
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "isvc-sklearn-raw"
+  namespace: ${NAMESPACE}
+  annotations:
+    serving.kserve.io/deploymentMode: Standard
+spec:
+  predictor:
+    sklearn:
+      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "128Mi"
+        limits:
+          cpu: "100m"
+          memory: "256Mi"
+EOF
+
+kubectl wait --for=condition=Ready inferenceservice/isvc-sklearn-raw \
+  -n ${NAMESPACE} --timeout=300s
+
 RAW_HOST="isvc-sklearn-raw-${NAMESPACE}.example.com"
 
 # Wait for AuthorizationPolicy to propagate through Envoy by polling
 # until an authenticated request is no longer denied by the default policy.
 echo "Waiting for AuthorizationPolicy to propagate..."
+STABLE_POLL_COUNT=0
 for attempt in $(seq 1 24); do
   POLL_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
     -H "Authorization: Bearer ${KSERVE_M2M_TOKEN}" \
@@ -418,8 +454,13 @@ for attempt in $(seq 1 24); do
     "http://${KSERVE_INGRESS_HOST_PORT}/v1/models/isvc-sklearn-raw:predict" \
     -d '{"instances": [[6.8, 2.8, 4.8, 1.4]]}')
   if [ "$POLL_CODE" != "403" ]; then
-    echo "AuthorizationPolicy propagated after $((attempt * 5)) seconds (HTTP ${POLL_CODE})"
-    break
+    STABLE_POLL_COUNT=$((STABLE_POLL_COUNT + 1))
+    if [ "$STABLE_POLL_COUNT" -eq 2 ]; then
+      echo "AuthorizationPolicy propagated after $((attempt * 5)) seconds (HTTP ${POLL_CODE})"
+      break
+    fi
+  else
+    STABLE_POLL_COUNT=0
   fi
   if [ "$attempt" -eq 24 ]; then
     echo "FAIL: AuthorizationPolicy did not propagate within 120 seconds"

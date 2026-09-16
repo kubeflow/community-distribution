@@ -13,9 +13,9 @@ on:
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**
-    - tests/pipeline_v1_test.py
-    - tests/pipeline_v2_test.py
-    - experimental/security/PSS/*
+    - tests/pipeline*
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
 
 permissions:
   contents: read

@@ -13,10 +13,21 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        fsGroup: 100
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: test
         image: ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.10.0
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
         resources:
           limits:
             cpu: "0.6"
