@@ -141,6 +141,48 @@ Labels in the `helm.sh/` namespace and annotations in the `helm.sh/` and
 `meta.helm.sh/` namespaces are always ignored; they are properties of Helm
 itself, not of one chart, so they are not declared per chart.
 
+### Sibling charts and partition groups
+
+A component whose resources form more than one release ships sibling charts
+named `helm*` next to its Kustomize sources, for example
+`applications/trainer/helm-crds`, `applications/trainer/helm` and
+`applications/trainer/helm-runtimes`. Discovery finds every `helm*` directory
+holding a `Chart.yaml`; a chart's own `charts/` dependencies are never
+discovered as releases of their own.
+
+Sibling charts that split one Kustomize baseline declare the same group name
+in `partition`, the same scenario names over the same `kustomize` targets, and
+select their share with `onlyKinds` or `excludeKinds`:
+
+```yaml
+component: trainer-apis
+partition: trainer
+scenarios:
+  platform:
+    kustomize: [applications/trainer/overlays]
+    onlyKinds: [CustomResourceDefinition]
+```
+
+Selection alone proves nothing about what a release creates, because the
+comparison filters both sides: three charts that each render the whole
+component would pass three green subset comparisons. The partition check
+therefore renders each member's **complete** output, from a temporary copy with
+isolated Helm directories, and requires it to be exactly the member's selected
+baseline objects: nothing missing, nothing extra, nothing twice, and every
+baseline object selected by exactly one member. Objects are identified by API
+group, kind, namespace and name; for a kind the baseline's own
+`CustomResourceDefinition` declares cluster-scoped, a stray `metadata.namespace`
+is not part of the identity. A member cannot `skip` objects or declare
+`helmOnlyResources`, cannot ship install-once `crds/` content at any dependency
+depth (`helm show crds` on the prepared chart must list nothing), and cannot
+render Helm hooks: those mechanisms are outside what the check can prove, so they are
+rejected rather than modelled.
+
+```bash
+python3 tests/run_helm_kustomize_comparison.py --partitions   # every declared group
+python3 tests/comparison_partitions_test.py -v                # the check and its fixtures
+```
+
 ### Adding a chart
 
 1. Write `<chart>/ci/comparison.yaml` with the identity fields and one

@@ -12,9 +12,9 @@ on:
     branches:
     - master
     paths:
-    - common/*/helm/**
-    - applications/*/helm/**
-    - applications/*/*/helm/**
+    - common/*/helm*/**
+    - applications/*/helm*/**
+    - applications/*/*/helm*/**
     - experimental/helm/charts/katib/**
     - tests/*_helm_install.sh
     - tests/knative_serving_install.sh
@@ -23,9 +23,9 @@ on:
     branches:
     - master
     paths:
-    - common/*/helm/**
-    - applications/*/helm/**
-    - applications/*/*/helm/**
+    - common/*/helm*/**
+    - applications/*/helm*/**
+    - applications/*/*/helm*/**
     - experimental/helm/charts/katib/**
     - tests/*_helm_install.sh
     - tests/knative_serving_install.sh

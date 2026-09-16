@@ -88,6 +88,18 @@ class ChartComparisonRules:
         )
         self._fired = set()
 
+    @staticmethod
+    def selects(scenario: Dict, kind: str) -> bool:
+        """The kind subset a scenario declares with onlyKinds and excludeKinds.
+
+        This is the ownership declaration a partition group is checked against;
+        skip allowances are deliberately not part of it.
+        """
+        only_kinds = scenario.get("onlyKinds")
+        if only_kinds is not None and kind not in only_kinds:
+            return False
+        return kind not in (scenario.get("excludeKinds") or [])
+
     def should_compare(self, manifest: Dict, scenario: Dict) -> bool:
         """Select the resource subset owned by a comparison scenario."""
         kind = manifest.get("kind", "")
@@ -95,10 +107,7 @@ class ChartComparisonRules:
         namespace = metadata.get("namespace", "")
         name = metadata.get("name", "")
 
-        only_kinds = scenario.get("onlyKinds")
-        if only_kinds is not None and kind not in only_kinds:
-            return False
-        if kind in (scenario.get("excludeKinds") or []):
+        if not self.selects(scenario, kind):
             return False
 
         for index, entry in enumerate(self.known_differences):

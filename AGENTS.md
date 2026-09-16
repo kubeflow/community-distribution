@@ -94,6 +94,7 @@ The expectation for the contributor is that he must understand all changes he is
 - The Helm charts are checked for parity against the Kustomize manifests through `tests/run_helm_kustomize_comparison.py` and its `helm-kustomize-comparison.yml` workflow.
 - The same workflow measures, for every chart that declares `ci/comparison.yaml` and every one of its scenarios, the release record Helm would store (`tests/helm_release_size_test.py`, with the record from `helm install --dry-run=client --output=json` encoded by `tests/helm-release-size-encoder` exactly as Helm's storage driver encodes it). The record must stay below the 1,048,576 byte Kubernetes Secret limit, because a chart that lints, packages and renders can still be impossible to install; package and manifest sizes do not predict it.
 - The same workflow checks, with `tests/helm_payload_freshness_test.py`, that every generated payload under `applications/*/helm/manifests` is byte for byte what its `scripts/generate-*-helm-manifests.py` generator produces from the local Kustomize inputs today; each generator has a read-only `--check` mode that reports stale, missing and extra files and names the generator as the repair.
+- A component whose resources form several releases ships sibling charts named `helm*` beside its Kustomize sources; sibling charts that split one baseline declare a `partition` group in `ci/comparison.yaml`, and `tests/run_helm_kustomize_comparison.py --partitions` proves from each release's complete rendered output that the group owns the baseline exactly once.
 
 ## Tooling
 
