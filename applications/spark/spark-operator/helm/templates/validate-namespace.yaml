@@ -1,0 +1,3 @@
+{{- if ne .Release.Namespace "kubeflow" }}
+{{- fail "Spark Operator chart must be installed into the kubeflow namespace" }}
+{{- end }}

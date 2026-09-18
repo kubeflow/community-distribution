@@ -538,6 +538,40 @@ class RetainedCustomResourceDefinitionTest(unittest.TestCase):
         )
 
 
+class ReleaseNamespaceTest(unittest.TestCase):
+    def test_the_release_namespace_keys_namespaced_helm_resources(self):
+        """A chart declaring helmUsesReleaseNamespace omits metadata.namespace;
+        both sides must key the object identically, while cluster-scoped kinds
+        must not acquire a namespace."""
+        namespace_rules = rules(namespace="kubeflow", helmUsesReleaseNamespace=True)
+        deployment = {"kind": "Deployment", "metadata": {"name": "controller"}}
+        cluster_role = {"kind": "ClusterRole", "metadata": {"name": "admin"}}
+
+        normalized = namespace_rules.normalize(deployment, is_helm_manifest=True)
+        self.assertEqual(
+            helm_kustomize_compare.get_resource_key(normalized),
+            "Deployment/kubeflow/controller",
+        )
+        normalized = namespace_rules.normalize(cluster_role, is_helm_manifest=True)
+        self.assertEqual(
+            helm_kustomize_compare.get_resource_key(normalized), "ClusterRole/admin"
+        )
+
+    def test_the_kustomize_side_and_undeclared_charts_are_untouched(self):
+        namespace_rules = rules(namespace="kubeflow", helmUsesReleaseNamespace=True)
+        undeclared_rules = rules(namespace="kubeflow")
+        deployment = {"kind": "Deployment", "metadata": {"name": "controller"}}
+
+        for side_rules, is_helm in ((namespace_rules, False), (undeclared_rules, True)):
+            normalized = side_rules.normalize(
+                dict(deployment), is_helm_manifest=is_helm
+            )
+            self.assertEqual(
+                helm_kustomize_compare.get_resource_key(normalized),
+                "Deployment/controller",
+            )
+
+
 class HelmOnlyResourceTest(unittest.TestCase):
     def test_a_declared_extra_is_allowed_and_an_undeclared_one_is_not(self):
         extras_rules = rules(
