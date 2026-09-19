@@ -62,7 +62,7 @@ spec:
   ## ================================================================
   filterRules:
 
-    ## hide this WorkspaceKind in namespaces which are not labeled 'workspace_team=team_1'
+    ## hide this WorkspaceKind in namespaces labeled 'workspace_team=team_1'
     - scope: WORKSPACE_KIND
       effect:
         ui:
@@ -72,7 +72,7 @@ spec:
             selector:
               matchExpressions:
                 - key: "workspace_team"
-                  operator: NotIn
+                  operator: In
                   values: ["team_1"]
 
   ## ================================================================
