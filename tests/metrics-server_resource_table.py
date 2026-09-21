@@ -53,6 +53,7 @@ COMPONENT_RULES = {
         "exclude": ["mysql-pv-claim"],
     },
     "Kubeflow Model Registry": {"keywords": ["model-registry", "mysql-pv-claim"]},
+    "MLflow": {"keywords": ["mlflow"]},
     "Spark Operator": {"keywords": ["spark"]},
     "Istio": {
         "namespaces": ["istio-system"],
@@ -83,6 +84,7 @@ COMPONENT_ORDER = [
     "KServe UI",
     "Kubeflow Pipelines",
     "Kubeflow Model Registry",
+    "MLflow",
     "Spark Operator",
     "Istio",
     "Knative",

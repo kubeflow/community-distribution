@@ -72,6 +72,8 @@ resources:
 - ../applications/katib/upstream/installs/katib-with-kubeflow
 # Central Dashboard
 - ../applications/dashboard/overlays/istio
+# MLflow experiment tracking
+- ../applications/mlflow/overlays/kubeflow
 # Notebooks v1
 - ../applications/notebooks-v1/overlays/istio
 # Trainer

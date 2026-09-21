@@ -37,6 +37,12 @@
             "type": "item"
         },
         {
+            "icon": "assessment",
+            "link": "/mlflow",
+            "text": "MLflow Experiments",
+            "type": "item"
+        },
+        {
             "icon": "kubeflow:pipeline-centered",
             "items": [
                 {

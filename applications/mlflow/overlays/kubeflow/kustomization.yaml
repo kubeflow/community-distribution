@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../upstream/base
+  - profile-roles.yaml
+
+patches:
+  - target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: mlflow
+    patch: |-
+      - op: replace
+        path: /spec/ingress/0/from
+        value:
+          - namespaceSelector:
+              matchLabels:
+                app.kubernetes.io/part-of: kubeflow-profile
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: istio-system

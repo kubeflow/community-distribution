@@ -1,0 +1,84 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-mlflow-view
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-view: "true"
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-mlflow-view: "true"
+rules:
+  - apiGroups:
+      - mlflow.kubeflow.org
+    resources:
+      - datasets
+      - experiments
+      - gatewaybudgets
+      - gatewayendpoints
+      - gatewayguardrails
+      - gatewaymodeldefinitions
+      - gatewaysecrets
+      - mcpservers
+      - registeredmodels
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - mlflow.kubeflow.org
+    resources:
+      - assistants
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-mlflow-edit
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-edit: "true"
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-mlflow-admin: "true"
+rules:
+  - apiGroups:
+      - mlflow.kubeflow.org
+    resources:
+      - datasets
+      - experiments
+      - gatewaybudgets
+      - gatewayendpoints
+      - gatewayguardrails
+      - gatewaymodeldefinitions
+      - gatewaysecrets
+      - mcpservers
+      - registeredmodels
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - update
+  - apiGroups:
+      - mlflow.kubeflow.org
+    resources:
+      - assistants
+    verbs:
+      - create
+      - get
+      - update
+  - apiGroups:
+      - mlflow.kubeflow.org
+    resources:
+      - gatewayendpoints/use
+      - gatewaymodeldefinitions/use
+      - gatewaysecrets/use
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-mlflow-admin
+  labels:
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: "true"
+aggregationRule:
+  clusterRoleSelectors:
+    - matchLabels:
+        rbac.authorization.kubeflow.org/aggregate-to-kubeflow-mlflow-admin: "true"
+rules: []
