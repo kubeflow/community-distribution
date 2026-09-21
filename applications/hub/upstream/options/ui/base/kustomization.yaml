@@ -25,4 +25,4 @@ resources:
 images:
 - name: model-registry-ui
   newName: ghcr.io/kubeflow/hub/ui
-  newTag: v0.3.16
+  newTag: v0.3.17
