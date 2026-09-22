@@ -45,6 +45,15 @@ rules:
   - patch
   - update
 - apiGroups:
+  - serving.kserve.io
+  resources:
+  - llminferenceservices
+  - llminferenceservices/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - serving.knative.dev
   resources:
   - services

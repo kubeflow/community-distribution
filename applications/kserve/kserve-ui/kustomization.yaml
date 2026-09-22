@@ -7,7 +7,7 @@ resources:
 
 images:
   - name: ghcr.io/kserve/models-web-app
-    newTag: 1.0.1
+    newTag: 1.0.3
 
 patches:
 # Istio selects individual pods by label when their namespace is not

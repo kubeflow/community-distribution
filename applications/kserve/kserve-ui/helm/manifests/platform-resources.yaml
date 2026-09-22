@@ -65,6 +65,15 @@ rules:
   - patch
   - update
 - apiGroups:
+  - serving.kserve.io
+  resources:
+  - llminferenceservices
+  - llminferenceservices/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - serving.knative.dev
   resources:
   - services
@@ -174,7 +183,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kserve-models-web-application-config
-        image: ghcr.io/kserve/models-web-app:1.0.1
+        image: ghcr.io/kserve/models-web-app:1.0.3
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 3
