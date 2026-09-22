@@ -17,7 +17,7 @@ kubectl wait --for condition=established --timeout=30s crd/clusterservingruntime
 kustomize build kserve | kubectl apply --server-side --force-conflicts -f -
 
 kustomize build kserve-ui | kubectl apply --server-side --force-conflicts -f -
-kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=600s \
+kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout=300s \
   --field-selector=status.phase!=Succeeded
 kubectl wait --for=condition=Available -n kserve --timeout=120s \
   deployment/kserve-controller-manager \
