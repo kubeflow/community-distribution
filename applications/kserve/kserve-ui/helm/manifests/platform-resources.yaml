@@ -183,7 +183,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kserve-models-web-application-config
-        image: ghcr.io/kserve/models-web-app:1.0.3
+        image: ghcr.io/kserve/models-web-app:1.0.5
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 3

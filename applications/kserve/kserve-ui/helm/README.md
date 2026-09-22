@@ -2,7 +2,7 @@
 
 This chart installs the nine resources rendered by
 `kustomize build applications/kserve/kserve-ui`, using the distribution's
-models-web-application v1.0.3 configuration. It runs independently of the KServe
+models-web-application v1.0.5 configuration. It runs independently of the KServe
 controller release. The shared generator writes literal YAML under `manifests/`;
 Helm reads it with `.Files.Get`, without evaluating embedded template expressions.
 

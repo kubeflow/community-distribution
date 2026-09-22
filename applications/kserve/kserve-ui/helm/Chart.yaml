@@ -3,7 +3,7 @@ name: kserve-models-web-application
 description: Kubeflow Models UI generated from the distribution Kustomize manifests
 type: application
 version: 0.1.0
-appVersion: "v1.0.3"
+appVersion: "v1.0.5"
 keywords:
 - kubeflow
 - kserve
