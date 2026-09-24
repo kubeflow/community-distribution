@@ -1,0 +1,3 @@
+{{- if and .Values.install.enabled (eq (default "platform-database" .Values.scenario) "platform-k8s-native") }}
+{{ include "kubeflow-pipelines.payload" (dict "root" . "path" "manifests/platform-kubernetes-native-resources.yaml") }}
+{{- end }}

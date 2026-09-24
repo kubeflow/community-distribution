@@ -126,6 +126,12 @@ jobs:
         python tests/kserve_ui_synchronization_test.py
     - name: Test Dashboard Helm behavior
       run: python tests/dashboard_helm_chart_test.py
+    - name: Test Kubeflow Pipelines Helm behavior
+      run: |
+        python tests/pipelines_helm_chart_test.py
+        python tests/pipelines_helm_install_helper_test.py
+        python tests/pipelines_helm_manifest_generator_test.py
+        python tests/pipelines_synchronization_replay_test.py
     - name: Test Notebooks Helm behavior
       run: python tests/notebooks_helm_chart_test.py
     - name: Test Dashboard manifest generation

@@ -1,0 +1,11 @@
+{{- $scenario := default "platform-database" .Values.scenario -}}
+{{- $validScenarios := list "platform-database" "platform-k8s-native" -}}
+{{- if not (has $scenario $validScenarios) -}}
+{{- fail (printf "invalid scenario %q; supported values: %s" $scenario (join ", " $validScenarios)) -}}
+{{- end -}}
+{{- if and .Values.install.enabled (not .Values.crds.enabled) -}}
+{{- fail "install.enabled=true requires crds.enabled=true" -}}
+{{- end -}}
+{{- if and (not .Values.crds.enabled) (not .Values.install.enabled) -}}
+{{- fail "at least one of crds.enabled or install.enabled must be true" -}}
+{{- end -}}

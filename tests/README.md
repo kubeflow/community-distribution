@@ -62,6 +62,7 @@ the generator itself, not the synchronization script, which imports upstream:
 
 ```bash
 python3 scripts/generate-dashboard-helm-manifests.py --check
+python3 scripts/generate-pipelines-helm-manifests.py --check
 python3 scripts/generate-notebooks-v1-helm-manifests.py --check
 python3 scripts/generate-dashboard-helm-manifests.py        # regenerate
 python3 tests/helm_payload_freshness_test.py -v             # the check and its fixtures

@@ -110,8 +110,8 @@ jobs:
     - name: Install KServe with Helm
       run: ./tests/kserve_helm_install.sh
 
-    - name: Install Pipelines with SeaweedFS
-      run: ./tests/pipelines_install.sh
+    - name: Install Pipelines with Helm
+      run: ./tests/pipelines_helm_install.sh platform-database
 
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh

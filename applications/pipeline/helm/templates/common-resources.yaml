@@ -1,0 +1,3 @@
+{{- if .Values.install.enabled }}
+{{ include "kubeflow-pipelines.payload" (dict "root" . "path" "manifests/common-resources.yaml") }}
+{{- end }}
