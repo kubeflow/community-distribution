@@ -21,6 +21,74 @@ import yaml
 KUSTOMIZE_HASH_SUFFIX = re.compile(r"-(?=[a-z0-9]{10}$)[a-z0-9]{10}$")
 HELM_LABEL_PREFIX = "helm.sh/"
 HELM_ANNOTATION_PREFIXES = ("helm.sh/", "meta.helm.sh/")
+PING_SOURCE_ADAPTER_RESOURCE = "Deployment/knative-eventing/pingsource-mt-adapter"
+PING_SOURCE_BOOTSTRAP_ENVIRONMENT = [
+    {"name": "K_OBSERVABILITY_CONFIG", "value": "{}"},
+    {"name": "K_LOGGING_CONFIG", "value": ""},
+    {"name": "K_LEADER_ELECTION_CONFIG", "value": ""},
+    {"name": "K_NO_SHUTDOWN_AFTER", "value": ""},
+    {"name": "K_SINK_TIMEOUT", "value": "-1"},
+    {"name": "POD_NAME", "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}}},
+]
+
+
+def normalize_controller_owned_ping_source_adapter(manifest, is_helm_manifest):
+    """Check the exact bootstrap contract before excusing controller fields.
+
+    This is a version-sensitive Knative allowance, not an arbitrary Deployment
+    field mask. An upstream bootstrap change requires a new reviewed decision.
+    """
+    metadata = manifest.get("metadata", {})
+    if (
+        manifest.get("apiVersion") != "apps/v1"
+        or manifest.get("kind") != "Deployment"
+        or metadata.get("namespace") != "knative-eventing"
+        or metadata.get("name") != "pingsource-mt-adapter"
+    ):
+        raise ValueError(
+            "controllerOwnedPingSourceAdapter requires apps/v1 "
+            + PING_SOURCE_ADAPTER_RESOURCE
+        )
+    specification = manifest.get("spec", {})
+    containers = specification.get("template", {}).get("spec", {}).get("containers")
+    targets = [
+        container
+        for container in (containers if isinstance(containers, list) else [])
+        if isinstance(container, dict) and container.get("name") == "dispatcher"
+    ]
+    if len(targets) != 1:
+        raise ValueError("PingSource adapter dispatcher must occur exactly once")
+    container = targets[0]
+    environment = container.get("env")
+    names = [
+        entry.get("name") if isinstance(entry, dict) else None
+        for entry in (environment if isinstance(environment, list) else [])
+    ]
+    if is_helm_manifest:
+        if "replicas" in specification:
+            raise ValueError("PingSource adapter Helm must omit replicas entirely")
+        if names != ["NAMESPACE", "SYSTEM_NAMESPACE"]:
+            raise ValueError(
+                "PingSource adapter Helm environment must contain only NAMESPACE "
+                "then SYSTEM_NAMESPACE; controller bootstrap entries must be absent"
+            )
+        return
+    if type(specification.get("replicas")) is not int or specification["replicas"] != 0:
+        raise ValueError(
+            "PingSource adapter Kustomize must declare integer replicas: 0"
+        )
+    expected_names = ["SYSTEM_NAMESPACE", "NAMESPACE"] + [
+        entry["name"] for entry in PING_SOURCE_BOOTSTRAP_ENVIRONMENT
+    ]
+    if names != expected_names or environment[2:] != PING_SOURCE_BOOTSTRAP_ENVIRONMENT:
+        raise ValueError(
+            "PingSource adapter Kustomize environment must retain the exact "
+            "six reviewed bootstrap entries and namespace-variable order"
+        )
+    del specification["replicas"]
+    # Only the two source namespace references change order. Their complete
+    # contents remain part of the ordinary comparison.
+    container["env"] = [environment[1], environment[0]]
 
 
 def load_manifests(file_path: str) -> List[Dict]:
@@ -291,6 +359,14 @@ class ChartComparisonRules:
             if not pattern or not resource_matches(pattern, kind, namespace, name):
                 continue
             identity = f"knownDifferences[{index}]"
+
+            if entry.get("controllerOwnedPingSourceAdapter"):
+                normalize_controller_owned_ping_source_adapter(
+                    normalized, is_helm_manifest
+                )
+                if not is_helm_manifest:
+                    self._fired.add(identity)
+                continue
 
             webhook_names = entry.get("controllerOwnedWebhookRules")
             if webhook_names:

@@ -1,0 +1,15 @@
+apiVersion: v2
+name: knative-eventing
+description: Knative Eventing core with Kubeflow security integration
+version: 0.1.0
+appVersion: "1.23.0"
+keywords:
+  - knative
+  - eventing
+  - cloudevents
+home: https://github.com/kubeflow/community-distribution
+sources:
+  - https://github.com/kubeflow/community-distribution/tree/master/common/knative
+  - https://github.com/knative/eventing
+annotations:
+  licenses: Apache-2.0

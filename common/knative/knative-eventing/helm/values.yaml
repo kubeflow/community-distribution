@@ -1,0 +1,5 @@
+# -- Supported installation scenario; the defaults equal the distribution overlay.
+scenario: platform
+installation:
+  # -- Bootstrap phase: definitions or complete. Use complete for upgrades.
+  phase: complete

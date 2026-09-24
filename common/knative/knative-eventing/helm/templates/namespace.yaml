@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/component: knative-eventing
+    app.kubernetes.io/name: knative-eventing
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    kustomize.component: knative
+    pod-security.kubernetes.io/enforce: restricted
+  name: knative-eventing
+  annotations:
+    helm.sh/resource-policy: keep

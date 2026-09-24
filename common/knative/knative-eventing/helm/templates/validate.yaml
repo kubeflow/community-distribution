@@ -1,0 +1,9 @@
+{{- if ne .Release.Namespace "kubeflow" -}}
+{{- fail "Knative Eventing release records must be installed into the kubeflow namespace" -}}
+{{- end -}}
+{{- if ne .Values.scenario "platform" -}}
+{{- fail "only the platform scenario is supported" -}}
+{{- end -}}
+{{- if not (has .Values.installation.phase (list "definitions" "complete")) -}}
+{{- fail "installation.phase must be definitions or complete" -}}
+{{- end -}}

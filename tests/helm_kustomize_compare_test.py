@@ -542,6 +542,208 @@ class ControllerOwnedWebhookRulesTest(unittest.TestCase):
         self.assertTrue(comparison_rules.unfired())
 
 
+class ControllerOwnedPingSourceAdapterTest(unittest.TestCase):
+    def manifest(self):
+        return {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "name": "pingsource-mt-adapter",
+                "namespace": "knative-eventing",
+            },
+            "spec": {
+                "replicas": 0,
+                "selector": {"matchLabels": {"source": "ping"}},
+                "template": {
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "dispatcher",
+                                "image": "adapter:1",
+                                "env": [
+                                    {
+                                        "name": "SYSTEM_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        },
+                                    },
+                                    {
+                                        "name": "NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        },
+                                    },
+                                    {"name": "K_OBSERVABILITY_CONFIG", "value": "{}"},
+                                    {"name": "K_LOGGING_CONFIG", "value": ""},
+                                    {"name": "K_LEADER_ELECTION_CONFIG", "value": ""},
+                                    {"name": "K_NO_SHUTDOWN_AFTER", "value": ""},
+                                    {"name": "K_SINK_TIMEOUT", "value": "-1"},
+                                    {
+                                        "name": "POD_NAME",
+                                        "valueFrom": {
+                                            "fieldRef": {"fieldPath": "metadata.name"}
+                                        },
+                                    },
+                                ],
+                                "resources": {"requests": {"cpu": "125m"}},
+                                "readinessProbe": {
+                                    "httpGet": {"path": "/readiness", "port": 8080}
+                                },
+                            }
+                        ],
+                    },
+                },
+            },
+        }
+
+    def allowance(self):
+        return rules(
+            knownDifferences=[
+                {
+                    "resource": "Deployment/knative-eventing/pingsource-mt-adapter",
+                    "controllerOwnedPingSourceAdapter": ["dispatcher"],
+                    "reason": "The PingSource controller owns adapter scaling and bootstrap environment.",
+                }
+            ]
+        )
+
+    def helm_manifest(self):
+        manifest = self.manifest()
+        del manifest["spec"]["replicas"]
+        container = manifest["spec"]["template"]["spec"]["containers"][0]
+        container["env"] = [container["env"][1], container["env"][0]]
+        return manifest
+
+    def test_only_exact_baseline_fields_are_removed_without_mutating_input(self):
+        baseline = self.manifest()
+        original = copy.deepcopy(baseline)
+        comparison_rules = self.allowance()
+        helm = comparison_rules.normalize(self.helm_manifest(), True)
+        self.assertTrue(comparison_rules.unfired())
+        self.assertEqual(comparison_rules.normalize(baseline, False), helm)
+        self.assertEqual(baseline, original)
+        self.assertEqual(comparison_rules.unfired(), [])
+
+    def test_helm_cannot_claim_replica_or_any_bootstrap_environment_field(self):
+        for value in (0, 1, None, False):
+            manifest = self.helm_manifest()
+            manifest["spec"]["replicas"] = value
+            with self.subTest(replicas=value), self.assertRaisesRegex(
+                ValueError, "Helm must omit replicas"
+            ):
+                self.allowance().normalize(manifest, True)
+        for variable in self.manifest()["spec"]["template"]["spec"]["containers"][0][
+            "env"
+        ][2:]:
+            manifest = self.helm_manifest()
+            manifest["spec"]["template"]["spec"]["containers"][0]["env"].append(
+                variable
+            )
+            with self.subTest(name=variable["name"]), self.assertRaisesRegex(
+                ValueError, "Helm.*environment"
+            ):
+                self.allowance().normalize(manifest, True)
+
+    def test_changed_or_missing_baseline_replica_and_bootstrap_values_fail(self):
+        for value in (1, None, False, "absent"):
+            manifest = self.manifest()
+            if value == "absent":
+                del manifest["spec"]["replicas"]
+            else:
+                manifest["spec"]["replicas"] = value
+            with self.subTest(replicas=value), self.assertRaisesRegex(
+                ValueError, "Kustomize.*replicas"
+            ):
+                self.allowance().normalize(manifest, False)
+        for index in range(2, 8):
+            for mode in ("changed", "missing", "duplicate"):
+                manifest = self.manifest()
+                environment = manifest["spec"]["template"]["spec"]["containers"][0][
+                    "env"
+                ]
+                if mode == "changed":
+                    environment[index]["value"] = "unexpected"
+                elif mode == "missing":
+                    environment.pop(index)
+                else:
+                    environment.append(copy.deepcopy(environment[index]))
+                comparison_rules = self.allowance()
+                with self.subTest(index=index, mode=mode), self.assertRaisesRegex(
+                    ValueError, "Kustomize.*environment"
+                ):
+                    comparison_rules.normalize(manifest, False)
+                self.assertTrue(comparison_rules.unfired())
+
+    def test_wrong_api_missing_duplicate_container_and_environment_order_fail(self):
+        for is_helm in (False, True):
+            for mode in ("api", "missing", "duplicate", "environment-order"):
+                manifest = self.helm_manifest() if is_helm else self.manifest()
+                containers = manifest["spec"]["template"]["spec"]["containers"]
+                if mode == "api":
+                    manifest["apiVersion"] = "other.example/v1"
+                elif mode == "missing":
+                    containers.clear()
+                elif mode == "duplicate":
+                    containers.append(copy.deepcopy(containers[0]))
+                else:
+                    containers[0]["env"].reverse()
+                with self.subTest(is_helm=is_helm, mode=mode), self.assertRaises(
+                    ValueError
+                ):
+                    self.allowance().normalize(manifest, is_helm)
+
+    def test_other_deployment_fields_and_downward_references_still_compare(self):
+        for mode in ("image", "resources", "probe", "selector", "reference", "sidecar"):
+            baseline = self.manifest()
+            helm = self.helm_manifest()
+            container = helm["spec"]["template"]["spec"]["containers"][0]
+            if mode == "image":
+                container["image"] = "unexpected:1"
+            elif mode == "resources":
+                container["resources"]["requests"]["cpu"] = "999m"
+            elif mode == "probe":
+                container["readinessProbe"]["httpGet"]["path"] = "/other"
+            elif mode == "selector":
+                helm["spec"]["selector"]["matchLabels"]["source"] = "other"
+            elif mode == "reference":
+                container["env"][0]["valueFrom"]["fieldRef"][
+                    "fieldPath"
+                ] = "metadata.name"
+            else:
+                helm["spec"]["template"]["spec"]["containers"].append(
+                    {"name": "sidecar", "image": "extra"}
+                )
+            comparison_rules = self.allowance()
+            with self.subTest(mode=mode):
+                self.assertTrue(
+                    helm_kustomize_compare.deep_diff(
+                        comparison_rules.normalize(baseline, False),
+                        comparison_rules.normalize(helm, True),
+                    )
+                )
+
+    def test_other_resource_names_namespaces_and_kinds_do_not_fire(self):
+        for mode in ("name", "namespace", "kind"):
+            manifest = self.manifest()
+            if mode == "kind":
+                manifest["kind"] = "StatefulSet"
+            else:
+                manifest["metadata"][mode] = "other"
+            comparison_rules = self.allowance()
+            with self.subTest(mode=mode):
+                normalized = comparison_rules.normalize(manifest, False)
+                self.assertIn("replicas", normalized["spec"])
+                self.assertEqual(
+                    len(normalized["spec"]["template"]["spec"]["containers"][0]["env"]),
+                    8,
+                )
+                self.assertTrue(comparison_rules.unfired())
+
+
 class ManifestSelectionTest(unittest.TestCase):
     def test_a_skip_entry_excludes_only_the_named_resource(self):
         skip_rules = rules(

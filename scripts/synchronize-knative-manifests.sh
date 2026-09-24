@@ -81,6 +81,11 @@ QUEUE_PROXY_IMAGE="$queue_proxy_image" yq eval -i \
 python3 "$SCRIPT_DIRECTORY/generate-knative-serving-helm-manifests.py" --repository-root "$MANIFESTS_DIRECTORY"
 helm lint "$serving_chart" --namespace kubeflow
 
+eventing_chart="$DESTINATION_DIRECTORY/knative-eventing/helm"
+update_helm_chart_application_version "$eventing_chart/Chart.yaml" "${KN_EVENTING_RELEASE#v}"
+python3 "$SCRIPT_DIRECTORY/generate-knative-eventing-helm-manifests.py" --repository-root "$MANIFESTS_DIRECTORY"
+helm lint "$eventing_chart" --namespace kubeflow
+
 # Only imported bundles, derived metadata/payloads and synchronized version tables
 # are generated outputs. Do not stage hand-written chart templates or other work.
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" \
@@ -90,6 +95,8 @@ commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from 
   "common/knative/knative-eventing-post-install-jobs/base/eventing-post-install.yaml" \
   "common/knative/knative-serving/helm/Chart.yaml" \
   "common/knative/knative-serving/helm/manifests" \
+  "common/knative/knative-eventing/helm/Chart.yaml" \
+  "common/knative/knative-eventing/helm/manifests" \
   "common/knative/README.md" \
   "README.md"
 echo "Synchronization completed successfully."

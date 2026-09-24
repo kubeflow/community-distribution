@@ -1,0 +1,35 @@
+component: knative-eventing
+releaseName: knative-eventing
+namespace: kubeflow
+includeCustomResourceDefinitions: false
+knownDifferences:
+- resource: Deployment/knative-eventing/pingsource-mt-adapter
+  controllerOwnedPingSourceAdapter: [dispatcher]
+  reason: The PingSource controller replaces dispatcher configuration and scales the
+    adapter; Helm omits those fields and starts one idle Pod instead of zero.
+retainedCustomResourceDefinitions:
+  reason: Retain Eventing API definitions and user objects when the release is removed;
+    conversion requires recovery of its webhook.
+  names:
+  - apiserversources.sources.knative.dev
+  - brokers.eventing.knative.dev
+  - channels.messaging.knative.dev
+  - containersources.sources.knative.dev
+  - eventpolicies.eventing.knative.dev
+  - eventtransforms.eventing.knative.dev
+  - eventtypes.eventing.knative.dev
+  - integrationsinks.sinks.knative.dev
+  - integrationsources.sources.knative.dev
+  - jobsinks.sinks.knative.dev
+  - parallels.flows.knative.dev
+  - pingsources.sources.knative.dev
+  - requestreplies.eventing.knative.dev
+  - sequences.flows.knative.dev
+  - sinkbindings.sources.knative.dev
+  - subscriptions.messaging.knative.dev
+  - triggers.eventing.knative.dev
+scenarios:
+  platform:
+    kustomize:
+    - common/knative/knative-eventing/overlays/security
+    values: ci/values-platform.yaml

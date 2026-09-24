@@ -137,6 +137,7 @@ enforces three rules, in this order of importance:
 | `ignorePodTemplateAnnotations` | ignore the listed pod template annotation keys, typically rollout checksums that replace Kustomize's content-hashed names |
 | `compareDataAsYaml` | parse the listed `data` keys as YAML before comparing, so quoting style does not matter |
 | `controllerOwnedWebhookRules` | list exact webhook entry names whose nonempty `rules` are removed only from the Kustomize side; Helm must omit the key entirely, including empty or null values |
+| `controllerOwnedPingSourceAdapter` | `[dispatcher]` only, for the exact Eventing PingSource adapter Deployment; validate and remove its reviewed bootstrap replicas and environment only from Kustomize |
 
 `controllerOwnedWebhookRules` is deliberately narrower than resource patterns:
 its sole action must target an exact `MutatingWebhookConfiguration/name` or
@@ -146,6 +147,22 @@ use `admissionregistration.k8s.io/v1`, and each target webhook must exist exactl
 once. Missing or empty baseline rules fail; declaring any Helm rules fails before
 empty-value normalization. The allowance fires only when baseline rules are
 removed. Other fields, webhook entries and resources still compare normally.
+
+`controllerOwnedPingSourceAdapter` must be the sole action on
+`Deployment/knative-eventing/pingsource-mt-adapter`, use `[dispatcher]`, and carry
+a reason. Both manifests must use `apps/v1` and contain exactly one `dispatcher`
+container. Kustomize must declare integer `replicas: 0`, its namespace variables
+in `SYSTEM_NAMESPACE`, `NAMESPACE` order, followed by exactly these six bootstrap
+entries: `K_OBSERVABILITY_CONFIG` with `'{}'`, `K_LOGGING_CONFIG`,
+`K_LEADER_ELECTION_CONFIG` and `K_NO_SHUTDOWN_AFTER` with empty strings,
+`K_SINK_TIMEOUT` with `'-1'`, and `POD_NAME` referencing `metadata.name`.
+The allowance removes only those replicas and six entries from the baseline and
+reorders the two remaining namespace references to match the controller.
+Helm must omit replicas entirely and keep only `NAMESPACE`, `SYSTEM_NAMESPACE`
+in that order. Their complete values and every other Deployment field still
+compare. Changes to this bootstrap contract fail; the allowance fires only on
+the baseline. It does not excuse arbitrary controller mutations or assert equal
+idle replica counts: omitting replicas initially defaults to one instead of zero.
 
 Labels in the `helm.sh/` namespace and annotations in the `helm.sh/` and
 `meta.helm.sh/` namespaces are always ignored; they are properties of Helm

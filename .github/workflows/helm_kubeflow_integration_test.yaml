@@ -6,8 +6,8 @@ on:
   # or push. The in-place replacement of the Kustomize gate is a later,
   # separate decision. The Katib chart is the only experimental chart this
   # workflow installs; the other experimental charts are not exercised here
-  # and are replaced by co-located charts. The shared Knative Serving script
-  # carries a branch only this workflow runs (ISTIO_MANAGED_BY_HELM).
+  # and are replaced by co-located charts. The dedicated Knative Helm installers
+  # preserve the Istio resources already owned by their Helm releases.
   push:
     branches:
     - master
@@ -24,6 +24,8 @@ on:
     - tests/knative_serving_helm_smoke_test.sh
     - tests/knative_serving_helm_lifecycle_test.sh
     - tests/knative_serving_helm_admission_test.sh
+    - tests/knative_eventing_helm_smoke_test.sh
+    - tests/knative_eventing_helm_lifecycle_test.sh
     - .github/workflows/helm_kubeflow_integration_test.yaml
   pull_request:
     branches:
@@ -41,6 +43,8 @@ on:
     - tests/knative_serving_helm_smoke_test.sh
     - tests/knative_serving_helm_lifecycle_test.sh
     - tests/knative_serving_helm_admission_test.sh
+    - tests/knative_eventing_helm_smoke_test.sh
+    - tests/knative_eventing_helm_lifecycle_test.sh
     - .github/workflows/helm_kubeflow_integration_test.yaml
 
 permissions:
@@ -57,7 +61,8 @@ jobs:
     runs-on:
       labels: oracle-vm-16cpu-64gb-x86-64
       # labels: ubuntu-latest-16-cores
-    timeout-minutes: 45
+    # Allow both Knative lifecycle suites in addition to the platform tests.
+    timeout-minutes: 60
     steps:
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,12 +105,13 @@ jobs:
     - name: Install Knative Serving with Helm
       # The istio release already owns the cluster-local gateway and the
       # Kubeflow Istio resources; the Knative Helm installer never reapplies them.
-      env:
-        ISTIO_MANAGED_BY_HELM: "true"
       run: ./tests/knative_serving_helm_install.sh
 
-    - name: Install Knative Eventing
-      run: ./tests/knative_eventing_install.sh
+    - name: Install Knative Eventing with Helm
+      run: ./tests/knative_eventing_helm_install.sh
+
+    - name: Test Knative Eventing lifecycle and delivery with Helm
+      run: ./tests/knative_eventing_helm_lifecycle_test.sh
 
     - name: Install KServe with Helm
       run: ./tests/kserve_helm_install.sh

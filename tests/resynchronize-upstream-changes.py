@@ -35,6 +35,7 @@ path_to_synchronization_script = {
     "common/cert-manager": "scripts/synchronize-cert-manager-manifests.sh",
     "common/dex": "scripts/synchronize-dex-manifests.sh",
     "common/istio": "scripts/synchronize-istio-manifests.sh",
+    "scripts/generate-knative-eventing-helm-manifests.py": "scripts/synchronize-knative-manifests.sh",
     "scripts/generate-knative-serving-helm-manifests.py": "scripts/synchronize-knative-manifests.sh",
     "common/knative": "scripts/synchronize-knative-manifests.sh",
     "common/oauth2-proxy": "scripts/synchronize-oauth2-proxy-manifests.sh",

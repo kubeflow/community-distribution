@@ -346,6 +346,47 @@ class MalformedAllowanceTest(unittest.TestCase):
                 "  controllerOwnedWebhookRules: [controlled.example.com]\n"
             )
 
+    def test_exact_controller_owned_ping_source_adapter_loads(self):
+        self.load(
+            "knownDifferences:\n- resource: Deployment/knative-eventing/pingsource-mt-adapter\n"
+            "  controllerOwnedPingSourceAdapter: [dispatcher]\n"
+            "  reason: The PingSource controller owns these fields.\n"
+        )
+
+    def test_ping_source_allowance_rejects_any_other_scope_or_action_combination(self):
+        for resource in (
+            "Deployment/knative-eventing/*",
+            "Deployment/pingsource-mt-adapter",
+            "Deployment/other/pingsource-mt-adapter",
+            "Deployment/knative-eventing/other",
+            "StatefulSet/knative-eventing/pingsource-mt-adapter",
+        ):
+            with self.subTest(resource=resource), self.assertRaises(ValueError):
+                self.load(
+                    f"knownDifferences:\n- resource: {resource}\n"
+                    "  controllerOwnedPingSourceAdapter: [dispatcher]\n"
+                    "  reason: Controller ownership.\n"
+                )
+        for value in ("[]", "[other]", "[dispatcher, dispatcher]", "['*']", "true"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.load(
+                    "knownDifferences:\n- resource: Deployment/knative-eventing/pingsource-mt-adapter\n"
+                    f"  controllerOwnedPingSourceAdapter: {value}\n"
+                    "  reason: Controller ownership.\n"
+                )
+        with self.assertRaises(ValueError):
+            self.load(
+                "knownDifferences:\n- resource: Deployment/knative-eventing/pingsource-mt-adapter\n"
+                "  controllerOwnedPingSourceAdapter: [dispatcher]\n"
+                "  ignorePodTemplateAnnotations: [other]\n"
+                "  reason: Controller ownership.\n"
+            )
+        with self.assertRaisesRegex(ValueError, "reason"):
+            self.load(
+                "knownDifferences:\n- resource: Deployment/knative-eventing/pingsource-mt-adapter\n"
+                "  controllerOwnedPingSourceAdapter: [dispatcher]\n"
+            )
+
     def test_a_partition_group_name_is_a_plain_lowercase_label(self):
         """The name also names a working directory, so path syntax, absolute
         names, dots and uppercase are rejected, not just emptiness."""

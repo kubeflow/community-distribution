@@ -1,0 +1,5 @@
+{{ include "knative-eventing.generatedPayload" (dict "root" . "path" "manifests/platform-crds.yaml") }}
+{{- if ne .Values.installation.phase "definitions" }}
+---
+{{ include "knative-eventing.generatedPayload" (dict "root" . "path" "manifests/platform-resources.yaml") }}
+{{- end }}
