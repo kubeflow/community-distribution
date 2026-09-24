@@ -1,0 +1,6 @@
+{{- if eq .Values.scenario "istio" }}
+{{- if .Values.customResourceDefinitions.enabled }}
+{{ include "kubeflow-workspaces.generatedPayload" (dict "root" . "path" "manifests/platform-crds.yaml") }}
+{{- end }}
+{{ include "kubeflow-workspaces.generatedPayload" (dict "root" . "path" "manifests/platform-resources.yaml") }}
+{{- end }}

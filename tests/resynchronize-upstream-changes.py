@@ -32,6 +32,11 @@ path_to_synchronization_script = {
     "applications/spark/spark-operator": "scripts/synchronize-spark-operator-manifests.sh",
     "applications/trainer/upstream": "scripts/synchronize-trainer-manifests.sh",
     "applications/workspaces/upstream": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
+    "applications/workspaces/overlays/istio": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
+    "applications/workspaces/helm/Chart.yaml": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
+    "applications/workspaces/helm/kustomize": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
+    "applications/workspaces/helm/manifests": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
+    "scripts/generate-workspaces-helm-manifests.py": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
     "common/cert-manager": "scripts/synchronize-cert-manager-manifests.sh",
     "common/dex": "scripts/synchronize-dex-manifests.sh",
     "common/istio": "scripts/synchronize-istio-manifests.sh",
@@ -48,6 +53,7 @@ path_to_synchronization_script = {
         "scripts/synchronize-kserve-ui-manifests.sh",
         "scripts/synchronize-notebooks-v1-manifests.sh",
         "scripts/synchronize-knative-manifests.sh",
+        "scripts/synchronize-kubeflow-workspaces-manifests.sh",
     ),
 }
 

@@ -34,6 +34,7 @@ KNOWN_GENERATORS = {
     "scripts/generate-kserve-ui-helm-manifests.py",
     "scripts/generate-notebooks-v1-helm-manifests.py",
     "scripts/generate-knative-serving-helm-manifests.py",
+    "scripts/generate-workspaces-helm-manifests.py",
 }
 
 CONFIGURATION = engine.GeneratorConfiguration(

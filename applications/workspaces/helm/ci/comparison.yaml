@@ -1,0 +1,24 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+#
+# namespace is the release namespace, where Helm stores the release record. The
+# chart renders Namespace/kubeflow-workspaces itself and every namespaced object
+# declares that namespace explicitly, so the release namespace deliberately
+# differs from the workload namespace. The Namespace object is compared.
+component: kubeflow-workspaces
+releaseName: kubeflow-workspaces
+namespace: kubeflow
+includeCustomResourceDefinitions: false
+retainedCustomResourceDefinitions:
+  reason: >
+    helm uninstall must leave the Workspace and WorkspaceKind definitions, and
+    with them every Workspace in the profile namespaces and every cluster-scoped
+    WorkspaceKind, behind.
+  names:
+  - workspacekinds.kubeflow.org
+  - workspaces.kubeflow.org
+scenarios:
+  istio:
+    kustomize:
+    - applications/workspaces/overlays/istio
+    values: ci/values-istio.yaml

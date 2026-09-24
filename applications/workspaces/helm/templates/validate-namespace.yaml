@@ -1,0 +1,3 @@
+{{- if ne .Release.Namespace "kubeflow" }}
+{{- fail "Kubeflow Workspaces chart must be installed into the kubeflow namespace; the chart itself renders the kubeflow-workspaces namespace" }}
+{{- end }}

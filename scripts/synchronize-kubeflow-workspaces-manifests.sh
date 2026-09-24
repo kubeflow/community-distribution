@@ -31,12 +31,47 @@ copy_component_manifests() {
     fi
 }
 
+HELM_CHART_PATH="applications/workspaces/helm"
+HELM_CHART_DIRECTORY="${MANIFESTS_DIRECTORY}/${HELM_CHART_PATH}"
+
+update_workspaces_helm_chart() {
+    local chart_yaml="${HELM_CHART_DIRECTORY}/Chart.yaml"
+
+    update_helm_chart_application_version "$chart_yaml" "$COMMIT"
+    python3 "${SCRIPT_DIRECTORY}/generate-workspaces-helm-manifests.py" \
+        --repository-root "$MANIFESTS_DIRECTORY"
+}
+
+validate_workspaces_helm_chart() {
+    # The chart refuses any release namespace but kubeflow, so the linter needs
+    # it too.
+    helm lint "$HELM_CHART_DIRECTORY" --namespace kubeflow
+    # Parity is compared in continuous integration, by the
+    # "Compare kubeflow-workspaces" job, with its pinned Helm version.
+}
+
 for component in {backend,frontend,controller}; do
     copy_component_manifests "workspaces/${component}/manifests/kustomize/" \
         "applications/workspaces/upstream/${component}" ""
 done
 
+update_workspaces_helm_chart
+validate_workspaces_helm_chart
+
+# An upstream change that the chart cannot absorb makes the continuous
+# integration comparison fail until a maintainer edits the chart. The
+# component-owned chart paths are therefore part of a synchronization change
+# and are staged with it.
 commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests to ${COMMIT}" \
   "${SCRIPT_DIRECTORY}/synchronize-kubeflow-workspaces-manifests.sh" \
-  "applications/workspaces/upstream/"
+  "applications/workspaces/upstream/" \
+  "${HELM_CHART_PATH}/Chart.yaml" \
+  "${HELM_CHART_PATH}/kustomize/kustomization.yaml" \
+  "${HELM_CHART_PATH}/manifests" \
+  "${HELM_CHART_PATH}/templates" \
+  "${HELM_CHART_PATH}/values.yaml" \
+  "${HELM_CHART_PATH}/ci" \
+  "${HELM_CHART_PATH}/README.md" \
+  "${SCRIPT_DIRECTORY}/helm_manifest_generator.py" \
+  "${SCRIPT_DIRECTORY}/generate-workspaces-helm-manifests.py"
 echo "Synchronization completed successfully."

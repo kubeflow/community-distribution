@@ -1,0 +1,16 @@
+apiVersion: v2
+name: kubeflow-workspaces
+description: A Helm chart for the Kubeflow Workspaces (Notebooks v2) platform resources
+version: 0.1.0
+appVersion: "v2.0.0-beta.2"
+keywords:
+- kubeflow
+- workspaces
+- notebooks
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/kubeflow/community-distribution/tree/master/applications/workspaces
+- https://github.com/kubeflow/notebooks
+annotations:
+  category: Notebooks
+  licenses: Apache-2.0
