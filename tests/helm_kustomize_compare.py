@@ -65,6 +65,47 @@ def resource_matches(pattern: str, kind: str, namespace: str, name: str) -> bool
     )
 
 
+# Kubernetes built-in kinds that are namespaced, keyed by (API group, kind).
+# The table is closed on purpose: helmUsesReleaseNamespace fills the release
+# namespace only for a kind proven namespaced, either here or by a
+# CustomResourceDefinition with spec.scope Namespaced in the same Helm render.
+# A kind missing from both is left untouched, so an omission surfaces as a
+# missing object instead of a cluster-scoped object keyed under a namespace.
+NAMESPACED_BUILT_IN_KINDS = {
+    ("", "ConfigMap"),
+    ("", "Endpoints"),
+    ("", "Event"),
+    ("", "LimitRange"),
+    ("", "PersistentVolumeClaim"),
+    ("", "Pod"),
+    ("", "PodTemplate"),
+    ("", "ReplicationController"),
+    ("", "ResourceQuota"),
+    ("", "Secret"),
+    ("", "Service"),
+    ("", "ServiceAccount"),
+    ("apps", "ControllerRevision"),
+    ("apps", "DaemonSet"),
+    ("apps", "Deployment"),
+    ("apps", "ReplicaSet"),
+    ("apps", "StatefulSet"),
+    ("autoscaling", "HorizontalPodAutoscaler"),
+    ("batch", "CronJob"),
+    ("batch", "Job"),
+    ("networking.k8s.io", "Ingress"),
+    ("networking.k8s.io", "NetworkPolicy"),
+    ("policy", "PodDisruptionBudget"),
+    ("rbac.authorization.k8s.io", "Role"),
+    ("rbac.authorization.k8s.io", "RoleBinding"),
+}
+
+
+def api_group(manifest: Dict) -> str:
+    """Return the API group of a manifest; the core group is the empty string."""
+    api_version = manifest.get("apiVersion") or ""
+    return api_version.split("/", 1)[0] if "/" in api_version else ""
+
+
 class ChartComparisonRules:
     """Interpret one chart's declared comparison allowances.
 
@@ -86,6 +127,12 @@ class ChartComparisonRules:
         self.helm_uses_kustomize_name_hashes = descriptor.get(
             "helmUsesKustomizeNameHashes", True
         )
+        self.helm_release_namespace = (
+            descriptor.get("namespace", "")
+            if descriptor.get("helmUsesReleaseNamespace") is True
+            else ""
+        )
+        self._namespaced_custom_kinds = set()
         self._fired = set()
 
     @staticmethod
@@ -142,7 +189,52 @@ class ChartComparisonRules:
                         "", name_value
                     )
 
+        # A chart that declares helmUsesReleaseNamespace omits
+        # metadata.namespace and relies on the release namespace instead; the
+        # resource still lands there. Kustomize writes the field through its
+        # namespace transformer, so without this the two sides key the same
+        # object differently and each reports the other's copy as missing.
+        # Only a kind proven namespaced is filled, and an explicit namespace
+        # is never changed.
+        if (
+            is_helm_manifest
+            and self.helm_release_namespace
+            and self._is_proven_namespaced(manifest)
+        ):
+            normalized.setdefault("metadata", {}).setdefault(
+                "namespace", self.helm_release_namespace
+            )
+
         return remove_empty_values(normalized)
+
+    def observe_helm_render(self, helm_manifests: List[Dict]) -> None:
+        """Record the custom kinds that this Helm render proves namespaced.
+
+        A custom kind counts as namespaced only when the same render carries
+        its CustomResourceDefinition with spec.scope Namespaced. Each call
+        replaces the previous render's record.
+        """
+        self._namespaced_custom_kinds = set()
+        for manifest in helm_manifests:
+            if (
+                manifest.get("kind") != "CustomResourceDefinition"
+                or api_group(manifest) != "apiextensions.k8s.io"
+            ):
+                continue
+            specification = manifest.get("spec") or {}
+            if specification.get("scope") != "Namespaced":
+                continue
+            group = specification.get("group")
+            kind = (specification.get("names") or {}).get("kind")
+            if group and kind:
+                self._namespaced_custom_kinds.add((group, kind))
+
+    def _is_proven_namespaced(self, manifest: Dict) -> bool:
+        identity = (api_group(manifest), manifest.get("kind", ""))
+        return (
+            identity in NAMESPACED_BUILT_IN_KINDS
+            or identity in self._namespaced_custom_kinds
+        )
 
     def validate_retained_custom_resource_definitions(
         self, helm_manifests: List[Dict]
@@ -479,6 +571,7 @@ def compare_manifests(
 
     if not rules.validate_retained_custom_resource_definitions(helm_manifests):
         return False
+    rules.observe_helm_render(helm_manifests)
 
     kustomize_resources = {}
     helm_resources = {}

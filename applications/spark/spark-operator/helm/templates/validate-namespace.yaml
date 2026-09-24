@@ -1,0 +1,8 @@
+{{- if ne .Release.Namespace "kubeflow" }}
+{{- fail "Spark Operator chart must be installed into the kubeflow namespace" }}
+{{- end }}
+{{- /* The upstream chart derives every resource name and the immutable
+spec.selector.matchLabels from the release name. */}}
+{{- if ne .Release.Name "spark-operator" }}
+{{- fail "Spark Operator chart must be installed with the release name spark-operator" }}
+{{- end }}

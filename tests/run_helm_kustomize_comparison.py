@@ -208,6 +208,7 @@ def load_descriptor(path):
             "defaultScenario",
             "includeCustomResourceDefinitions",
             "helmUsesKustomizeNameHashes",
+            "helmUsesReleaseNamespace",
             "dependencyRepositories",
             "ignoredLabels",
             "knownDifferences",
@@ -349,7 +350,7 @@ def render_kustomize(scenario, destination, root=ROOT_DIRECTORY):
     destination.write_text(DOCUMENT_SEPARATOR.join(documents))
 
 
-def render_helm(chart, descriptor, scenario, destination):
+def render_helm(chart, descriptor, scenario, destination, environment=None):
     command = ["helm", "template", descriptor["releaseName"], str(chart)]
     command += ["--namespace", descriptor["namespace"]]
     if descriptor.get("includeCustomResourceDefinitions"):
@@ -357,7 +358,9 @@ def render_helm(chart, descriptor, scenario, destination):
     if scenario.get("values"):
         command += ["--values", str(chart / scenario["values"])]
     destination.write_text(
-        subprocess.run(command, check=True, capture_output=True, text=True).stdout
+        subprocess.run(
+            command, check=True, capture_output=True, text=True, env=environment
+        ).stdout
     )
 
 
@@ -367,31 +370,15 @@ def compare(component, name, descriptors, rules):
     print(f"Comparing {component} manifests for scenario: {name}")
 
     try:
-        if descriptor.get("dependencyRepositories"):
-            for repository, url in descriptor["dependencyRepositories"].items():
-                # Adding fails when the repository is already present, and its
-                # index may be stale, so refresh it as the previous harness did.
-                if subprocess.run(
-                    ["helm", "repo", "add", repository, url], capture_output=True
-                ).returncode:
-                    subprocess.run(
-                        ["helm", "repo", "update", repository],
-                        check=True,
-                        capture_output=True,
-                        text=True,
-                    )
-            subprocess.run(
-                ["helm", "dependency", "build", str(chart)],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-
         with tempfile.TemporaryDirectory() as directory:
+            environment = helm_environment(Path(directory) / "helm")
+            prepared_chart = prepare_member(
+                chart, descriptor, Path(directory) / "charts", environment
+            )
             kustomize_output = Path(directory) / "kustomize.yaml"
             helm_output = Path(directory) / "helm.yaml"
             render_kustomize(scenario, kustomize_output)
-            render_helm(chart, descriptor, scenario, helm_output)
+            render_helm(prepared_chart, descriptor, scenario, helm_output, environment)
             return comparator.compare_manifests(
                 str(kustomize_output), str(helm_output), rules, scenario
             )

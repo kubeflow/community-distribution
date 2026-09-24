@@ -18,6 +18,34 @@ require_helm_major_version() {
   fi
 }
 
+# A Kustomize baseline that is itself Helm output can change between Helm minor
+# versions, so its synchronization script requires the exact version that the
+# comparison workflow pins. Helm appends build metadata to some builds
+# (v4.2.2+g1234567); build metadata does not change the version.
+require_helm_version() {
+  local required="$1"
+  local version
+  version="$(helm version --template '{{.Version}}')"
+  if [[ "${version%%+*}" != "$required" ]]; then
+    echo "ERROR: Helm $required required to match the comparison workflow, found $version." >&2
+    exit 1
+  fi
+}
+
+# Point Helm at directories under "$1" so that a script neither reads nor
+# changes the caller's Helm state. HELM_REPOSITORY_CONFIG,
+# HELM_REPOSITORY_CACHE and HELM_PLUGINS override or extend the three home
+# directories, so an inherited value would reach the caller's repository
+# configuration, repository cache or plugins after all; they are removed, as
+# helm_environment in tests/run_helm_kustomize_comparison.py removes them.
+isolate_helm_environment() {
+  local home="$1"
+  export HELM_CACHE_HOME="$home/cache"
+  export HELM_CONFIG_HOME="$home/configuration"
+  export HELM_DATA_HOME="$home/data"
+  unset HELM_REPOSITORY_CONFIG HELM_REPOSITORY_CACHE HELM_PLUGINS
+}
+
 # Check if the git repository has uncommitted changes
 check_uncommitted_changes() {
   if [ -n "$(git status --porcelain)" ]; then

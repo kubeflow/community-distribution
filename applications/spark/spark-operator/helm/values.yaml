@@ -1,0 +1,53 @@
+# Default values for the Kubeflow Spark Operator chart.
+#
+# The Kustomize baseline is itself produced by rendering the upstream Spark
+# Operator chart, so this chart depends on that same chart instead of vendoring
+# its output. Every value below reproduces a flag the synchronization script
+# already passes, or a patch the Kustomize baseline already applies, and every
+# default equals what applications/spark/spark-operator/overlays/kubeflow
+# renders.
+
+spark-operator:
+  # -- Install the upstream Spark Operator chart. Disable to render only the
+  # Kubeflow resources against an operator someone else already manages.
+  enabled: true
+
+  spark:
+    # -- Namespaces to watch for Spark applications. A list holding the empty
+    # string means every namespace, which is what the Kustomize baseline
+    # renders and why the operator is granted cluster-wide permissions.
+    #
+    # This must be a list containing "", not an empty list. The synchronization
+    # script passes --set "spark.jobNamespaces={}", which Helm parses as [""],
+    # and the upstream template emits --namespaces="" only when the list
+    # contains the empty string. An empty list renders no --namespaces argument
+    # at all, which is a different operator configuration.
+    #
+    # Naming namespaces here makes this release create a ServiceAccount, Role
+    # and RoleBinding inside each one. In Kubeflow those are Profile
+    # namespaces, whose RBAC the Profile controller already owns.
+    jobNamespaces:
+    - ""
+
+  controller:
+    # -- Pod labels for the controller. Excludes the controller from the Istio
+    # mesh, replacing the Kustomize strategic merge patch.
+    labels:
+      sidecar.istio.io/inject: "false"
+
+  webhook:
+    # -- Run the admission webhook.
+    enable: true
+    # -- Port the admission webhook listens on.
+    port: 9443
+    # -- Pod labels for the webhook. Excludes the webhook from the Istio mesh,
+    # replacing the Kustomize strategic merge patch.
+    labels:
+      sidecar.istio.io/inject: "false"
+
+kubeflow:
+  aggregatedRoles:
+    # -- Create the Kubeflow aggregated ClusterRoles that grant Spark
+    # application access to the kubeflow-admin, kubeflow-edit and kubeflow-view
+    # cluster roles. These are the only resources this chart owns directly.
+    enabled: true

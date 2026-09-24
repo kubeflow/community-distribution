@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+import contextlib
 import copy
 import importlib.util
+import io
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -684,6 +687,208 @@ class RetainedCustomResourceDefinitionTest(unittest.TestCase):
             declared_rules.unfired(),
             ["retainedCustomResourceDefinitions: profiles.kubeflow.org"],
         )
+
+
+class ReleaseNamespaceTest(unittest.TestCase):
+    """helmUsesReleaseNamespace fills the release namespace only for a kind
+    proven namespaced: a Kubernetes built-in from the closed table, or a custom
+    kind whose Namespaced CustomResourceDefinition is in the same Helm render.
+    """
+
+    @staticmethod
+    def manifest(api_version, kind, name="example", namespace=None):
+        metadata = {"name": name}
+        if namespace is not None:
+            metadata["namespace"] = namespace
+        return {"apiVersion": api_version, "kind": kind, "metadata": metadata}
+
+    @staticmethod
+    def definition(group, kind, scope):
+        plural = kind.lower() + "s"
+        return {
+            "apiVersion": "apiextensions.k8s.io/v1",
+            "kind": "CustomResourceDefinition",
+            "metadata": {"name": f"{plural}.{group}"},
+            "spec": {
+                "group": group,
+                "scope": scope,
+                "names": {"kind": kind, "plural": plural},
+            },
+        }
+
+    def helm_key(self, manifest, render=(), **descriptor):
+        descriptor.setdefault("namespace", "kubeflow")
+        descriptor.setdefault("helmUsesReleaseNamespace", True)
+        namespace_rules = rules(**descriptor)
+        namespace_rules.observe_helm_render(list(render))
+        return helm_kustomize_compare.get_resource_key(
+            namespace_rules.normalize(manifest, is_helm_manifest=True)
+        )
+
+    def test_a_namespaced_built_in_kind_is_filled(self):
+        self.assertEqual(
+            self.helm_key(self.manifest("apps/v1", "Deployment", "controller")),
+            "Deployment/kubeflow/controller",
+        )
+        self.assertEqual(
+            self.helm_key(self.manifest("v1", "Service", "webhook")),
+            "Service/kubeflow/webhook",
+        )
+
+    def test_an_explicit_namespace_is_preserved(self):
+        self.assertEqual(
+            self.helm_key(
+                self.manifest("apps/v1", "Deployment", "controller", "other")
+            ),
+            "Deployment/other/controller",
+        )
+
+    def test_a_custom_kind_sharing_a_built_in_name_is_not_filled(self):
+        """The table is keyed by API group as well as kind, so the core
+        Service entry does not cover a custom kind named Service."""
+        self.assertEqual(
+            self.helm_key(self.manifest("serving.knative.dev/v1", "Service")),
+            "Service/example",
+        )
+        self.assertEqual(
+            self.helm_key(self.manifest("example.com/v1", "Deployment")),
+            "Deployment/example",
+        )
+
+    def test_cluster_scoped_built_in_kinds_are_untouched(self):
+        for api_version, kind in (
+            ("rbac.authorization.k8s.io/v1", "ClusterRole"),
+            ("rbac.authorization.k8s.io/v1", "ClusterRoleBinding"),
+            ("v1", "Node"),
+            ("node.k8s.io/v1", "RuntimeClass"),
+            ("v1", "Namespace"),
+            ("apiextensions.k8s.io/v1", "CustomResourceDefinition"),
+        ):
+            with self.subTest(kind=kind):
+                self.assertEqual(
+                    self.helm_key(self.manifest(api_version, kind)),
+                    f"{kind}/example",
+                )
+
+    def test_a_cluster_scoped_custom_kind_is_untouched(self):
+        cluster_issuer = self.manifest("cert-manager.io/v1", "ClusterIssuer")
+        definition = self.definition("cert-manager.io", "ClusterIssuer", "Cluster")
+
+        for render in ((), (definition,)):
+            with self.subTest(definition_rendered=bool(render)):
+                self.assertEqual(
+                    self.helm_key(dict(cluster_issuer), render),
+                    "ClusterIssuer/example",
+                )
+
+    def test_a_namespaced_custom_kind_needs_its_definition_in_the_render(self):
+        application = self.manifest("sparkoperator.k8s.io/v1beta2", "SparkApplication")
+        definition = self.definition(
+            "sparkoperator.k8s.io", "SparkApplication", "Namespaced"
+        )
+
+        self.assertEqual(self.helm_key(dict(application)), "SparkApplication/example")
+        self.assertEqual(
+            self.helm_key(dict(application), (definition,)),
+            "SparkApplication/kubeflow/example",
+        )
+        # The same kind in another API group is not proven by that definition.
+        self.assertEqual(
+            self.helm_key(
+                self.manifest("example.com/v1", "SparkApplication"), (definition,)
+            ),
+            "SparkApplication/example",
+        )
+
+    def test_a_later_render_replaces_the_recorded_definitions(self):
+        namespace_rules = rules(namespace="kubeflow", helmUsesReleaseNamespace=True)
+        application = self.manifest("sparkoperator.k8s.io/v1beta2", "SparkApplication")
+        namespace_rules.observe_helm_render(
+            [self.definition("sparkoperator.k8s.io", "SparkApplication", "Namespaced")]
+        )
+        namespace_rules.observe_helm_render([])
+
+        self.assertEqual(
+            helm_kustomize_compare.get_resource_key(
+                namespace_rules.normalize(application, is_helm_manifest=True)
+            ),
+            "SparkApplication/example",
+        )
+
+    def test_the_kustomize_side_and_undeclared_charts_are_untouched(self):
+        namespace_rules = rules(namespace="kubeflow", helmUsesReleaseNamespace=True)
+        deployment = self.manifest("apps/v1", "Deployment", "controller")
+
+        normalized = namespace_rules.normalize(dict(deployment), is_helm_manifest=False)
+        self.assertEqual(
+            helm_kustomize_compare.get_resource_key(normalized),
+            "Deployment/controller",
+        )
+        for descriptor in (
+            {"helmUsesReleaseNamespace": False},
+            {"helmUsesReleaseNamespace": None},
+            {"helmUsesReleaseNamespace": "false"},
+        ):
+            with self.subTest(descriptor=descriptor):
+                self.assertEqual(
+                    self.helm_key(dict(deployment), **descriptor),
+                    "Deployment/controller",
+                )
+        self.assertEqual(
+            helm_kustomize_compare.get_resource_key(
+                rules(namespace="kubeflow").normalize(
+                    dict(deployment), is_helm_manifest=True
+                )
+            ),
+            "Deployment/controller",
+        )
+
+    def test_compare_manifests_reads_the_definitions_from_the_helm_render(self):
+        """End to end: the Helm file omits the namespace on a built-in and on
+        a custom resource whose definition it carries; the Kustomize file
+        writes both namespaces."""
+        definition = self.definition(
+            "sparkoperator.k8s.io", "SparkApplication", "Namespaced"
+        )
+        helm_documents = [
+            definition,
+            self.manifest("apps/v1", "Deployment", "controller"),
+            self.manifest("sparkoperator.k8s.io/v1beta2", "SparkApplication"),
+            self.manifest("rbac.authorization.k8s.io/v1", "ClusterRole", "admin"),
+        ]
+        kustomize_documents = [
+            definition,
+            self.manifest("apps/v1", "Deployment", "controller", "kubeflow"),
+            self.manifest(
+                "sparkoperator.k8s.io/v1beta2",
+                "SparkApplication",
+                "example",
+                "kubeflow",
+            ),
+            self.manifest("rbac.authorization.k8s.io/v1", "ClusterRole", "admin"),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            helm_file = os.path.join(directory, "helm.yaml")
+            kustomize_file = os.path.join(directory, "kustomize.yaml")
+            for path, documents in (
+                (helm_file, helm_documents),
+                (kustomize_file, kustomize_documents),
+            ):
+                with open(path, "w", encoding="utf-8") as handle:
+                    yaml.safe_dump_all(documents, handle)
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                declared = helm_kustomize_compare.compare_manifests(
+                    kustomize_file,
+                    helm_file,
+                    rules(namespace="kubeflow", helmUsesReleaseNamespace=True),
+                    {},
+                )
+                undeclared = helm_kustomize_compare.compare_manifests(
+                    kustomize_file, helm_file, rules(namespace="kubeflow"), {}
+                )
+        self.assertTrue(declared)
+        self.assertFalse(undeclared)
 
 
 class HelmOnlyResourceTest(unittest.TestCase):

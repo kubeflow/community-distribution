@@ -141,8 +141,8 @@ jobs:
     - name: Install Model Catalog
       run: ./tests/model_catalog_install.sh
 
-    - name: Install Spark
-      run: chmod u+x tests/*.sh && ./tests/spark_install.sh
+    - name: Install Spark with Helm
+      run: chmod u+x tests/*.sh && ./tests/spark_helm_install.sh
 
     - name: Install Kubeflow Workspaces
       run: ./tests/workspaces_install.sh
