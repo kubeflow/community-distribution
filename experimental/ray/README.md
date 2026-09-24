@@ -148,3 +148,11 @@ kubectl get svc -n $MY_KUBEFLOW_USER_NAMESPACE
 
 # Upgrading
 See [UPGRADE.md](UPGRADE.md) for more details.
+
+## Helm installation
+
+The co-located [KubeRay operator wrapper](kuberay-operator/helm/README.md) provides
+an alternative Helm 4 installation with the same Kubeflow overlay defaults.
+Use one installation owner; do not apply the Kustomize operator bundle over its
+Helm release. The chart README documents definition maintenance, retained custom
+resources and the integration tests.

@@ -3,8 +3,7 @@ KUBERAY_HELM_CHART_REPO ?= https://ray-project.github.io/kuberay-helm/
 
 .PHONY: kuberay-operator/base
 kuberay-operator/base:
-	mkdir -p kuberay-operator/base
-	cd kuberay-operator/base && helm template --include-crds kuberay-operator kuberay-operator --version ${KUBERAY_RELEASE_VERSION} --repo ${KUBERAY_HELM_CHART_REPO} > resources.yaml
+	KUBEFLOW_SYNCHRONIZE_NO_COMMIT=true ../../scripts/synchronize-ray-manifests.sh
 
 .PHONY: test
 test:

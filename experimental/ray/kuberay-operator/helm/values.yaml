@@ -1,0 +1,12 @@
+# Preserve the distribution's kubeflow overlay using upstream-owned settings.
+# All other dependency settings inherit the pinned upstream chart defaults.
+kuberay-operator:
+  env:
+  - name: ENABLE_INIT_CONTAINER_INJECTION
+    value: "false"
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault

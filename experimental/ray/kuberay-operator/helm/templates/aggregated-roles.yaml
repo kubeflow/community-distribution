@@ -1,0 +1,52 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-kuberay-admin
+  labels:
+    app: kuberay-operator
+    app.kubernetes.io/name: kuberay-operator
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: "true"
+rules: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-kuberay-edit
+  labels:
+    app: kuberay-operator
+    app.kubernetes.io/name: kuberay-operator
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-edit: "true"
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: "true"
+rules:
+  - apiGroups:
+      - ray.io
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeflow-kuberay-view
+  labels:
+    app: kuberay-operator
+    app.kubernetes.io/name: kuberay-operator
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-view: "true"
+rules:
+  - apiGroups:
+      - ray.io
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+      - watch
+---

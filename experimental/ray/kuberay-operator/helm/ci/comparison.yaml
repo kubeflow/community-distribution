@@ -1,0 +1,10 @@
+component: kuberay-operator
+releaseName: kuberay-operator
+namespace: kubeflow
+includeCustomResourceDefinitions: true
+dependencyRepositories:
+  kuberay: https://ray-project.github.io/kuberay-helm/
+scenarios:
+  kubeflow:
+    kustomize:
+    - experimental/ray/kuberay-operator/overlays/kubeflow

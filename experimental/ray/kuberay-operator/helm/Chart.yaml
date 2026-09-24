@@ -1,0 +1,21 @@
+apiVersion: v2
+name: kubeflow-kuberay-operator
+description: Upstream KubeRay operator with Kubeflow integration defaults
+version: 0.1.0
+appVersion: "1.6.2"
+type: application
+keywords:
+- kubeflow
+- ray
+- machine-learning
+annotations:
+  category: MachineLearning
+  licenses: Apache-2.0
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/ray-project/kuberay/tree/v1.6.2/helm-chart/kuberay-operator
+- https://github.com/kubeflow/community-distribution/tree/master/experimental/ray
+dependencies:
+- name: kuberay-operator
+  version: "1.6.2"
+  repository: https://ray-project.github.io/kuberay-helm/

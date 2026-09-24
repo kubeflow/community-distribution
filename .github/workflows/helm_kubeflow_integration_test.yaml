@@ -4,9 +4,9 @@ on:
   # Runs only when a chart, a Helm installation script, or this workflow
   # changes, so the second full-platform job does not load every pull request
   # or push. The in-place replacement of the Kustomize gate is a later,
-  # separate decision. The Katib chart is the only experimental chart this
-  # workflow installs; the other experimental charts are not exercised here
-  # and are replaced by co-located charts. The shared Knative Serving script
+  # separate decision. The workflow includes the experimental Katib chart
+  # and co-located Ray wrapper; other experimental charts remain outside it.
+  # The shared Knative Serving script
   # carries a branch only this workflow runs (ISTIO_MANAGED_BY_HELM).
   push:
     branches:
@@ -17,6 +17,8 @@ on:
     - applications/*/helm*/**
     - applications/*/*/helm*/**
     - experimental/helm/charts/katib/**
+    - experimental/ray/**
+    - tests/ray_helm_lifecycle.sh
     - tests/*_helm_install.sh
     - tests/kserve_ui_helm_lifecycle_test.sh
     - tests/kserve_test.sh
@@ -34,6 +36,8 @@ on:
     - applications/*/helm*/**
     - applications/*/*/helm*/**
     - experimental/helm/charts/katib/**
+    - experimental/ray/**
+    - tests/ray_helm_lifecycle.sh
     - tests/*_helm_install.sh
     - tests/kserve_ui_helm_lifecycle_test.sh
     - tests/kserve_test.sh
@@ -128,11 +132,8 @@ jobs:
     - name: Install Trainer
       run: ./tests/trainer_install.sh
 
-    - name: Install Ray
-      run: |
-        cd experimental/ray/
-        kustomize build kuberay-operator/overlays/kubeflow | kubectl -n kubeflow apply --server-side -f -
-        kubectl -n kubeflow wait --for=condition=available --timeout=60s deploy/kuberay-operator
+    - name: Install Ray with Helm
+      run: ./tests/ray_helm_install.sh
 
 
     - name: Install Model Registry
@@ -252,9 +253,16 @@ jobs:
       run: ./tests/workspaces_test.sh "${KF_PROFILE}"
 
     - name: Run Ray Test
+      env:
+        RAY_MANAGED_BY_HELM: "true"
       run: |
         cd experimental/ray/
         ./test.sh ${KF_PROFILE}
+
+    - name: Test KubeRay Helm lifecycle
+      env:
+        RUN_HELM_LIFECYCLE_TESTS: "true"
+      run: ./tests/ray_helm_lifecycle.sh "${KF_PROFILE}"
 
     - name: Run Model Registry Tests
       run: ./tests/model_registry_test.sh

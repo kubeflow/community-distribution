@@ -1,0 +1,6 @@
+{{- if ne .Release.Namespace "kubeflow" -}}
+{{- fail "The Kubeflow KubeRay operator must be installed in the existing kubeflow namespace" -}}
+{{- end -}}
+{{- if ne .Release.Name "kuberay-operator" -}}
+{{- fail "The Kubeflow KubeRay release name must be kuberay-operator to preserve selectors" -}}
+{{- end -}}

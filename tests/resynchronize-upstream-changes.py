@@ -32,6 +32,8 @@ path_to_synchronization_script = {
     "applications/spark/spark-operator": "scripts/synchronize-spark-operator-manifests.sh",
     "applications/trainer/upstream": "scripts/synchronize-trainer-manifests.sh",
     "applications/workspaces/upstream": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
+    "experimental/ray/Makefile": "scripts/synchronize-ray-manifests.sh",
+    "experimental/ray/kuberay-operator": "scripts/synchronize-ray-manifests.sh",
     "common/cert-manager": "scripts/synchronize-cert-manager-manifests.sh",
     "common/dex": "scripts/synchronize-dex-manifests.sh",
     "common/istio": "scripts/synchronize-istio-manifests.sh",

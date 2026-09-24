@@ -35,6 +35,7 @@ CHART_GLOBS = (
     "applications/*/helm*",
     "applications/*/*/helm*",
     "experimental/helm/charts/*",
+    "experimental/ray/*/helm*",
 )
 DOCUMENT_SEPARATOR = "\n---\n"
 HOOK_ANNOTATION = "helm.sh/hook"

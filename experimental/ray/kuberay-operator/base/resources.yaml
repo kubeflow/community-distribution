@@ -71532,6 +71532,7 @@ rules:
   - raycronjobs/status
   verbs:
   - get
+
 ---
 # Source: kuberay-operator/templates/ray_raycronjob_viewer_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -71558,6 +71559,7 @@ rules:
   - raycronjobs/status
   verbs:
   - get
+
 ---
 # Source: kuberay-operator/templates/ray_rayjob_editor_role.yaml
 kind: ClusterRole
@@ -71588,6 +71590,7 @@ rules:
   - rayjobs/status
   verbs:
   - get
+
 ---
 # Source: kuberay-operator/templates/ray_rayjob_viewer_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -71614,6 +71617,7 @@ rules:
   - rayjobs/status
   verbs:
   - get
+
 ---
 # Source: kuberay-operator/templates/ray_rayservice_editor_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -71644,6 +71648,7 @@ rules:
   - rayservices/status
   verbs:
   - get
+
 ---
 # Source: kuberay-operator/templates/ray_rayservice_viewer_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -71670,6 +71675,7 @@ rules:
   - rayservices/status
   verbs:
   - get
+
 ---
 # Source: kuberay-operator/templates/role.yaml
 kind: ClusterRole
@@ -71881,6 +71887,7 @@ rules:
   - patch
   - update
   - watch
+
 ---
 # Source: kuberay-operator/templates/rolebinding.yaml
 kind: ClusterRoleBinding
@@ -71900,6 +71907,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: kuberay-operator
+
 ---
 # Source: kuberay-operator/templates/leader_election_role.yaml
 kind: Role
@@ -71940,6 +71948,7 @@ rules:
   - get
   - list
   - update
+
 ---
 # Source: kuberay-operator/templates/leader_election_role_binding.yaml
 kind: RoleBinding
@@ -71960,6 +71969,7 @@ subjects:
 - kind: ServiceAccount
   name: kuberay-operator
   namespace: default
+
 ---
 # Source: kuberay-operator/templates/service.yaml
 apiVersion: v1
@@ -71982,6 +71992,7 @@ spec:
   selector:
     app.kubernetes.io/name: kuberay-operator
     app.kubernetes.io/instance: kuberay-operator
+
 ---
 # Source: kuberay-operator/templates/deployment.yaml
 apiVersion: apps/v1

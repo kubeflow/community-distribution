@@ -98,6 +98,15 @@ class SiblingChartDiscoveryTest(unittest.TestCase):
             (chart / "ci/comparison.yaml").unlink()
             self.assertEqual(comparison.charts_without_descriptor(root), [chart])
 
+    def test_ray_co_located_chart_is_discovered_without_its_dependency(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_chart(root, "experimental/ray/kuberay-operator/helm")
+            self.write_chart(
+                root, "experimental/ray/kuberay-operator/helm/charts/upstream"
+            )
+            self.assertEqual(list(comparison.discover(root)), ["kuberay-operator-helm"])
+
     def test_a_directory_without_a_chart_is_not_discovered(self):
         """A descriptor alone does not make a chart; Helm would fail on it."""
         with tempfile.TemporaryDirectory() as directory:
