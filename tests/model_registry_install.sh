@@ -6,8 +6,10 @@ if ! kubectl get namespace kubeflow-user-example-com >/dev/null 2>&1; then
     exit 1
 fi
 
-kustomize build applications/hub/overlays/model-registry \
-  | kubectl apply -f -
+if [[ ${HUB_MANAGED_BY_HELM:-false} != true ]]; then
+  kustomize build applications/hub/overlays/model-registry \
+    | kubectl apply -f -
+fi
 
 # Wait for registry database
 if ! kubectl wait --for=condition=available -n kubeflow-user-example-com deployment/model-registry-db --timeout=120s; then

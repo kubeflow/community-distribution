@@ -1,0 +1,1 @@
+{{ include "hub-model-registry.generatedPayload" (dict "root" . "path" "manifests/platform-resources.yaml") }}

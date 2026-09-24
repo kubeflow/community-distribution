@@ -134,6 +134,10 @@ jobs:
         python tests/dashboard_helm_manifest_generator_test.py
     - name: Test Knative Serving Helm behavior
       run: python tests/knative_serving_helm_chart_test.py
+    - name: Test Hub Helm behavior
+      run: |
+        python tests/hub_helm_chart_test.py
+        python tests/hub_synchronization_test.py
     - name: Install Go
       # The release size encoder must compress with the Go standard library
       # Helm is built with; go.mod pins that release.

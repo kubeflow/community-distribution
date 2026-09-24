@@ -1,0 +1,9 @@
+component: hub-model-registry
+releaseName: hub-model-registry
+namespace: kubeflow-user-example-com
+includeCustomResourceDefinitions: false
+scenarios:
+  platform:
+    kustomize:
+    - applications/hub/overlays/model-registry
+    values: ci/values-platform.yaml

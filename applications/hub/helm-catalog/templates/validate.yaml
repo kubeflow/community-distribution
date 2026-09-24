@@ -1,0 +1,9 @@
+{{- if ne .Values.scenario "platform" -}}
+{{- fail "only the platform scenario is supported" -}}
+{{- end -}}
+{{- if ne .Release.Namespace "kubeflow" -}}
+{{- fail "this chart must be installed in kubeflow" -}}
+{{- end -}}
+{{- if or (not (kindIs "string" .Values.database.password)) (empty .Values.database.password) (eq .Values.database.password "REPLACE_ME_DATABASE_PASSWORD") -}}
+{{- fail "database.password must be supplied in a private values file" -}}
+{{- end -}}

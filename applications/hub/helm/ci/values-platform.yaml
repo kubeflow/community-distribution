@@ -1,0 +1,5 @@
+# Test-only public upstream demo credentials for exact baseline comparison.
+# Do not use this file to install a shared environment.
+scenario: platform
+database:
+  password: test

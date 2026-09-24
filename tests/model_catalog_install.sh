@@ -1,8 +1,10 @@
 #!/bin/bash
 set -euxo pipefail
 
-kustomize build applications/hub/overlays/model-catalog \
-  | kubectl apply -f -
+if [[ ${HUB_MANAGED_BY_HELM:-false} != true ]]; then
+  kustomize build applications/hub/overlays/model-catalog \
+    | kubectl apply -f -
+fi
 
 # Wait for catalog database
 if ! kubectl wait --for=condition=ready -n kubeflow pod \

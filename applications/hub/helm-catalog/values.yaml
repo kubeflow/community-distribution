@@ -1,0 +1,8 @@
+# -- Supported distribution installation.
+scenario: platform
+# -- Database credentials. Supply a private values file; keep stable across upgrades.
+database:
+  # -- PostgreSQL password; existing volumes require a database-side rotation procedure.
+  password: REPLACE_ME_DATABASE_PASSWORD
+# -- Hugging Face API key. Empty disables authenticated remote-source access.
+huggingFaceApiKey: ""

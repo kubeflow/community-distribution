@@ -1,0 +1,9 @@
+component: hub-model-catalog
+releaseName: hub-model-catalog
+namespace: kubeflow
+includeCustomResourceDefinitions: false
+scenarios:
+  platform:
+    kustomize:
+    - applications/hub/overlays/model-catalog
+    values: ci/values-platform.yaml

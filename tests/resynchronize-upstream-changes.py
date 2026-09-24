@@ -13,7 +13,9 @@ path_to_synchronization_script = {
     "applications/dashboard/helm/Chart.yaml": "scripts/synchronize-dashboard-manifests.sh",
     "applications/dashboard/helm/kustomize": "scripts/synchronize-dashboard-manifests.sh",
     "applications/dashboard/helm/manifests": "scripts/synchronize-dashboard-manifests.sh",
-    "applications/hub/upstream": "scripts/synchronize-hub-manifests.sh",
+    "applications/hub": "scripts/synchronize-hub-manifests.sh",
+    "experimental/helm/charts/hub/values.yaml": "scripts/synchronize-hub-manifests.sh",
+    "experimental/helm/charts/hub/ci": "scripts/synchronize-hub-manifests.sh",
     "applications/katib/upstream": "scripts/synchronize-katib-manifests.sh",
     # The KServe chart payloads are generated from the whole component, so any
     # change under it regenerates them.
@@ -41,7 +43,10 @@ path_to_synchronization_script = {
     "scripts/generate-dashboard-helm-manifests.py": "scripts/synchronize-dashboard-manifests.sh",
     # The shared generator belongs to every component that renders through it,
     # so a change to it must resynchronize all of them.
+    "scripts/generate-hub-registry-helm-manifests.py": "scripts/synchronize-hub-manifests.sh",
+    "scripts/generate-hub-catalog-helm-manifests.py": "scripts/synchronize-hub-manifests.sh",
     "scripts/helm_manifest_generator.py": (
+        "scripts/synchronize-hub-manifests.sh",
         "scripts/synchronize-dashboard-manifests.sh",
         "scripts/synchronize-istio-manifests.sh",
         "scripts/synchronize-kserve-kserve-manifests.sh",

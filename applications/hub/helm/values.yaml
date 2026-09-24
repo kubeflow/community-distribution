@@ -1,0 +1,6 @@
+# -- Supported distribution installation.
+scenario: platform
+# -- Database credentials. Supply a private values file; keep stable across upgrades.
+database:
+  # -- URI-safe PostgreSQL password (letters, digits, dot, underscore, tilde, hyphen).
+  password: REPLACE_ME_DATABASE_PASSWORD

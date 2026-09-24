@@ -1,0 +1,16 @@
+apiVersion: v2
+name: hub-model-registry
+description: Kubeflow Hub model registry platform resources
+version: 0.1.0
+appVersion: "v0.3.17"
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/kubeflow/hub
+- https://github.com/kubeflow/community-distribution/tree/master/applications/hub
+keywords:
+- kubeflow
+- hub
+- model-registry
+annotations:
+  category: MachineLearning
+  licenses: Apache-2.0
