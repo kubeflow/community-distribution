@@ -3,7 +3,8 @@ set -euxo pipefail
 
 KF_PROFILE=${1:-kubeflow-user-example-com}
 
-kubectl apply -f tests/katib_test.yaml
+# The fixture names the default profile; apply it to the namespace under test.
+sed "s/^  namespace: kubeflow-user-example-com$/  namespace: ${KF_PROFILE}/" tests/katib_test.yaml | kubectl apply -f -
 kubectl wait --for=condition=Running experiments.kubeflow.org -n $KF_PROFILE --all --timeout=60s
 echo "Waiting for all Trials to be Completed..."
 kubectl wait --for=condition=Created trials.kubeflow.org -n $KF_PROFILE --all --timeout=60s

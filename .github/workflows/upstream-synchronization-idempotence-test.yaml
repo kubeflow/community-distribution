@@ -44,6 +44,11 @@ jobs:
         python -m unittest tests/helm_manifest_generator_test.py
         python -m unittest tests/dashboard_helm_manifest_generator_test.py
 
+    - name: Test Katib synchronization patch and staging
+      run: |
+        python tests/katib_synchronization_patch_test.py
+        python tests/katib_synchronization_staging_test.py
+
     - name: Run upstream synchronization scripts for changed files
       run: |
         mapfile -t changed_files < <(git diff --name-only "origin/${{ github.base_ref }}...HEAD")

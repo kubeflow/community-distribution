@@ -1,0 +1,23 @@
+# Default values for the Katib chart.
+#
+# The chart vendors the Kustomize installation katib-with-kubeflow verbatim. The
+# generator applies two controlled transforms to that content: every custom
+# resource definition receives helm.sh/resource-policy: keep, and the aggregated
+# ClusterRole kubeflow-katib-admin omits its empty rules field, because the
+# Kubernetes aggregation controller owns that field. Values that the Kustomize
+# baseline declares - container images and the katib-config configMapGenerator
+# input - are not exposed yet; that is a separate change.
+
+# -- Rendered Kustomize parity scenario.
+# Supported value: platform
+scenario: platform
+
+customResourceDefinitions:
+  # -- Render the Experiment, Suggestion and Trial custom resource definitions.
+  # They are rendered as ordinary templates rather than from crds/, because Helm
+  # never upgrades or deletes anything in crds/, and they carry
+  # helm.sh/resource-policy: keep so uninstalling the release cannot delete
+  # existing experiments. Helm's --skip-crds does not apply to templates; set
+  # this to false instead when an administrator or another release already owns
+  # them.
+  enabled: true

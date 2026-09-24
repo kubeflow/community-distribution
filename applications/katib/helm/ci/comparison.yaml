@@ -1,0 +1,19 @@
+# Declares how this chart is compared against its Kustomize baseline.
+# The harness discovers this file; no shared list needs editing.
+component: katib
+releaseName: katib
+namespace: kubeflow
+includeCustomResourceDefinitions: false
+retainedCustomResourceDefinitions:
+  reason: >
+    helm uninstall must leave the experiment, suggestion and trial definitions,
+    and with them every user's experiments, behind.
+  names:
+  - experiments.kubeflow.org
+  - suggestions.kubeflow.org
+  - trials.kubeflow.org
+scenarios:
+  platform:
+    kustomize:
+    - applications/katib/upstream/installs/katib-with-kubeflow
+    values: ci/values-platform.yaml

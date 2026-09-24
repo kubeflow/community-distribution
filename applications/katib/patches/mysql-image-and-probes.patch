@@ -1,0 +1,58 @@
+Distribution deviation from kubeflow/katib v0.19.0 for the Katib MySQL Deployment.
+
+scripts/synchronize-katib-manifests.sh applies this patch to the freshly
+imported applications/katib/upstream/components/mysql/mysql.yaml. It records
+the edits that the distribution made to that imported file:
+  8516895e align GHA tests to KF/MR (#3307): image mysql:8.0, probes through
+           127.0.0.1, liveness probe as a query, startupProbe removed
+  854bd3a2 Update mysql.yaml (#3310): variable syntax of the liveness command
+
+The script checks the SHA-256 of the imported file before and of the result
+after the application. When upstream changes the file, review this patch, then
+update it together with both digests in the script.
+
+diff --git a/applications/katib/upstream/components/mysql/mysql.yaml b/applications/katib/upstream/components/mysql/mysql.yaml
+index e948b45d..1dbd3d4e 100644
+--- a/applications/katib/upstream/components/mysql/mysql.yaml
++++ b/applications/katib/upstream/components/mysql/mysql.yaml
+@@ -24,7 +24,7 @@ spec:
+         fsGroupChangePolicy: OnRootMismatch
+       containers:
+         - name: katib-mysql
+-          image: mysql:8.0.29
++          image: mysql:8.0
+           args:
+             - --datadir
+             - /var/lib/mysql/datadir
+@@ -46,27 +46,19 @@ spec:
+               command:
+                 - "/bin/bash"
+                 - "-c"
+-                - "mysql -D ${MYSQL_DATABASE} -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1'"
++                - "mysql -h 127.0.0.1 -D ${MYSQL_DATABASE} -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1'"
+             initialDelaySeconds: 10
+             periodSeconds: 5
+             failureThreshold: 10
+           livenessProbe:
+             exec:
+               command:
+-                - "/bin/bash"
+-                - "-c"
+-                - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
++              - "/bin/bash"
++              - "-c"
++              - "mysql -h 127.0.0.1 -D ${MYSQL_DATABASE} -u root -p${MYSQL_ROOT_PASSWORD} -e 'SELECT 1'"
+             initialDelaySeconds: 10
+             periodSeconds: 5
+             failureThreshold: 10
+-          startupProbe:
+-            exec:
+-              command:
+-                - "/bin/bash"
+-                - "-c"
+-                - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+-            periodSeconds: 15
+-            failureThreshold: 60
+           volumeMounts:
+             - name: katib-mysql
+               mountPath: /var/lib/mysql

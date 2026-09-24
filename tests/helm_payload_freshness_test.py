@@ -30,6 +30,7 @@ _SPEC.loader.exec_module(engine)
 GENERATOR_GLOB = "scripts/generate-*-helm-manifests.py"
 KNOWN_GENERATORS = {
     "scripts/generate-dashboard-helm-manifests.py",
+    "scripts/generate-katib-helm-manifests.py",
     "scripts/generate-kserve-helm-manifests.py",
     "scripts/generate-kserve-ui-helm-manifests.py",
     "scripts/generate-notebooks-v1-helm-manifests.py",
