@@ -1,0 +1,11 @@
+apiVersion: v2
+name: trainer-runtimes
+description: Default Trainer runtime catalog as ordinary Helm resources
+version: 0.1.0
+appVersion: "v2.3.0"
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/kubeflow/trainer
+- https://github.com/kubeflow/community-distribution/tree/master/applications/trainer
+annotations:
+  licenses: Apache-2.0

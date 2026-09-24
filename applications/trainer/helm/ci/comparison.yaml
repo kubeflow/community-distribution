@@ -1,0 +1,11 @@
+component: trainer
+releaseName: trainer
+namespace: kubeflow-system
+partition: trainer-platform
+scenarios:
+  platform:
+    kustomize:
+    - applications/trainer/overlays
+    excludeKinds:
+    - CustomResourceDefinition
+    - ClusterTrainingRuntime

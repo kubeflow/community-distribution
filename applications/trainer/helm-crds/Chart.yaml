@@ -1,0 +1,14 @@
+apiVersion: v2
+name: trainer-apis
+description: Trainer and managed JobSet API definitions, retained on uninstall
+version: 0.1.0
+appVersion: "v2.3.0"
+home: https://github.com/kubeflow/community-distribution
+sources:
+- https://github.com/kubeflow/trainer
+- https://github.com/kubeflow/community-distribution/tree/master/applications/trainer
+annotations:
+  licenses: Apache-2.0
+dependencies:
+- name: trainer-api-payload
+  version: 0.1.0

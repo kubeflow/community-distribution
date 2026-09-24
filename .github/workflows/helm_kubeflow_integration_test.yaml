@@ -126,7 +126,7 @@ jobs:
       run: ./tests/katib_helm_install.sh
 
     - name: Install Trainer
-      run: ./tests/trainer_install.sh
+      run: ./tests/trainer_helm_install.sh
 
     - name: Install Ray
       run: |

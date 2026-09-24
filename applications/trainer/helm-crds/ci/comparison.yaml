@@ -1,0 +1,18 @@
+component: trainer-apis
+releaseName: trainer-apis
+namespace: kubeflow-system
+partition: trainer-platform
+scenarios:
+  platform:
+    kustomize:
+    - applications/trainer/overlays
+    onlyKinds:
+    - CustomResourceDefinition
+retainedCustomResourceDefinitions:
+  reason: API release uninstall retains definitions and all user objects; controller
+    uninstall never owns them.
+  names:
+  - clustertrainingruntimes.trainer.kubeflow.org
+  - jobsets.jobset.x-k8s.io
+  - trainingruntimes.trainer.kubeflow.org
+  - trainjobs.trainer.kubeflow.org

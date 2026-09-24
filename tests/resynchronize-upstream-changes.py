@@ -31,6 +31,11 @@ path_to_synchronization_script = {
     "applications/pipeline/upstream": "scripts/synchronize-pipelines-manifests.sh",
     "applications/spark/spark-operator": "scripts/synchronize-spark-operator-manifests.sh",
     "applications/trainer/upstream": "scripts/synchronize-trainer-manifests.sh",
+    "applications/trainer/overlays": "scripts/synchronize-trainer-manifests.sh",
+    "applications/trainer/helm-crds": "scripts/synchronize-trainer-manifests.sh",
+    "applications/trainer/helm": "scripts/synchronize-trainer-manifests.sh",
+    "applications/trainer/helm-runtimes": "scripts/synchronize-trainer-manifests.sh",
+    "scripts/generate-trainer-helm-manifests.py": "scripts/synchronize-trainer-manifests.sh",
     "applications/workspaces/upstream": "scripts/synchronize-kubeflow-workspaces-manifests.sh",
     "common/cert-manager": "scripts/synchronize-cert-manager-manifests.sh",
     "common/dex": "scripts/synchronize-dex-manifests.sh",
@@ -42,6 +47,7 @@ path_to_synchronization_script = {
     # The shared generator belongs to every component that renders through it,
     # so a change to it must resynchronize all of them.
     "scripts/helm_manifest_generator.py": (
+        "scripts/synchronize-trainer-manifests.sh",
         "scripts/synchronize-dashboard-manifests.sh",
         "scripts/synchronize-istio-manifests.sh",
         "scripts/synchronize-kserve-kserve-manifests.sh",

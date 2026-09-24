@@ -1,0 +1,10 @@
+component: trainer-runtimes
+releaseName: trainer-runtimes
+namespace: kubeflow-system
+partition: trainer-platform
+scenarios:
+  platform:
+    kustomize:
+    - applications/trainer/overlays
+    onlyKinds:
+    - ClusterTrainingRuntime
