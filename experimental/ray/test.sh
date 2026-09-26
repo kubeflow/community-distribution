@@ -40,7 +40,23 @@ kubectl -n kubeflow wait --for=condition=available --timeout=90s deploy/kuberay-
 kubectl -n kubeflow get pod -l app.kubernetes.io/component=kuberay-operator
 
 # Install RayCluster components
-kubectl -n $NAMESPACE apply -f raycluster_example.yaml
+kubectl -n "$NAMESPACE" apply -f raycluster_example.yaml
+
+if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
+  kubectl -n "$NAMESPACE" patch raycluster kubeflow-raycluster --type=merge --patch '{
+    "spec": {
+      "autoscalerOptions": {
+        "securityContext": {
+          "allowPrivilegeEscalation": false,
+          "capabilities": {"drop": ["ALL"]},
+          "runAsNonRoot": true,
+          "seccompProfile": {"type": "RuntimeDefault"}
+        }
+      }
+    }
+  }'
+  kubectl -n "$NAMESPACE" get raycluster kubeflow-raycluster -o jsonpath='{.spec.autoscalerOptions.securityContext.seccompProfile.type}' | grep -qx RuntimeDefault
+fi
 
 # Wait for the RayCluster to be ready.
 sleep 5
