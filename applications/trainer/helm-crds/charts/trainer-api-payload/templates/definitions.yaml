@@ -1,0 +1,7 @@
+{{ include "trainer.generatedPayload" (dict "root" . "path" "manifests/definitions/clustertrainingruntimes.trainer.kubeflow.org.yaml") }}
+---
+{{ include "trainer.generatedPayload" (dict "root" . "path" "manifests/definitions/jobsets.jobset.x-k8s.io.yaml") }}
+---
+{{ include "trainer.generatedPayload" (dict "root" . "path" "manifests/definitions/trainingruntimes.trainer.kubeflow.org.yaml") }}
+---
+{{ include "trainer.generatedPayload" (dict "root" . "path" "manifests/definitions/trainjobs.trainer.kubeflow.org.yaml") }}

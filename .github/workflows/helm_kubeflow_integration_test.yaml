@@ -25,6 +25,9 @@ on:
     - tests/model_catalog_install.sh
     - tests/*_helm_install.sh
     - tests/katib_helm_lifecycle_test.sh
+    - tests/trainer_helm_lifecycle_test.sh
+    - tests/trainer_test.sh
+    - tests/trainer_test.py
     - tests/kserve_ui_helm_lifecycle_test.sh
     - tests/kserve_test.sh
     - tests/knative_serving_install.sh
@@ -50,6 +53,9 @@ on:
     - tests/model_catalog_install.sh
     - tests/*_helm_install.sh
     - tests/katib_helm_lifecycle_test.sh
+    - tests/trainer_helm_lifecycle_test.sh
+    - tests/trainer_test.sh
+    - tests/trainer_test.py
     - tests/kserve_ui_helm_lifecycle_test.sh
     - tests/kserve_test.sh
     - tests/knative_serving_install.sh
@@ -73,7 +79,7 @@ jobs:
     runs-on:
       labels: oracle-vm-16cpu-64gb-x86-64
       # labels: ubuntu-latest-16-cores
-    # Allow both Knative lifecycle suites in addition to the platform tests.
+    # Allow Knative and Trainer lifecycle checks alongside the platform tests.
     timeout-minutes: 60
     steps:
     - name: Checkout
@@ -144,7 +150,7 @@ jobs:
       run: ./tests/katib_helm_install.sh
 
     - name: Install Trainer
-      run: ./tests/trainer_install.sh
+      run: ./tests/trainer_helm_install.sh
 
     - name: Install Ray with Helm
       run: ./tests/ray_helm_install.sh
@@ -296,6 +302,15 @@ jobs:
 
     - name: Test Hub Helm lifecycle
       run: ./tests/hub_helm_lifecycle_test.sh "$RUNNER_TEMP/hub-registry-values.yaml" "$RUNNER_TEMP/hub-catalog-values.yaml"
+
+    - name: Test Trainer Helm lifecycle
+      timeout-minutes: 15
+      env:
+        TRAINER_HELM_LIFECYCLE_DISPOSABLE: "true"
+        EVIDENCE_DIRECTORY: logs/trainer-lifecycle
+      run: |
+        export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
+        ./tests/trainer_helm_lifecycle_test.sh "${KF_PROFILE}"
 
     - name: Apply Pod Security Standards Restricted
       run: ./tests/PSS_enable.sh restricted

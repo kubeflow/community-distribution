@@ -62,7 +62,10 @@ class GeneratorConfiguration:
     # Helm refuses to load any chart file above 5 MiB, and one component's
     # definitions together can exceed that.
     crds_payload_directory: str = ""
-    resources_payload_filename: str = "platform-resources.yaml"
+    resources_payload_filename: str | None = "platform-resources.yaml"
+    # (API group, kind), for releases owning disjoint parts of one baseline.
+    included_resource_kinds: tuple = ()
+    excluded_resource_kinds: tuple = ()
     # (kind, name or name prefix, name_is_prefix)
     hand_written_resources: tuple = ()
     # (kind, name or name prefix, name_is_prefix, data key, output filename)
@@ -271,6 +274,13 @@ def generate_payload_contents(resources, configuration):
             matched_exclusions.add(exclusion)
             continue
 
+        resource_kind = object_identity[:2]
+        if (
+            configuration.included_resource_kinds
+            and resource_kind not in configuration.included_resource_kinds
+        ) or resource_kind in configuration.excluded_resource_kinds:
+            continue
+
         hand_written_selector = next(
             (
                 selector
@@ -353,17 +363,24 @@ def generate_payload_contents(resources, configuration):
         ]
     else:
         crds_payload_name = configuration.crds_payload_filename
-        crd_payloads = [(configuration.crds_payload_filename, crd_resources)]
-    payloads = (
-        *crd_payloads,
-        (configuration.resources_payload_filename, payload_resources),
-    )
+        crd_payloads = []
+        if configuration.crds_payload_filename is not None:
+            crd_payloads = [(configuration.crds_payload_filename, crd_resources)]
+        elif crd_resources:
+            raise ValueError("selected definitions have no payload destination")
+    payloads = list(crd_payloads)
+    if configuration.resources_payload_filename is not None:
+        payloads.append((configuration.resources_payload_filename, payload_resources))
+    elif payload_resources:
+        raise ValueError("selected resources have no payload destination")
     empty_payloads = [filename for filename, entries in payloads if not entries]
     # The single-file layout records its empty definition payload through the
     # loop above; the per-definition layout has no file to record, so name the
     # directory instead.
     if configuration.crds_payload_directory and not crd_resources:
         empty_payloads.insert(0, crds_payload_name)
+    if not payloads and not empty_payloads:
+        raise ValueError("required generated payloads are empty")
     if empty_payloads:
         raise ValueError(
             "required generated payloads are empty: " + ", ".join(empty_payloads)
