@@ -476,7 +476,7 @@ apiVersion: v1
 data:
   CLUSTER_DOMAIN: cluster.local
   ISTIO_GATEWAY: kubeflow/kubeflow-gateway
-  ISTIO_HOST: '*'
+  ISTIO_HOSTS: '*'
   USE_ISTIO: 'true'
 kind: ConfigMap
 metadata:
@@ -484,7 +484,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/name: workspaces-controller
     app.kubernetes.io/part-of: kubeflow-workspaces
-  name: kubeflow-workspaces-istio-config-5mh986k69k
+  name: kubeflow-workspaces-istio-config-696kdcdck5
   namespace: kubeflow-workspaces
 ---
 apiVersion: v1
@@ -593,7 +593,7 @@ spec:
           value: /workspaces
         - name: PORT
           value: '4000'
-        image: ghcr.io/kubeflow/notebooks/workspaces-backend:v2.0.0-beta.2
+        image: ghcr.io/kubeflow/notebooks/workspaces-backend:v2.0.0-beta.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -681,23 +681,23 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: USE_ISTIO
-              name: kubeflow-workspaces-istio-config-5mh986k69k
+              name: kubeflow-workspaces-istio-config-696kdcdck5
         - name: ISTIO_GATEWAY
           valueFrom:
             configMapKeyRef:
               key: ISTIO_GATEWAY
-              name: kubeflow-workspaces-istio-config-5mh986k69k
-        - name: ISTIO_HOST
+              name: kubeflow-workspaces-istio-config-696kdcdck5
+        - name: ISTIO_HOSTS
           valueFrom:
             configMapKeyRef:
-              key: ISTIO_HOST
-              name: kubeflow-workspaces-istio-config-5mh986k69k
+              key: ISTIO_HOSTS
+              name: kubeflow-workspaces-istio-config-696kdcdck5
         - name: CLUSTER_DOMAIN
           valueFrom:
             configMapKeyRef:
               key: CLUSTER_DOMAIN
-              name: kubeflow-workspaces-istio-config-5mh986k69k
-        image: ghcr.io/kubeflow/notebooks/workspaces-controller:v2.0.0-beta.2
+              name: kubeflow-workspaces-istio-config-696kdcdck5
+        image: ghcr.io/kubeflow/notebooks/workspaces-controller:v2.0.0-beta.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -783,7 +783,7 @@ spec:
       - env:
         - name: PORT
           value: '8080'
-        image: ghcr.io/kubeflow/notebooks/workspaces-frontend:v2.0.0-beta.2
+        image: ghcr.io/kubeflow/notebooks/workspaces-frontend:v2.0.0-beta.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

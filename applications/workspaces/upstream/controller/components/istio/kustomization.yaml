@@ -10,7 +10,7 @@ patches:
 
 configMapGenerator:
 ##
-## TODO: users will likely need to configure things like ISTIO_HOST,
+## TODO: users will likely need to configure things like ISTIO_HOSTS,
 ##       we should show users these settings in the istio overlay by including a configmap generator there.
 ##
 - name: kubeflow-workspaces-istio-config
