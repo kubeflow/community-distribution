@@ -32,7 +32,6 @@ on:
     - tests/kserve_test.sh
     - tests/knative_serving_install.sh
     - tests/knative_serving_helm_smoke_test.sh
-    - tests/knative_serving_helm_lifecycle_test.sh
     - tests/knative_serving_helm_admission_test.sh
     - tests/knative_eventing_helm_lifecycle_test.sh
     - .github/workflows/helm_kubeflow_integration_test.yaml
@@ -60,7 +59,6 @@ on:
     - tests/kserve_test.sh
     - tests/knative_serving_install.sh
     - tests/knative_serving_helm_smoke_test.sh
-    - tests/knative_serving_helm_lifecycle_test.sh
     - tests/knative_serving_helm_admission_test.sh
     - tests/knative_eventing_helm_lifecycle_test.sh
     - .github/workflows/helm_kubeflow_integration_test.yaml
@@ -79,7 +77,7 @@ jobs:
     runs-on:
       labels: oracle-vm-16cpu-64gb-x86-64
       # labels: ubuntu-latest-16-cores
-    # Allow Knative and Trainer lifecycle checks alongside the platform tests.
+    # Allow the remaining lifecycle checks alongside the platform tests.
     timeout-minutes: 60
     steps:
     - name: Checkout
@@ -142,8 +140,10 @@ jobs:
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh
 
-    - name: Test Knative Serving lifecycle and routing with Helm
-      run: ./tests/knative_serving_helm_lifecycle_test.sh ${KF_PROFILE}
+    - name: Test Knative Serving routing with Helm
+      # Routing only. The release lifecycle runs on its own cluster in
+      # .github/workflows/knative_test.yaml.
+      run: ./tests/knative_serving_helm_smoke_test.sh ${KF_PROFILE}
 
     - name: Install Notebooks v1 with Helm
       run: ./tests/notebooks_helm_install.sh
@@ -358,7 +358,7 @@ jobs:
         mkdir -p logs
         kubectl get all --all-namespaces > logs/resources.txt
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
-        for namespace in kubeflow kserve kubeflow-system istio-system cert-manager auth kubeflow-user-example-com knative-eventing; do
+        for namespace in kubeflow kserve kubeflow-system istio-system cert-manager auth kubeflow-user-example-com knative-eventing knative-serving; do
             kubectl get namespace $namespace >/dev/null 2>&1 || continue
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do

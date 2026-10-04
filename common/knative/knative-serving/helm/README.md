@@ -119,15 +119,25 @@ python3 tests/knative_serving_helm_chart_test.py
 python3 tests/helm_release_size.py knative-serving
 ./tests/knative_serving_helm_admission_test.sh
 ./tests/knative_serving_helm_smoke_test.sh kubeflow-user-example-com
-# Destructive; use only a disposable test cluster. Requires PyYAML.
+# Destructive; use only a disposable cluster that no other test needs. Requires PyYAML.
 ./tests/knative_serving_helm_lifecycle_test.sh kubeflow-user-example-com
 ```
 
 The Helm integration workflow installs this chart and tests a real Knative Service
 through the cluster-local gateway, requiring its exact response body and rejecting
-an unauthenticated request. Existing KServe tests remain in that workflow.
-The lifecycle gate keeps the Service identity through an unchanged upgrade, a
-disposable controller Pod-template change, rollback, uninstall and reinstall.
+an unauthenticated request. Existing KServe tests remain in that workflow. It
+retains the bootstrap installation, which advances its phases with Helm upgrades,
+and one routing probe; the post-installation release lifecycle checks run in the
+`knative_serving_helm_lifecycle` job in `.github/workflows/knative_test.yaml`.
+That job uses its own cluster, with the Helm foundation charts, a Profile and
+this chart, and without KServe. It keeps the Service identity through an
+unchanged upgrade, a disposable controller Pod-template change, rollback,
+uninstall and reinstall. It verifies admission after the unchanged upgrade, the
+live controller annotation after the changed upgrade and the rollback, and
+routing with the missing-token rejection after initial installation, the changed
+upgrade, the rollback and the reinstall. It saves diagnostics before the
+upgrades, the rollback and the uninstall under `logs/knative-serving-lifecycle/`,
+which the workflow uploads, and preserves the fixture when a check fails.
 That changed-rollout fixture is not evidence for cross-version schema downgrade.
 Local chart tests and parity do not prove live installation. Before promoting the
 draft, record clean installation, unchanged upgrade, a compatible changed
