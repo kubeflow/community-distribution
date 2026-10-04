@@ -1,12 +1,28 @@
 #!/usr/bin/env bash
-# Destructive Eventing lifecycle; use only the disposable integration cluster.
+# Without an argument: destructive Eventing release lifecycle. Run it only on a
+# disposable cluster that no later test needs; the knative_eventing_helm_lifecycle
+# job in .github/workflows/knative_test.yaml does. With --smoke-only: one fresh
+# PingSource delivery and no Helm operation, for the full Helm integration job.
 set -euo pipefail
+smoke_only=false
+evidence=logs/knative-eventing-lifecycle
+case "$#:${1:-}" in
+    0:) ;;
+    1:--smoke-only)
+        smoke_only=true
+        evidence=logs/knative-eventing-smoke
+        ;;
+    *)
+        echo "Usage: knative_eventing_helm_lifecycle_test.sh [--smoke-only]" >&2
+        exit 2
+        ;;
+esac
 chart=common/knative/knative-eventing/helm
 namespace=knative-eventing
 fixture=knative-helm-events
 temporary=$(mktemp -d)
 capture_diagnostics() {
-    local directory="logs/knative-eventing-lifecycle/$1"
+    local directory="$evidence/$1"
     mkdir -p "$directory" || return 0
     kubectl get deployments,pods,events -n "$namespace" --request-timeout=10s -o yaml >"$directory/resources.yaml" 2>&1 || true
     for deployment in eventing-controller eventing-webhook pingsource-mt-adapter "$fixture"; do
@@ -18,7 +34,7 @@ cleanup() {
     rm -rf "$temporary"
     if (( status != 0 )); then
         capture_diagnostics failure
-        echo "Preserving Eventing fixtures after failure; see logs/knative-eventing-lifecycle/." >&2
+        echo "Preserving Eventing fixtures after failure; see $evidence/." >&2
     else
         kubectl delete pingsource,eventtype,service,deployment "$fixture" -n "$namespace" --ignore-not-found || status=$?
     fi
@@ -124,6 +140,11 @@ sys.exit(count < 1)'; then
     echo "Eventing delivered the exact PingSource CloudEvent payload."
 }
 check_event_delivery
+if [[ "$smoke_only" == true ]]; then
+    echo "Eventing smoke passed: fresh PingSource delivery only; no Helm lifecycle operation ran."
+    exit 0
+fi
+mkdir -p "$evidence"
 kubectl apply -n "$namespace" -f - <<EOF
 apiVersion: eventing.knative.dev/v1beta2
 kind: EventType
@@ -170,14 +191,19 @@ assert pods and all(
 ), "Expected healthy, active adapter Pods"
 print(json.dumps(sorted(pod["metadata"]["uid"] for pod in pods)))'
 }
-capture_adapter >"$temporary/adapter-before"
+controller_annotation() {
+    kubectl get deployment/eventing-controller -n "$namespace" \
+        -o jsonpath='{.spec.template.metadata.annotations.tests\.kubeflow\.org/lifecycle}'
+}
+# Snapshots stay under the uploaded evidence directory, one file per phase.
+capture_adapter >"$evidence/adapter-before-upgrades.txt"
 capture_diagnostics before-upgrades
 for attempt in 1 2; do
     helm upgrade knative-eventing "$chart" -n kubeflow --reset-values --set installation.phase=complete --wait --timeout 10m
     # A new event gives the adapter time to process work after each upgrade.
     check_event_delivery
-    capture_adapter >"$temporary/adapter-after"
-    if ! diff -u "$temporary/adapter-before" "$temporary/adapter-after"; then
+    capture_adapter >"$evidence/adapter-after-unchanged-upgrade-$attempt.txt"
+    if ! diff -u "$evidence/adapter-before-upgrades.txt" "$evidence/adapter-after-unchanged-upgrade-$attempt.txt"; then
         echo "Unchanged upgrade $attempt rewrote the PingSource adapter or replaced its Pod" >&2
         exit 1
     fi
@@ -201,10 +227,24 @@ assert len(controllers) == 1, "Expected one controller Deployment"
 controllers[0]["spec"]["template"]["metadata"].setdefault("annotations", {})["tests.kubeflow.org/lifecycle"] = "changed"
 path.write_text(yaml.safe_dump_all(resources, sort_keys=False))
 PYTHON
+capture_diagnostics before-changed-upgrade
 helm upgrade knative-eventing "$temporary/chart" -n kubeflow --wait --timeout 10m
 kubectl rollout status deployment/eventing-controller -n "$namespace" --timeout=120s
+# A standalone assignment lets a failed read stop the script.
+changed_annotation=$(controller_annotation)
+if [[ "$changed_annotation" != changed ]]; then
+    echo "The changed upgrade did not reach the live eventing-controller Pod template" >&2
+    exit 1
+fi
 check_event_delivery
+capture_diagnostics before-rollback
 helm rollback knative-eventing "$revision" -n kubeflow --wait --timeout 10m
+kubectl rollout status deployment/eventing-controller -n "$namespace" --timeout=120s
+restored_annotation=$(controller_annotation)
+if [[ -n "$restored_annotation" ]]; then
+    echo "Rollback did not restore the live eventing-controller Pod template" >&2
+    exit 1
+fi
 check_event_delivery
 capture_diagnostics before-uninstall
 helm uninstall knative-eventing -n kubeflow --wait --timeout 10m
@@ -214,11 +254,12 @@ helm uninstall knative-eventing -n kubeflow --wait --timeout 10m
 kubectl get -f "$chart/manifests/platform-crds.yaml" >/dev/null
 # Retained definitions do not preserve conversion availability after uninstall.
 for path in "$converted_ping_path" "$converted_eventtype_path"; do
-    if kubectl get --request-timeout=10s --raw "$path" >"$temporary/conversion.out" 2>"$temporary/conversion.err"; then
+    conversion="$evidence/conversion-after-uninstall-$(basename "${path%/*}")"
+    if kubectl get --request-timeout=10s --raw "$path" >"$conversion.out" 2>"$conversion.err"; then
         echo "Expected unavailable conversion while eventing-webhook is removed" >&2
         exit 1
     fi
-    grep -Eiq 'conversion|webhook|service.*not found' "$temporary/conversion.err"
+    grep -Eiq 'conversion|webhook|service.*not found' "$conversion.err"
 done
 ./tests/knative_eventing_helm_install.sh
 # Pod readiness does not verify the API server's trust of the new webhook
@@ -236,4 +277,4 @@ done
 [[ $(kubectl get --raw "$ping_path" | python3 -c 'import json,sys; print(json.load(sys.stdin)["metadata"]["uid"])') == "$uid" ]]
 [[ $(kubectl get --raw "$eventtype_path" | python3 -c 'import json,sys; print(json.load(sys.stdin)["metadata"]["uid"])') == "$eventtype_uid" ]]
 check_event_delivery
-echo "Eventing upgrades, rollback, retention, conversion interruption/recovery and fresh delivery passed."
+echo "Eventing lifecycle passed: unchanged upgrades, live changed upgrade and rollback, retention, conversion interruption/recovery and fresh delivery."

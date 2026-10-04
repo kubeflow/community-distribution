@@ -1,0 +1,78 @@
+name: Test Knative Helm Lifecycle
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+    - .github/workflows/knative_test.yaml
+    - common/knative/knative-eventing/**
+    - common/kubeflow-namespace/**
+    - tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+    - tests/kubeflow_namespace_helm_install.sh
+    - tests/knative_eventing_helm_install.sh
+    - tests/knative_eventing_helm_lifecycle_test.sh
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  knative_eventing_helm_lifecycle:
+    name: Knative Eventing Helm Lifecycle
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Install Helm
+      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+      with:
+        version: v4.2.2
+
+    - name: Install KinD, Create KinD cluster and Install kustomize
+      run: |
+        ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+        echo "/tmp/usr/local/bin" >> "$GITHUB_PATH"
+
+    - name: Setup python 3.12
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: 3.12
+
+    - name: Install Knative lifecycle test dependency
+      run: pip3 install PyYAML==6.0.2
+
+    - name: Install Kubeflow Namespaces with Helm
+      run: ./tests/kubeflow_namespace_helm_install.sh
+
+    - name: Install Knative Eventing with Helm
+      # Eventing core only: this cluster has no Istio, Knative Serving or KServe.
+      run: ./tests/knative_eventing_helm_install.sh
+
+    - name: Test Knative Eventing Helm lifecycle
+      run: ./tests/knative_eventing_helm_lifecycle_test.sh
+
+    - name: Collect Logs on Failure
+      if: failure() || cancelled()
+      # kubectl has no request timeout by default, so bound this step and
+      # let the upload below still run if the API server stops responding.
+      timeout-minutes: 5
+      run: |
+        mkdir -p logs
+        kubectl get all --all-namespaces > logs/resources.txt 2>&1 || true
+        kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt 2>&1 || true
+        helm list --all-namespaces --all > logs/helm-releases.txt 2>&1 || true
+        for namespace in kubeflow knative-eventing; do
+            kubectl get namespace $namespace >/dev/null 2>&1 || continue
+            kubectl describe pods -n $namespace > logs/$namespace-pods.txt 2>&1 || true
+            for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
+                kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true
+            done
+        done
+
+    - name: Upload Diagnostic Logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ github.job }}-logs
+        path: logs/

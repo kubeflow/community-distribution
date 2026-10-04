@@ -128,8 +128,10 @@ jobs:
     - name: Install Knative Eventing with Helm
       run: ./tests/knative_eventing_helm_install.sh
 
-    - name: Test Knative Eventing lifecycle and delivery with Helm
-      run: ./tests/knative_eventing_helm_lifecycle_test.sh
+    - name: Test Knative Eventing delivery with Helm
+      # Delivery only. The release lifecycle runs on its own cluster in
+      # .github/workflows/knative_test.yaml.
+      run: ./tests/knative_eventing_helm_lifecycle_test.sh --smoke-only
 
     - name: Install KServe with Helm
       run: ./tests/kserve_helm_install.sh
