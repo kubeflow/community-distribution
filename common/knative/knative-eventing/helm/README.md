@@ -106,20 +106,30 @@ helm lint common/knative/knative-eventing/helm -n kubeflow
 python3 tests/run_helm_kustomize_comparison.py knative-eventing --all-scenarios
 python3 tests/knative_eventing_helm_chart_test.py
 python3 tests/helm_release_size.py knative-eventing
-# Destructive: only on a disposable integration cluster. Requires PyYAML.
+# Non-destructive: one fresh PingSource delivery, no Helm operation.
+./tests/knative_eventing_helm_lifecycle_test.sh --smoke-only
+# Destructive: only on a disposable cluster that no other test needs. Requires PyYAML.
 ./tests/knative_eventing_helm_lifecycle_test.sh
 ```
 
-The lifecycle script creates one receiver and PingSource, reused for fresh event
-checks after each Helm operation. The workflow gate requires a fresh, exact
-PingSource event payload, then
+The script creates one receiver and PingSource and requires a fresh, exact
+PingSource event payload. With `--smoke-only` it stops there; the full Helm
+integration workflow runs this mode, which does not validate the lifecycle.
+
+Without an argument, the script continues with the release lifecycle. The
+`knative_eventing_helm_lifecycle` job in `.github/workflows/knative_test.yaml`
+runs it on its own cluster with only the foundation namespaces and Eventing
+installed. It reuses the receiver and PingSource for fresh event checks after
+each Helm operation and requires
 two unchanged upgrades that preserve the adapter specification, generation and
-Pod identities, an actual controller Pod-template rollout, compatible rollback,
+Pod identities, a controller Pod-template change observed on the live Deployment,
+a compatible rollback that restores the live Pod template,
 retained PingSource/EventType identities, the expected conversion interruption,
 recovered converted-version reads and fresh delivery after reinstall. This uses
 only core Eventing; it does not create a Broker. After reinstall, it retries each
 converted API for 120 seconds, with a 10-second timeout per request.
-It saves diagnostics before upgrades and uninstall under
+It saves diagnostics before each upgrade phase, rollback and uninstall, the
+adapter snapshots and the conversion errors under
 `logs/knative-eventing-lifecycle/`, which the workflow uploads, and preserves
 fixtures and failure diagnostics when a check fails. A controller-template change is
 not proof of cross-version schema downgrade safety.
