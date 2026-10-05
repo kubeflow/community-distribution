@@ -2,7 +2,7 @@ apiVersion: v2
 name: kubeflow-workspaces
 description: A Helm chart for the Kubeflow Workspaces (Notebooks v2) platform resources
 version: 0.1.0
-appVersion: "v2.0.0-beta.2"
+appVersion: "v2.0.0-beta.3"
 keywords:
 - kubeflow
 - workspaces

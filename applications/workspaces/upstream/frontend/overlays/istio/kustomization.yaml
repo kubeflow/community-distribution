@@ -10,30 +10,7 @@ components:
 - ../../components/istio
 - ../../components/common
 
-patches:
-- patch: |-
-    - op: remove
-      path: /metadata/labels/app.kubernetes.io~1component
-    - op: remove
-      path: /metadata/labels/app.kubernetes.io~1name
-    - op: add
-      path: /metadata/labels/istio-injection
-      value: enabled
-  target:
-    kind: Namespace
-    name: kubeflow-workspaces
-
 replacements:
-- source:
-    fieldPath: metadata.namespace
-    kind: Deployment
-    name: workspaces-frontend
-  targets:
-  - fieldPaths:
-    - metadata.name
-    select:
-      kind: Namespace
-      name: kubeflow-workspaces
 - source:
     fieldPath: metadata.name
     kind: Service
