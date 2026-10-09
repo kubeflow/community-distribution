@@ -20,7 +20,7 @@ jobs:
     name: Kubeflow Installation and Testing
     if: ${{ github.repository == 'kubeflow/community-distribution' }}
     runs-on:
-      labels: oracle-vm-16cpu-64gb-x86-64
+      labels: cncf-ubuntu-16-64-x86
       # labels: ubuntu-latest-16-cores
     timeout-minutes: 45
     steps:
