@@ -7,7 +7,9 @@ on:
   # separate decision. Every chart this workflow installs is co-located with
   # its component; the charts under experimental/helm are not exercised here.
   # The dedicated Knative Helm installers preserve the Istio resources
-  # already owned by their Helm releases.
+  # already owned by their Helm releases. The helm_lifecycle_test job installs
+  # the same charts on a second cluster and runs the destructive release
+  # lifecycle checks there, so the functional job never loses a release midway.
   push:
     branches:
     - master
@@ -18,23 +20,23 @@ on:
     - applications/*/helm*/**
     - applications/*/*/helm*/**
     - experimental/ray/**
-    - tests/ray_helm_lifecycle.sh
-    - tests/hub_helm_lifecycle_test.sh
+    - tests/helm_lifecycle_test.sh
     - tests/hub_helm_smoke_test.sh
     - tests/model_registry_install.sh
     - tests/model_catalog_install.sh
     - tests/*_helm_install.sh
-    - tests/katib_helm_lifecycle_test.sh
-    - tests/trainer_helm_lifecycle_test.sh
+    - tests/katib_test.sh
+    - tests/katib_test.yaml
+    - tests/workspacekind.test.yaml
+    - applications/spark/sparkapplication_example.yaml
+    - tests/kubeflow_profile_install.sh
+    - tests/port_forward_gateway.sh
     - tests/trainer_test.sh
     - tests/trainer_test.py
-    - tests/kserve_ui_helm_lifecycle_test.sh
     - tests/kserve_test.sh
     - tests/knative_serving_install.sh
     - tests/knative_serving_helm_smoke_test.sh
-    - tests/knative_serving_helm_lifecycle_test.sh
     - tests/knative_serving_helm_admission_test.sh
-    - tests/knative_eventing_helm_lifecycle_test.sh
     - .github/workflows/helm_kubeflow_integration_test.yaml
   pull_request:
     branches:
@@ -46,23 +48,23 @@ on:
     - applications/*/helm*/**
     - applications/*/*/helm*/**
     - experimental/ray/**
-    - tests/ray_helm_lifecycle.sh
-    - tests/hub_helm_lifecycle_test.sh
+    - tests/helm_lifecycle_test.sh
     - tests/hub_helm_smoke_test.sh
     - tests/model_registry_install.sh
     - tests/model_catalog_install.sh
     - tests/*_helm_install.sh
-    - tests/katib_helm_lifecycle_test.sh
-    - tests/trainer_helm_lifecycle_test.sh
+    - tests/katib_test.sh
+    - tests/katib_test.yaml
+    - tests/workspacekind.test.yaml
+    - applications/spark/sparkapplication_example.yaml
+    - tests/kubeflow_profile_install.sh
+    - tests/port_forward_gateway.sh
     - tests/trainer_test.sh
     - tests/trainer_test.py
-    - tests/kserve_ui_helm_lifecycle_test.sh
     - tests/kserve_test.sh
     - tests/knative_serving_install.sh
     - tests/knative_serving_helm_smoke_test.sh
-    - tests/knative_serving_helm_lifecycle_test.sh
     - tests/knative_serving_helm_admission_test.sh
-    - tests/knative_eventing_helm_lifecycle_test.sh
     - .github/workflows/helm_kubeflow_integration_test.yaml
 
 permissions:
@@ -79,8 +81,9 @@ jobs:
     runs-on:
       labels: cncf-ubuntu-16-64-x86
       # labels: ubuntu-latest-16-cores
-    # Allow Knative and Trainer lifecycle checks alongside the platform tests.
-    timeout-minutes: 75
+    # Installation and functional tests only; the release lifecycle runs in
+    # helm_lifecycle_test.
+    timeout-minutes: 60
     steps:
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -117,9 +120,6 @@ jobs:
     - name: Install Dashboard with Helm
       run: ./tests/dashboard_helm_install.sh
 
-    - name: Install Knative lifecycle test dependency
-      run: pip3 install PyYAML==6.0.2
-
     - name: Install Knative Serving with Helm
       # The istio release already owns the cluster-local gateway and the
       # Kubeflow Istio resources; the Knative Helm installer never reapplies them.
@@ -128,8 +128,9 @@ jobs:
     - name: Install Knative Eventing with Helm
       run: ./tests/knative_eventing_helm_install.sh
 
-    - name: Test Knative Eventing lifecycle and delivery with Helm
-      run: ./tests/knative_eventing_helm_lifecycle_test.sh
+    - name: Test Knative Eventing delivery with Helm
+      # Delivery only; the release lifecycle runs in helm_lifecycle_test.
+      run: ./tests/helm_lifecycle_test.sh --smoke-only knative-eventing
 
     - name: Install KServe with Helm
       run: ./tests/kserve_helm_install.sh
@@ -140,8 +141,9 @@ jobs:
     - name: Create KF Profile
       run: ./tests/kubeflow_profile_install.sh
 
-    - name: Test Knative Serving lifecycle and routing with Helm
-      run: ./tests/knative_serving_helm_lifecycle_test.sh ${KF_PROFILE}
+    - name: Test Knative Serving routing with Helm
+      # Routing only; the release lifecycle runs in helm_lifecycle_test.
+      run: ./tests/knative_serving_helm_smoke_test.sh ${KF_PROFILE}
 
     - name: Install Notebooks v1 with Helm
       run: ./tests/notebooks_helm_install.sh
@@ -155,10 +157,9 @@ jobs:
     - name: Install Ray with Helm
       run: ./tests/ray_helm_install.sh
 
-
     - name: Install Hub model registry and catalog with Helm
       run: |
-        # One private values file per release, reused by the lifecycle test.
+        # One private values file per release.
         umask 077
         python3 - <<'PYTHON'
         import os, pathlib, secrets
@@ -269,8 +270,6 @@ jobs:
       run: ./tests/katib_test.sh "${KF_PROFILE}"
 
     - name: Run KServe Test
-      env:
-        KSERVE_UI_MANAGED_BY_HELM: "true"
       run: ./tests/kserve_test.sh ${KF_PROFILE}
 
     - name: Run Spark Test
@@ -289,11 +288,6 @@ jobs:
         cd experimental/ray/
         ./test.sh ${KF_PROFILE}
 
-    - name: Test KubeRay Helm lifecycle
-      env:
-        RUN_HELM_LIFECYCLE_TESTS: "true"
-      run: ./tests/ray_helm_lifecycle.sh "${KF_PROFILE}"
-
     - name: Run Model Registry Tests
       run: ./tests/model_registry_test.sh
 
@@ -302,18 +296,6 @@ jobs:
 
     - name: Test Hub model catalog contents
       run: ./tests/hub_helm_smoke_test.sh
-
-    - name: Test Hub Helm lifecycle
-      run: ./tests/hub_helm_lifecycle_test.sh "$RUNNER_TEMP/hub-registry-values.yaml" "$RUNNER_TEMP/hub-catalog-values.yaml"
-
-    - name: Test Trainer Helm lifecycle
-      timeout-minutes: 15
-      env:
-        TRAINER_HELM_LIFECYCLE_DISPOSABLE: "true"
-        EVIDENCE_DIRECTORY: logs/trainer-lifecycle
-      run: |
-        export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
-        ./tests/trainer_helm_lifecycle_test.sh "${KF_PROFILE}"
 
     - name: Apply Pod Security Standards Restricted
       run: ./tests/PSS_enable.sh restricted
@@ -347,9 +329,6 @@ jobs:
         pip3 install -q PyYAML
         python3 tests/metrics-server_resource_table.py
 
-    - name: Test Katib Helm lifecycle
-      run: ./tests/katib_helm_lifecycle_test.sh "${KF_PROFILE}"
-
     - name: Collect Logs on Failure
       if: failure()
       # kubectl has no request timeout by default, so bound this step and
@@ -359,7 +338,8 @@ jobs:
         mkdir -p logs
         kubectl get all --all-namespaces > logs/resources.txt
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
-        for namespace in kubeflow kserve kubeflow-system istio-system cert-manager auth kubeflow-user-example-com knative-eventing; do
+        helm list --all-namespaces --all > logs/helm-releases.txt 2>&1 || true
+        for namespace in kubeflow kserve kubeflow-system istio-system cert-manager auth oauth2-proxy kubeflow-user-example-com knative-eventing knative-serving kubeflow-workspaces; do
             kubectl get namespace $namespace >/dev/null 2>&1 || continue
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
@@ -372,4 +352,146 @@ jobs:
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: kubeflow-test-logs
+        path: logs/
+
+  helm_lifecycle_test:
+    name: Kubeflow Helm Release Lifecycle
+    if: ${{ github.repository == 'kubeflow/community-distribution' }}
+    runs-on:
+      labels: cncf-ubuntu-16-64-x86
+    # Measured budget: Kind 2 to 6 minutes, the installers about 11, the
+    # Profile and the Katib fixture about 4, the lifecycle script about 35,
+    # collection and upload about 5. The lifecycle step has its own 45-minute
+    # limit so that a hang there still leaves time for log collection.
+    timeout-minutes: 70
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Install Helm
+      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+      with:
+        version: v4.2.2
+
+    - name: Install KinD, Create KinD cluster and Install kustomize
+      run: ./tests/install_KinD_create_KinD_cluster_install_kustomize.sh
+
+    - name: Install Kubeflow Namespaces with Helm
+      run: ./tests/kubeflow_namespace_helm_install.sh
+
+    - name: Install Certificate Manager with Helm
+      run: ./tests/cert_manager_helm_install.sh
+
+    - name: Install Istio with Helm
+      run: ./tests/istio_helm_install.sh
+
+    - name: Install OAuth2 Proxy with Helm
+      run: ./tests/oauth2-proxy_helm_install.sh
+
+    - name: Install Kubeflow Istio Resources with Helm
+      run: ./tests/kubeflow_istio_resources_helm_install.sh
+
+    - name: Install Multi-Tenancy with Helm
+      run: ./tests/multi_tenancy_helm_install.sh
+
+    - name: Install Dex with Helm
+      run: ./tests/dex_helm_install.sh
+
+    - name: Install Dashboard with Helm
+      run: ./tests/dashboard_helm_install.sh
+
+    - name: Install the lifecycle test dependency
+      # The lifecycle script edits disposable chart copies with PyYAML.
+      run: pip3 install PyYAML==6.0.2
+
+    - name: Install Knative Serving with Helm
+      # The istio release already owns the cluster-local gateway and the
+      # Kubeflow Istio resources; the Knative Helm installer never reapplies them.
+      run: ./tests/knative_serving_helm_install.sh
+
+    - name: Install Knative Eventing with Helm
+      run: ./tests/knative_eventing_helm_install.sh
+
+    - name: Install KServe with Helm
+      run: ./tests/kserve_helm_install.sh
+
+    - name: Install Pipelines with Helm
+      run: ./tests/pipelines_helm_install.sh platform-database
+
+    - name: Create KF Profile
+      run: ./tests/kubeflow_profile_install.sh
+
+    - name: Install Notebooks v1 with Helm
+      run: ./tests/notebooks_helm_install.sh
+
+    - name: Install Katib with Helm
+      run: ./tests/katib_helm_install.sh
+
+    - name: Install Trainer
+      run: ./tests/trainer_helm_install.sh
+
+    - name: Install Ray with Helm
+      run: ./tests/ray_helm_install.sh
+
+    - name: Install Hub model registry and catalog with Helm
+      run: |
+        # One private values file per release, reused by the lifecycle script.
+        umask 077
+        python3 - <<'PYTHON'
+        import os, pathlib, secrets
+        for component in ("registry", "catalog"):
+            path = pathlib.Path(os.environ["RUNNER_TEMP"]) / f"hub-{component}-values.yaml"
+            path.write_text(f"database:\n  password: {secrets.token_urlsafe(32)}\n")
+        PYTHON
+        ./tests/hub_helm_install.sh registry "$RUNNER_TEMP/hub-registry-values.yaml"
+        ./tests/hub_helm_install.sh catalog "$RUNNER_TEMP/hub-catalog-values.yaml"
+
+    - name: Install Spark with Helm
+      run: chmod u+x tests/*.sh && ./tests/spark_helm_install.sh
+
+    - name: Install Workspaces with Helm
+      run: ./tests/workspaces_helm_install.sh
+
+    - name: Wait for All Pods to be Ready
+      run: kubectl wait --for=condition=Ready pods --all --all-namespaces --timeout 90s --field-selector=status.phase!=Succeeded
+
+    - name: Port-forward the istio-ingress gateway
+      run: ./tests/port_forward_gateway.sh
+
+    - name: Run Katib Test
+      # Fixture: the lifecycle records the identities of this Experiment and its Trials.
+      run: ./tests/katib_test.sh "${KF_PROFILE}"
+
+    - name: Test the Helm release lifecycle of every chart
+      # A step timeout below the job timeout lets the collector run after a hang.
+      timeout-minutes: 45
+      env:
+        HELM_LIFECYCLE_DISPOSABLE: "true"
+        HUB_REGISTRY_VALUES_FILE: ${{ runner.temp }}/hub-registry-values.yaml
+        HUB_CATALOG_VALUES_FILE: ${{ runner.temp }}/hub-catalog-values.yaml
+      run: ./tests/helm_lifecycle_test.sh
+
+    - name: Collect Logs on Failure
+      if: failure() || cancelled()
+      # kubectl has no request timeout by default, so bound this step and
+      # let the upload below still run if the API server stops responding.
+      timeout-minutes: 5
+      run: |
+        mkdir -p logs
+        kubectl get all --all-namespaces > logs/resources.txt 2>&1 || true
+        kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt 2>&1 || true
+        helm list --all-namespaces --all > logs/helm-releases.txt 2>&1 || true
+        for namespace in kubeflow kserve kubeflow-system istio-system cert-manager auth oauth2-proxy kubeflow-user-example-com knative-eventing knative-serving kubeflow-workspaces; do
+            kubectl get namespace $namespace >/dev/null 2>&1 || continue
+            kubectl describe pods -n $namespace > logs/$namespace-pods.txt 2>&1 || true
+            for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
+                kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true
+            done
+        done
+
+    - name: Upload Diagnostic Logs
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: kubeflow-helm-lifecycle-logs
         path: logs/

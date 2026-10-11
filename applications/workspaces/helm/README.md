@@ -243,21 +243,18 @@ How this chart is compared, including the retained definitions, is in
 [`tests/README.md`](../../../tests/README.md). The `Namespace` object is part of
 the comparison.
 
-`tests/workspaces_helm_install.sh` installs the chart on a cluster.
-Run the manual lifecycle and upgrade scripts only on a disposable test cluster.
-The lifecycle fixture overwrites the cluster-wide `jupyterlab` WorkspaceKind.
-`tests/workspaces_helm_lifecycle_test.sh` exercises explicit `Workspace`
-deletion, uninstall with a retained `Workspace`, reinstallation and the refusal
-of a namespace that the release does not own; it is destructive and is not part
-of a workflow. `tests/workspaces_helm_upgrade_test.sh` runs an unchanged
-upgrade, an upgrade to a changed copy of the chart and a rollback, all without a
-force option. After each it checks that the three aggregated ClusterRoles carry
-rules, that Helm is not a manager of that field, and that a ServiceAccount bound
-to `kubeflow-workspaces-edit` may still create a `Workspace` and may still not
-read a `Secret`; it is not part of a workflow either. It creates a uniquely
-named namespace for that ServiceAccount and deletes only a namespace that it has
-created, which `tests/workspaces_helm_upgrade_cleanup_test.sh` verifies without
-a cluster, with stub `kubectl` and `helm` executables.
+`tests/workspaces_helm_install.sh` installs the chart on a cluster. The
+Workspaces section of `tests/helm_lifecycle_test.sh`, run by the
+`helm_lifecycle_test` job of the Helm integration workflow on a disposable
+cluster, creates the `jupyterlab` WorkspaceKind when it is absent and one paused
+`Workspace` with its volume claim, then runs an upgrade to a changed copy of
+the chart observed on the live controller, a rollback, the
+uninstall that removes `kubeflow-workspaces` and keeps the definitions, the
+WorkspaceKind, the Workspace and its claim, and the reinstallation, all without
+a force option. After the changed upgrade and after the reinstall it checks that
+the validating webhook rejects a `Workspace` naming an absent kind, that the
+three aggregated ClusterRoles carry rules, and that Helm is not a manager of
+that field.
 
 ## Keeping The Chart Up To Date
 

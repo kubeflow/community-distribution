@@ -208,25 +208,6 @@ READY=$(kubectl get isvc sklearn-iris -n ${NAMESPACE} -o jsonpath='{.status.cond
   exit 1
 }
 
-# The Helm workflow exercises UI release operations while a real user object
-# exists, then repeats the authenticated API assertion after reinstallation.
-if [[ "${KSERVE_UI_MANAGED_BY_HELM:-false}" == "true" ]]; then
-  ./tests/kserve_ui_helm_lifecycle_test.sh "${NAMESPACE}" sklearn-iris
-  # Obtain a cookie from the new UI instance and allow the recreated Istio
-  # route a bounded propagation interval before testing the authenticated API.
-  curl -sS --fail-with-body --retry 12 --retry-delay 2 --retry-all-errors \
-    --max-time 10 --retry-max-time 60 "http://${BASE_URL}/" \
-    -H "Authorization: Bearer ${TOKEN}" -c /tmp/kserve_xcrf.txt >/dev/null
-  XSRFTOKEN=$(grep XSRF-TOKEN /tmp/kserve_xcrf.txt | awk '{print $NF}')
-  RESPONSE=$(curl -sS --fail-with-body --retry 12 --retry-delay 2 --retry-all-errors \
-    --max-time 10 --retry-max-time 60 \
-    "${BASE_URL}/api/namespaces/${NAMESPACE}/inferenceservices" \
-    -H "Authorization: Bearer ${TOKEN}" \
-    -H "X-XSRF-TOKEN: ${XSRFTOKEN}" \
-    -H "Cookie: XSRF-TOKEN=${XSRFTOKEN}")
-  echo "$RESPONSE" | grep -q "sklearn-iris"
-fi
-
 kubectl delete inferenceservice sklearn-iris -n ${NAMESPACE}
 
 # Test unauthorized access to KServe UI

@@ -119,15 +119,26 @@ python3 tests/knative_serving_helm_chart_test.py
 python3 tests/helm_release_size.py knative-serving
 ./tests/knative_serving_helm_admission_test.sh
 ./tests/knative_serving_helm_smoke_test.sh kubeflow-user-example-com
-# Destructive; use only a disposable test cluster. Requires PyYAML.
-./tests/knative_serving_helm_lifecycle_test.sh kubeflow-user-example-com
+# Destructive; the helm_lifecycle_test job runs it on its own cluster. Requires PyYAML.
+HELM_LIFECYCLE_DISPOSABLE=true ./tests/helm_lifecycle_test.sh knative-serving
 ```
 
-The Helm integration workflow installs this chart and tests a real Knative Service
-through the cluster-local gateway, requiring its exact response body and rejecting
-an unauthenticated request. Existing KServe tests remain in that workflow.
-The lifecycle gate keeps the Service identity through an unchanged upgrade, a
-disposable controller Pod-template change, rollback, uninstall and reinstall.
+The functional job of the Helm integration workflow installs this chart and tests
+a real Knative Service through the cluster-local gateway, requiring its exact
+response body and rejecting an unauthenticated request. Existing KServe tests
+remain in that job. It retains the bootstrap installation, which advances its
+phases with Helm upgrades, and one routing probe; the post-installation release
+lifecycle checks run in the `helm_lifecycle_test` job of the same workflow, which
+installs every chart on a second cluster and runs the Knative Serving section of
+`tests/helm_lifecycle_test.sh` after the KServe sections. It keeps the Service
+identity through a disposable controller Pod-template change, rollback,
+uninstall and reinstall. It verifies admission before the upgrade and during
+the reinstall, the live controller annotation after the changed upgrade and the
+rollback, and routing with the missing-token rejection after initial
+installation and after the reinstall. It saves diagnostics before the upgrade,
+the rollback and the uninstall under
+`logs/helm-lifecycle/knative-serving/`, which the workflow uploads, and preserves
+the fixture when a check fails.
 That changed-rollout fixture is not evidence for cross-version schema downgrade.
 Local chart tests and parity do not prove live installation. Before promoting the
 draft, record clean installation, unchanged upgrade, a compatible changed

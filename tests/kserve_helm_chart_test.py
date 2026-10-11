@@ -24,7 +24,7 @@ OBSOLETE_TOP_LEVEL_VALUES = {
 HELM_COMMAND_SOURCES = (
     CHART_PATH / "README.md",
     REPOSITORY_ROOT / "tests/kserve_helm_install.sh",
-    REPOSITORY_ROOT / "tests/kserve_helm_lifecycle_test.sh",
+    REPOSITORY_ROOT / "tests/helm_lifecycle_test.sh",
 )
 OWNED_NAMESPACE = "kserve"
 CUSTOM_RESOURCE_DEFINITION_COUNT = 20

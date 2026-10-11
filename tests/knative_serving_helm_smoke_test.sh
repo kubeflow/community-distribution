@@ -6,11 +6,15 @@ fixture=knative-helm-routing
 port=${KNATIVE_HELM_TEST_PORT:-18081}
 port_forward_pid=""
 cleanup() {
+    local status=$?
     if [[ -n "$port_forward_pid" ]]; then kill "$port_forward_pid" 2>/dev/null || true; fi
-    if [[ "${KNATIVE_HELM_KEEP_FIXTURE:-false}" != true ]]; then
-        kubectl delete services.serving.knative.dev "$fixture" -n "$namespace" --ignore-not-found
-        kubectl delete authorizationpolicy "$fixture" -n "$namespace" --ignore-not-found
+    if (( status != 0 )); then
+        echo "Preserving the Knative Serving fixture after failure." >&2
+    elif [[ "${KNATIVE_HELM_KEEP_FIXTURE:-false}" != true ]]; then
+        kubectl delete services.serving.knative.dev "$fixture" -n "$namespace" --ignore-not-found || status=$?
+        kubectl delete authorizationpolicy "$fixture" -n "$namespace" --ignore-not-found || status=$?
     fi
+    exit "$status"
 }
 trap cleanup EXIT
 kubectl apply -n "$namespace" -f - <<EOF
@@ -72,8 +76,14 @@ for ((attempt=0; attempt<30; attempt++)); do
     if [[ "$response" == "knative-helm-routing-ok" ]]; then break; fi
     sleep 2
 done
-[[ "$response" == "knative-helm-routing-ok" ]]
+if [[ "$response" != "knative-helm-routing-ok" ]]; then
+    echo "Expected the fixture body from the Knative route, received: $response" >&2
+    exit 1
+fi
 status=$(curl --silent --max-time 5 --output /dev/null --write-out '%{http_code}' \
     -H "Host: $hostname" "http://localhost:$port/")
-[[ "$status" == 403 ]]
+if [[ "$status" != 403 ]]; then
+    echo "Expected HTTP 403 without a JWT, received: $status" >&2
+    exit 1
+fi
 echo "Knative Serving routed the exact fixture body and rejected a missing JWT."

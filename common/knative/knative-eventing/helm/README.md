@@ -106,23 +106,31 @@ helm lint common/knative/knative-eventing/helm -n kubeflow
 python3 tests/run_helm_kustomize_comparison.py knative-eventing --all-scenarios
 python3 tests/knative_eventing_helm_chart_test.py
 python3 tests/helm_release_size.py knative-eventing
-# Destructive: only on a disposable integration cluster. Requires PyYAML.
-./tests/knative_eventing_helm_lifecycle_test.sh
+# Non-destructive: one fresh PingSource delivery, no Helm operation.
+./tests/helm_lifecycle_test.sh --smoke-only knative-eventing
+# Destructive: the helm_lifecycle_test job runs it on its own cluster. Requires PyYAML.
+HELM_LIFECYCLE_DISPOSABLE=true ./tests/helm_lifecycle_test.sh knative-eventing
 ```
 
-The lifecycle script creates one receiver and PingSource, reused for fresh event
-checks after each Helm operation. The workflow gate requires a fresh, exact
-PingSource event payload, then
-two unchanged upgrades that preserve the adapter specification, generation and
-Pod identities, an actual controller Pod-template rollout, compatible rollback,
-retained PingSource/EventType identities, the expected conversion interruption,
-recovered converted-version reads and fresh delivery after reinstall. This uses
+The Knative Eventing section of `tests/helm_lifecycle_test.sh` creates one
+receiver and PingSource and requires a fresh, exact PingSource event payload.
+With `--smoke-only` it stops there; the functional job of the Helm integration
+workflow runs this mode, which does not validate the lifecycle.
+
+The `helm_lifecycle_test` job of the same workflow runs the full section last,
+on a second cluster with every chart installed. It keeps the receiver and
+PingSource as retained user objects and requires a controller Pod-template
+change observed on the live Deployment that preserves the adapter specification,
+generation and Pod identities, a compatible rollback that restores the live Pod
+template, retained PingSource/EventType identities, the expected conversion
+interruption and recovered converted-version reads after reinstall. This uses
 only core Eventing; it does not create a Broker. After reinstall, it retries each
-converted API for 120 seconds, with a 10-second timeout per request.
-It saves diagnostics before upgrades and uninstall under
-`logs/knative-eventing-lifecycle/`, which the workflow uploads, and preserves
-fixtures and failure diagnostics when a check fails. A controller-template change is
-not proof of cross-version schema downgrade safety.
+converted API for 120 seconds, with a 10-second timeout per request. It saves
+diagnostics before the upgrade, the rollback and the uninstall, the adapter snapshots and
+the conversion errors under `logs/helm-lifecycle/knative-eventing/`, which the
+workflow uploads, and preserves fixtures and failure diagnostics when a check
+fails. A controller-template change is not proof of cross-version schema
+downgrade safety.
 
 Local parity, chart behavior and release-size tests do not establish these live
 properties. Keep the pull request a draft until the clean-install and full live

@@ -222,13 +222,36 @@ python3 tests/run_helm_kustomize_comparison.py --partitions
 python3 tests/helm_release_size.py trainer-apis trainer trainer-runtimes
 ```
 
-`tests/trainer_helm_install.sh` is the ordered installer used by the full Helm
-workflow; `TRAINER_APIS_CHART` points its API release at a packaged chart, and
+`tests/trainer_helm_install.sh` is the ordered installer used by both Helm
+jobs; `TRAINER_APIS_CHART` points its API release at a packaged chart, and
 arguments name the releases to install. `tests/trainer_test.sh` supplies the
-existing SDK functional test. Near the end of the same full Helm job,
-`tests/trainer_helm_lifecycle_test.sh` checks upgrade, rollback, retention and
-reinstallation, then repeats SDK training after recovery. It requires an explicit
-disposable kubeconfig and `TRAINER_HELM_LIFECYCLE_DISPOSABLE=true`. Its evidence
-under `logs/trainer-lifecycle/` is included in the workflow artifact, and fixtures
-stay until the cluster is destroyed.
-See the [chart lifecycle instructions](../applications/trainer/helm/README.md).
+existing SDK functional test. The Trainer section of `tests/helm_lifecycle_test.sh`
+checks the changed upgrade, the rollback, the uninstall of `trainer` while
+`trainer-apis` and `trainer-runtimes` stay deployed, and the reinstallation with
+an admission probe; see the Helm release lifecycle section below and the
+[chart lifecycle instructions](../applications/trainer/helm/README.md).
+
+## Helm release lifecycle
+
+`.github/workflows/helm_kubeflow_integration_test.yaml` has two jobs on separate
+Kind clusters. `helm_kubeflow_integration_test` installs every chart and runs the
+functional tests; after the installation it performs no Helm operation.
+`helm_lifecycle_test` installs the same charts, runs the Katib Experiment test as
+a fixture, and then runs `tests/helm_lifecycle_test.sh`. For every chart, in a
+fixed order, that script performs an upgrade to a disposable changed chart copy
+observed on the live controller, a rollback observed the same way, an uninstall
+that must delete every release object except the ones annotated
+`helm.sh/resource-policy: keep`, and a reinstall through the chart's installer.
+Per-chart hook functions hold the identities that must survive and a probe that
+proves recovery after the reinstall. Evidence is written under `logs/helm-lifecycle/<chart>/` and
+uploaded as `kubeflow-helm-lifecycle-logs`.
+
+```bash
+# Destructive; only on a disposable cluster on which every Helm installer has run.
+HELM_LIFECYCLE_DISPOSABLE=true ./tests/helm_lifecycle_test.sh [chart ...]
+# Non-destructive Knative Eventing delivery probe, used by the functional job.
+./tests/helm_lifecycle_test.sh --smoke-only knative-eventing
+```
+
+To add a chart, write its `lifecycle_<chart>` function and hooks in that script
+and append the chart to `CHART_ORDER`; foundation charts go last.

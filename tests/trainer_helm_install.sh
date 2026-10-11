@@ -4,9 +4,9 @@
 # Without arguments all three releases are installed; this is the workflow call.
 # Arguments name the releases to install (trainer-apis, trainer,
 # trainer-runtimes). The named releases are installed in the same order and with
-# the same readiness sequence as in a complete installation, so the reinstall
-# paths of tests/trainer_helm_lifecycle_test.sh call this script instead of
-# repeating its commands.
+# the same readiness sequence as in a complete installation, so the Trainer
+# section of tests/helm_lifecycle_test.sh calls this script for its reinstall
+# instead of repeating its commands.
 #
 # TRAINER_APIS_CHART, when set, is the chart of the trainer-apis release instead
 # of the directory applications/trainer/helm-crds: a packaged parent or another

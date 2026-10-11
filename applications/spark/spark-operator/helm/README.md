@@ -229,9 +229,11 @@ first waits for the `Lease` of the previous pod to expire, and it writes
 to 19 seconds on a live cluster, and until then the API server rejected a Spark
 application with `x509: certificate signed by unknown authority`.
 `tests/spark_helm_install.sh` therefore waits for `caBundle`.
-`tests/spark_helm_lifecycle_test.sh` verified the rest on the same cluster: the
-reinstalled controller completes a new application, leaves a completed one
-alone, and submits it again when its specification changes.
+The Spark section of `tests/helm_lifecycle_test.sh`, run by the
+`helm_lifecycle_test` job of the Helm integration workflow, verifies the rest: a
+controller replica change and its rollback, the uninstall
+that keeps the definitions and a completed `SparkApplication`, and the
+reinstallation after which the controller completes a new application.
 
 ## How this chart is kept up to date
 
