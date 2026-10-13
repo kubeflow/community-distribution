@@ -85,16 +85,15 @@ controllers, inference definitions or users' InferenceServices. The UI is
 unavailable while it is uninstalled. Reinstallation restores the route and UI;
 this draft makes no uninterrupted-service claim during upgrades or rollback.
 
-The Helm integration workflow retains the existing authenticated UI object lookup
-and unauthorized-account rejection checks in `tests/kserve_test.sh`. With
-`KSERVE_UI_MANAGED_BY_HELM=true`, that test also calls
-`tests/kserve_ui_helm_lifecycle_test.sh` while a real Ready InferenceService exists.
-The lifecycle test checks unchanged upgrade, a disposable changed chart with two
-UI replicas, rollback, uninstall and reinstall. It asserts that the Namespace,
-KServe controller Deployment and user InferenceService retain their UIDs, and
-checks readiness. The caller then repeats the authenticated API lookup and the
-unauthorized-account check after recovery. These cluster gates are implemented
-but have not been executed locally for this draft.
+The functional job of the Helm integration workflow retains the existing
+authenticated UI object lookup and unauthorized-account rejection checks in
+`tests/kserve_test.sh`. The Models UI section of `tests/helm_lifecycle_test.sh`,
+run by the `helm_lifecycle_test` job, creates a real Ready InferenceService and
+checks a disposable changed chart observed on the live UI Deployment, rollback,
+uninstall and reinstall. It asserts that the Namespace,
+every other Deployment in `kserve` and the user InferenceService retain their
+UIDs, repeats the authenticated API lookup after the reinstall, and repeats the
+unauthorized-account check after recovery.
 
 ## Synchronization and local checks
 

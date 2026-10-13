@@ -211,13 +211,9 @@ option, then creates a `deployed` revision again.
 The supported claim is recovery: after the upgrade or the rollback has
 completed and the controllers are ready again, existing `InferenceService`
 objects reconcile and serve. Uninterrupted serving during the operation is not
-claimed. `tests/kserve_helm_lifecycle_test.sh` sends requests to an
-`InferenceService` before, during and after both operations and records when
-every request started and when it completed. It counts a request in the phase
-in which the request started, and it counts every failure and timeout,
-including that of a request which started before an operation and completed
-during or after it. Recovery is asserted only on a request that started after
-the operation had ended and completed successfully.
+claimed and not measured. The KServe section of `tests/helm_lifecycle_test.sh`
+verifies, after the reinstallation, that a retained `InferenceService` becomes
+Ready again and that a fresh `InferenceService` is reconciled to Ready.
 
 ### Uninstall and reinstall
 
@@ -285,10 +281,12 @@ python3 tests/kserve_helm_release_size_test.py
 python3 scripts/generate-kserve-helm-manifests.py --check
 ```
 
-`tests/kserve_helm_lifecycle_test.sh` exercises the installation from the
-chart directory and from a packaged chart, the upgrade, the rollback, the
-uninstallation and the reinstallation on a cluster that already provides the
-prerequisites.
+The KServe section of `tests/helm_lifecycle_test.sh`, run by the
+`helm_lifecycle_test` job of the Helm integration workflow, exercises a changed
+upgrade observed on the live controller, the
+rollback, the uninstallation that keeps the definitions and the user
+`InferenceService`, and the reinstallation through `tests/kserve_helm_install.sh`.
+Installation from a packaged chart is not exercised by a workflow.
 
 How this chart is compared, including every declared allowance, is in
 [`ci/comparison.yaml`](ci/comparison.yaml); the descriptor format is documented in

@@ -413,10 +413,10 @@ class RayHelmEnvironmentTest(unittest.TestCase):
             RayChartTest.directory.cleanup()
 
     def test_shell_entrypoints_discard_inherited_helm_overrides(self):
-        for script in (
-            "scripts/synchronize-ray-manifests.sh",
-            "tests/ray_helm_install.sh",
-            "tests/ray_helm_lifecycle.sh",
+        for script, arguments in (
+            ("scripts/synchronize-ray-manifests.sh", []),
+            ("tests/ray_helm_install.sh", []),
+            ("tests/helm_lifecycle_test.sh", ["ray"]),
         ):
             with self.subTest(
                 script=script
@@ -446,7 +446,7 @@ class RayHelmEnvironmentTest(unittest.TestCase):
                 executable.chmod(0o755)
                 capture = root / "environment.json"
                 result = subprocess.run(
-                    ["bash", str(root / script)],
+                    ["bash", str(root / script), *arguments],
                     env={
                         **os.environ,
                         **{
@@ -456,7 +456,7 @@ class RayHelmEnvironmentTest(unittest.TestCase):
                         "PATH": f"{executable.parent}:{os.environ['PATH']}",
                         "HELM_ENVIRONMENT_CAPTURE": str(capture),
                         "KUBEFLOW_SYNCHRONIZE_NO_COMMIT": "true",
-                        "RUN_HELM_LIFECYCLE_TESTS": "true",
+                        "HELM_LIFECYCLE_DISPOSABLE": "true",
                     },
                     capture_output=True,
                     text=True,

@@ -147,39 +147,38 @@ storage is measured for each installable chart, including the packaged API paren
 The APIs are kept in a dependency to reduce the stored release size; archive size
 alone is not the Kubernetes Secret storage limit.
 
-Render and storage tests do not establish lifecycle safety. The full Helm
-integration workflow runs `tests/trainer_test.sh` after installation, then runs
-`tests/trainer_helm_lifecycle_test.sh` after the application tests and before the
-Pod Security Standards check, using the same disposable Kind cluster.
+Render and storage tests do not establish lifecycle safety. The functional job
+of the Helm integration workflow runs `tests/trainer_test.sh` after installation.
+Its `helm_lifecycle_test` job installs every chart on a second cluster and runs
+the Trainer section of `tests/helm_lifecycle_test.sh`, which operates the
+`trainer` release while `trainer-apis` and `trainer-runtimes` stay deployed:
 
-The lifecycle script runs one fixed sequence:
+1. Create one suspended TrainJob on the catalog runtime and record the identity
+   of its runtime snapshot and JobSet.
+2. Change the controller Pod templates, verify the live change, and roll back.
+3. Uninstall `trainer`, verifying that its webhook configurations leave and that
+   the other two releases, the definitions, the catalog runtime and the fixture
+   keep their identities.
+4. Reinstall through `tests/trainer_helm_install.sh trainer` and verify
+   admission with a server dry run; the functional job runs the SDK training
+   test on a fresh installation.
 
-1. Change the controller Pod templates, verify the live change, and roll back.
-2. Change the catalog image, verify the new TrainJob snapshot and JobSet, and roll
-   back without rewriting existing snapshots. These fixture jobs stay suspended;
-   this checks configuration resolution, not execution of the changed image.
-3. Uninstall and reinstall `trainer-apis`, verifying retention of definitions and
-   custom objects, then upgrade the reinstalled release with the unchanged chart.
-4. Uninstall and reinstall `trainer-runtimes`, verifying admission while the catalog
-   is absent and preservation of administrator and namespaced runtimes.
-5. Uninstall and reinstall `trainer`, verifying webhook removal and retained
-   resources, then run the existing SDK training test again to prove recovery.
+Catalog image updates, reinstallation of `trainer-apis` and retirement of the
+catalog release are not exercised by a workflow.
 
 For a manual run, first install all three releases and the platform prerequisites
 on a disposable cluster:
 
 ```sh
-KUBECONFIG=/path/to/disposable.kubeconfig \
-  TRAINER_HELM_LIFECYCLE_DISPOSABLE=true \
-  ./tests/trainer_helm_lifecycle_test.sh kubeflow-user-example-com
+HELM_LIFECYCLE_DISPOSABLE=true ./tests/helm_lifecycle_test.sh trainer
 ```
 
 The script saves resource identities, snapshots and logs under
-`logs/trainer-lifecycle/` before destructive operations and on failure. The
-workflow uploads that directory through its existing `logs/` artifact step.
+`logs/helm-lifecycle/trainer/` before destructive operations and on failure. The
+workflow uploads that directory through the job's `logs/` artifact step.
 Collection uses Kubernetes request timeouts and does not mask the failing test.
-Fixtures remain for diagnosis until the disposable cluster is destroyed; a
-failure can leave a release changed or uninstalled. No automatic recovery runs
+After a failure the fixture remains for diagnosis until the disposable cluster
+is destroyed, and the release can be left changed or uninstalled. No automatic recovery runs
 on failure because it could hide the cause.
 
 This sequence does not establish compatibility across Trainer versions, safe API

@@ -134,8 +134,9 @@ python3 tests/helm_release_size.py kuberay-operator
 python3 tests/ray_helm_chart_test.py -v
 ```
 
-The Helm integration workflow installs this chart, runs the existing Ray fixture
-with `RAY_MANAGED_BY_HELM=true`, and then runs `tests/ray_helm_lifecycle.sh`.
+The functional job of the Helm integration workflow installs this chart and runs
+the existing Ray fixture with `RAY_MANAGED_BY_HELM=true`; its `helm_lifecycle_test`
+job runs the Ray section of `tests/helm_lifecycle_test.sh` on a second cluster.
 The fixture executes distributed tasks and checks their results as well as the
 dashboard version. Its Helm mode never applies or deletes the operator bundle;
 cleanup selects only its RayCluster's Pods. The legacy Kustomize workflow keeps
@@ -148,16 +149,16 @@ atomic checks of the namespace UID and label value. It refuses to run if its
 RayCluster, AuthorizationPolicy or headless Service already exists, and a failed
 identity read stops the test.
 
-The lifecycle script is destructive to its operator release and requires
-`RUN_HELM_LIFECYCLE_TESTS=true` on a disposable cluster. It holds a RayJob with
+The lifecycle section is destructive to its operator release and requires
+`HELM_LIFECYCLE_DISPOSABLE=true` on a disposable cluster. It holds a RayJob with
 `suspend: true` and the upstream-required `shutdownAfterJobFinishes: true`,
 waits for `Suspended`, and compares definition schemas, object
 UIDs, the Job specification and namespace UIDs across same-version definition
-maintenance, unchanged upgrade, replica change, rollback, uninstall and
-reinstall. It then runs real distributed work after recovery. It leaves the
-operator installed. On failure, inspect the retained fixture and release state;
+maintenance, replica change, rollback, uninstall and reinstall. The functional
+job runs the Ray fixture on a fresh installation. It leaves the operator
+installed. On failure, inspect the retained fixture and release state;
 there is no automatic forced cleanup or claimed recovery.
 
 Rendering, release-size and chart behavior checks run in the comparison workflow.
-The full Helm integration workflow runs the Ray fixture and lifecycle script;
+The Helm integration workflow runs the Ray fixture and the lifecycle section;
 these cluster checks cover behavior that rendering and size checks cannot prove.

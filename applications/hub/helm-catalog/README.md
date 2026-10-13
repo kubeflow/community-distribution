@@ -81,9 +81,11 @@ python3 tests/hub_helm_chart_test.py
 
 The Helm full-integration workflow replaces only the two Hub installation steps;
 the Kustomize workflow retains its original installers. Existing API and registry
-authorization tests continue. `tests/hub_helm_lifecycle_test.sh` additionally
-exercises same-version unchanged/changed upgrades, rollback, stable Secrets,
-SQL sentinels, registry PVC identity and independent destructive uninstall/reinstall.
-Run it only in a disposable environment with both private values files. These
+authorization tests continue. The Hub section of `tests/helm_lifecycle_test.sh`,
+run by the `helm_lifecycle_test` job, additionally exercises a same-version
+changed upgrade, rollback, stable Secrets, SQL sentinels, registry PVC
+identity and independent destructive uninstall/reinstall of both releases. Run it
+only in a disposable environment, with the two private values files named by
+`HUB_REGISTRY_VALUES_FILE` and `HUB_CATALOG_VALUES_FILE`. These
 lifecycle gates must pass before claiming the chart ready; local rendering tests
 alone provide no runtime or cross-version migration evidence.
