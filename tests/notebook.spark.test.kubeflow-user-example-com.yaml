@@ -1,0 +1,29 @@
+# Notebook used by tests/notebooks_spark_connect_test.sh. It runs as "default-editor",
+# which a Kubeflow Profile already binds to "kubeflow-edit"; the aggregated
+# "kubeflow-spark-edit" ClusterRole carries sparkconnects, so no extra grant is needed
+# here. A distinct resource name avoids colliding with tests/notebook.test.*.yaml.
+apiVersion: kubeflow.org/v1
+kind: Notebook
+metadata:
+  annotations:
+    notebooks.kubeflow.org/creator: user@example.com
+    notebooks.kubeflow.org/server-type: jupyter
+  labels:
+    app: spark-test
+  name: spark-test
+  namespace: kubeflow-user-example-com
+spec:
+  template:
+    spec:
+      containers:
+      - name: spark-test
+        image: ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: "0.6"
+            memory: 1.2Gi
+          requests:
+            cpu: "0.5"
+            memory: 1Gi
+      serviceAccountName: default-editor
