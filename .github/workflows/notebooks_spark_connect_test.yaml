@@ -14,6 +14,7 @@ on:
     - tests/notebook.spark.test.kubeflow-user-example-com.yaml
     - tests/istio*
     - tests/multi_tenancy_install.sh
+    - tests/profile_controller_install.sh
     - tests/kubeflow_profile_install.sh
     - tests/oauth2-proxy_install.sh
     - tests/cert_manager_install.sh
@@ -53,6 +54,9 @@ jobs:
 
     - name: Install Kubeflow Istio Resources
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
+
+    - name: Install Profile Controller
+      run: ./tests/profile_controller_install.sh
 
     - name: Install Multi-Tenancy
       run: ./tests/multi_tenancy_install.sh
