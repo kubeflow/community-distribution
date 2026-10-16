@@ -10,7 +10,7 @@ on:
     - tests/spark*.sh
     - tests/workspaces_install.sh
     - tests/workspaces_spark_connect_test.sh
-    - tests/spark_connect_from_workspace.py
+    - tests/spark_connect_session.py
     - tests/workspacekind.spark.test.yaml
     - tests/workspace.spark.test.kubeflow-user-example-com.yaml
     - tests/istio*
