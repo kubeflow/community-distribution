@@ -49,9 +49,9 @@ kubectl -n "${KF_PROFILE}" exec "${WORKSPACE_POD}" -- \
   python -m pip install --quiet "pyspark-connect==${SPARK_VERSION}"
 
 kubectl -n "${KF_PROFILE}" cp \
-  ./tests/spark_connect_from_workspace.py \
-  "${WORKSPACE_POD}:/home/jovyan/spark_connect_from_workspace.py"
+  ./tests/spark_connect_session.py \
+  "${WORKSPACE_POD}:/home/jovyan/spark_connect_session.py"
 
 kubectl -n "${KF_PROFILE}" exec "${WORKSPACE_POD}" -- \
   env KF_PROFILE="${KF_PROFILE}" \
-  python /home/jovyan/spark_connect_from_workspace.py
+  python /home/jovyan/spark_connect_session.py

@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Create a Spark Connect session from inside a Kubeflow Workspace and run a query.
+"""Create a Spark Connect session from inside a Kubeflow notebook pod and run a query.
 
-Executed inside the Workspace pod by tests/workspaces_spark_connect_test.sh. The
-Workspace runs as its own ServiceAccount ("ws-{WORKSPACE_NAME}"), which the
-WorkspaceKind grants "kubeflow-spark-edit" so it can create SparkConnect resources.
+Shared by two tests, which copy this file into their pod and run it there:
+tests/workspaces_spark_connect_test.sh and tests/notebooks_spark_connect_test.sh.
+Creating the session is identical from either, so keep this file host-agnostic — only
+the way the pod's ServiceAccount gets "kubeflow-spark-edit" differs, and that lives in
+the shell scripts. A Workspace runs as "ws-{WORKSPACE_NAME}" and its WorkspaceKind has
+to request the grant; a Notebook runs as "default-editor", which a Profile already binds
+to the aggregated "kubeflow-edit".
 """
 
 import logging
@@ -11,7 +15,7 @@ import os
 import sys
 import pyspark
 
-logger = logging.getLogger("spark_connect_from_workspace")
+logger = logging.getLogger("spark_connect_session")
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.INFO,
