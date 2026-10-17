@@ -74,6 +74,8 @@ resources:
 - ../applications/dashboard/overlays/istio
 # Notebooks v1
 - ../applications/notebooks-v1/overlays/istio
+# Workspaces (Notebooks v2)
+- ../applications/workspaces/overlays/istio
 # Trainer
 - ../applications/trainer/overlays
 # User namespace
@@ -94,12 +96,6 @@ resources:
 # Here is the internal documentation for Ray: - ../experimental/ray/README.md
 # - ../experimental/ray/kuberay-operator/overlays/kubeflow
 
-# --> DANGER: Workspaces (Notebooks v2) is still pre-GA <--
-#
-# !!! DO NOT DEPLOY THIS TO A PRODUCTION CLUSTER !!!
-#
-# See this for the current status: https://www.kubeflow.org/docs/components/notebooks/notebooks-v2-pre-ga-banner
-# - ../applications/workspaces/overlays/istio
-# Patches the centraldashboard configmap to add the Workspaces menu entry for Workspaces
-# components:
-# - ../applications/workspaces/components/centraldashboard
+components:
+# Adds the Workspaces menu entry to the Central Dashboard ConfigMap
+- ../applications/workspaces/components/centraldashboard
