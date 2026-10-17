@@ -250,7 +250,7 @@ class IstioHelmChartTest(unittest.TestCase):
 
         self.assertNotIn("registry.istio.io/release", manifests)
         for image in ["install-cni", "pilot", "proxyv2", "ztunnel"]:
-            self.assertIn(f"docker.io/istio/{image}:1.31.1", manifests)
+            self.assertIn(f"docker.io/istio/{image}:1.31.2", manifests)
 
 
 if __name__ == "__main__":
