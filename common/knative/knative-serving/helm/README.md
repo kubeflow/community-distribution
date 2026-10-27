@@ -1,6 +1,6 @@
 # Knative Serving for Kubeflow
 
-This chart installs the distribution's patched Serving and net-istio v1.23.0
+This chart installs the distribution's patched Serving and net-istio v1.24.0
 bundles. It does not install the Knative Operator. The `platform` default equals
 `kustomize build common/knative/knative-serving/overlays/gateways`, except for
 Helm retention annotations and the two controller-owned admission rule fields

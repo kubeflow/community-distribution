@@ -4,7 +4,7 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -12,7 +12,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-controller
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -29,7 +29,7 @@ metadata:
   namespace: knative-eventing
   name: imc-controller
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -45,7 +45,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-controller-resolver
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -62,7 +62,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -70,7 +70,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-dispatcher
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -117,7 +117,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app.kubernetes.io/component: imc-controller
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 data:
   MaxIdleConnections: "1000"
@@ -131,7 +131,7 @@ metadata:
   labels:
     knative.dev/high-availability: "true"
     app.kubernetes.io/component: imc-controller
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
     bindings.knative.dev/exclude: "true"
 spec:
@@ -145,7 +145,7 @@ spec:
         messaging.knative.dev/channel: in-memory-channel
         messaging.knative.dev/role: controller
         app.kubernetes.io/component: imc-controller
-        app.kubernetes.io/version: "1.23.0"
+        app.kubernetes.io/version: "1.24.0"
         app.kubernetes.io/name: knative-eventing
     spec:
       affinity:
@@ -162,7 +162,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: controller
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:4cf6f399bc42a3a36676d62f3a684a07a88948a6de4a1b7a377c44116696707b
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_controller@sha256:7939a26f4466246fc943790d451c878bb5d4fb57e19e86bb1a6bb734eba06aca
           env:
             - name: WEBHOOK_NAME
               value: inmemorychannel-webhook
@@ -179,7 +179,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: DISPATCHER_IMAGE
-              value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:950eb883f04cd6f0329757cb200c180d0f1bbebc436c6eb9135138be633b3ae5
+              value: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:77bf26982b9437a1d4203745d2379bd9c2d61154e48bb2c0ae7a7b59242ed0ea
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -224,7 +224,7 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: imc-controller
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
   name: inmemorychannel-webhook
   namespace: knative-eventing
@@ -252,7 +252,7 @@ metadata:
     messaging.knative.dev/channel: in-memory-channel
     messaging.knative.dev/role: dispatcher
     app.kubernetes.io/component: imc-dispatcher
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 spec:
   selector:
@@ -279,7 +279,7 @@ metadata:
   labels:
     knative.dev/high-availability: "true"
     app.kubernetes.io/component: imc-dispatcher
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
     bindings.knative.dev/exclude: "true"
 spec:
@@ -293,7 +293,7 @@ spec:
         messaging.knative.dev/channel: in-memory-channel
         messaging.knative.dev/role: dispatcher
         app.kubernetes.io/component: imc-dispatcher
-        app.kubernetes.io/version: "1.23.0"
+        app.kubernetes.io/version: "1.24.0"
         app.kubernetes.io/name: knative-eventing
     spec:
       affinity:
@@ -310,7 +310,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: dispatcher
-          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:950eb883f04cd6f0329757cb200c180d0f1bbebc436c6eb9135138be633b3ae5
+          image: gcr.io/knative-releases/knative.dev/eventing/cmd/in_memory/channel_dispatcher@sha256:77bf26982b9437a1d4203745d2379bd9c2d61154e48bb2c0ae7a7b59242ed0ea
           readinessProbe:
             failureThreshold: 3
             httpGet:
@@ -378,7 +378,7 @@ metadata:
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -402,7 +402,7 @@ spec:
                   type: object
                   properties:
                     backoffDelay:
-                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                      description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^(<numberOfRetries>-1).'
                       type: string
                     backoffPolicy:
                       description: BackoffPolicy is the retry backoff policy (linear, exponential).
@@ -452,7 +452,7 @@ spec:
                         type: object
                         properties:
                           backoffDelay:
-                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^<numberOfRetries>.'
+                            description: 'BackoffDelay is the delay before retrying. More information on Duration format: - https://www.iso.org/iso-8601-date-and-time-format.html - https://en.wikipedia.org/wiki/ISO_8601  For linear policy, backoff delay is backoffDelay*<numberOfRetries>. For exponential policy, backoff delay is backoffDelay*2^(<numberOfRetries>-1).'
                             type: string
                           backoffPolicy:
                             description: BackoffPolicy is the retry backoff policy (linear, exponential).
@@ -699,7 +699,7 @@ metadata:
   name: imc-addressable-resolver
   labels:
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -718,7 +718,7 @@ metadata:
   name: imc-channelable-manipulator
   labels:
     duck.knative.dev/channelable: "true"
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -740,7 +740,7 @@ kind: ClusterRole
 metadata:
   name: imc-controller
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -889,7 +889,7 @@ metadata:
   name: imc-subscriber
   labels:
     duck.knative.dev/crossnamespace-subscribable: "true"
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -904,7 +904,7 @@ kind: ClusterRole
 metadata:
   name: imc-dispatcher
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -978,7 +978,7 @@ metadata:
   namespace: knative-eventing
   name: knative-inmemorychannel-webhook
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -998,7 +998,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: inmemorychannel.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 webhooks:
   - admissionReviewVersions: ["v1"]
@@ -1016,7 +1016,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.inmemorychannel.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 webhooks:
   - admissionReviewVersions: ["v1"]
@@ -1035,7 +1035,7 @@ metadata:
   name: inmemorychannel-webhook-certs
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
     app.kubernetes.io/name: knative-eventing
 ---
 

@@ -162,6 +162,30 @@ class ModelsUiHelmChartTest(unittest.TestCase):
             )
         )
 
+    def test_application_version_matches_the_default_image_in_both_charts(self):
+        experimental_chart = REPOSITORY_ROOT / "experimental/helm/charts/kserve-ui"
+        platform_version = yaml.safe_load((CHART_PATH / "Chart.yaml").read_text())[
+            "appVersion"
+        ]
+        experimental_version = yaml.safe_load(
+            (experimental_chart / "Chart.yaml").read_text()
+        )["appVersion"]
+        experimental_values = yaml.safe_load(
+            (experimental_chart / "values.yaml").read_text()
+        )
+        deployment = next(
+            resource for resource in self.manifests if resource["kind"] == "Deployment"
+        )
+        image = deployment["spec"]["template"]["spec"]["containers"][0]["image"]
+
+        self.assertEqual(experimental_version, platform_version)
+        self.assertEqual(
+            experimental_values["global"]["imageTag"], platform_version.lstrip("v")
+        )
+        self.assertEqual(
+            image, f"ghcr.io/kserve/models-web-app:{platform_version.lstrip('v')}"
+        )
+
     def test_unsupported_legacy_values_fail_instead_of_being_ignored(self):
         result = render_chart(CHART_PATH, "--set", "app.replicas=2")
         self.assertNotEqual(result.returncode, 0)

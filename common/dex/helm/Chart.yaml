@@ -2,7 +2,7 @@ apiVersion: v2
 name: dex
 description: A Helm chart for Kubeflow Dex authentication resources
 version: 0.1.0
-appVersion: 2.46.0
+appVersion: 2.46.1
 
 keywords:
 - authentication

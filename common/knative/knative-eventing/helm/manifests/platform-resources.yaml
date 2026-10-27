@@ -8,7 +8,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-controller
   namespace: knative-eventing
@@ -19,7 +19,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook
   namespace: knative-eventing
@@ -30,7 +30,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: job-sink
   namespace: knative-eventing
@@ -41,7 +41,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: pingsource-mt-adapter
   namespace: knative-eventing
@@ -52,7 +52,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: request-reply
   namespace: knative-eventing
@@ -63,7 +63,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-auth-proxy
   namespace: knative-eventing
@@ -91,7 +91,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-webhook
   namespace: knative-eventing
@@ -118,7 +118,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: addressable-resolver
 ---
@@ -128,7 +128,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: broker-addressable-resolver
@@ -149,7 +149,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/crossnamespace-subscribable: 'true'
     kustomize.component: knative
   name: broker-subscriber
@@ -167,7 +167,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/podspecable: 'true'
     kustomize.component: knative
   name: builtin-podspecable-binding
@@ -198,7 +198,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: channel-addressable-resolver
@@ -225,7 +225,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/crossnamespace-subscribable: 'true'
     kustomize.component: knative
   name: channel-subscriber
@@ -247,7 +247,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: channelable-manipulator
 ---
@@ -261,7 +261,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: crossnamespace-subscriber
 ---
@@ -271,7 +271,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-broker-filter
 rules:
@@ -299,7 +299,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-broker-ingress
 rules:
@@ -318,7 +318,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-config-reader
 rules:
@@ -337,7 +337,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/source: 'true'
     kustomize.component: knative
   name: eventing-sources-source-observer
@@ -361,7 +361,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: eventtransforms-addressable-resolver
@@ -382,7 +382,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: flows-addressable-resolver
@@ -405,7 +405,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: integrationsinks-addressable-resolver
@@ -426,7 +426,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: jobsinks-addressable-resolver
@@ -447,7 +447,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-admin: 'true'
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: 'true'
@@ -466,7 +466,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-controller
 rules:
@@ -710,7 +710,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-view: 'true'
   name: knative-eventing-eventpolicy-reader
@@ -730,7 +730,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-job-sink
 rules:
@@ -811,7 +811,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-admin: 'true'
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: 'true'
@@ -830,7 +830,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-edit: 'true'
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-edit: 'true'
@@ -857,7 +857,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-view: 'true'
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-view: 'true'
@@ -883,7 +883,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-pingsource-mt-adapter
 rules:
@@ -942,7 +942,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-request-reply
 rules:
@@ -998,7 +998,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-sources-controller
 rules:
@@ -1103,7 +1103,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-webhook
 rules:
@@ -1265,7 +1265,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-admin: 'true'
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: 'true'
@@ -1284,7 +1284,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-admin: 'true'
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: 'true'
@@ -1303,7 +1303,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-admin: 'true'
   name: knative-sinks-namespaced-admin
@@ -1321,7 +1321,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     rbac.authorization.k8s.io/aggregate-to-admin: 'true'
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: 'true'
@@ -1340,7 +1340,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/channelable: 'true'
     kustomize.component: knative
   name: meta-channelable-manipulator
@@ -1369,7 +1369,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: podspecable-binding
 ---
@@ -1379,7 +1379,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: service-addressable-resolver
@@ -1399,7 +1399,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     duck.knative.dev/addressable: 'true'
     kustomize.component: knative
   name: serving-addressable-resolver
@@ -1426,7 +1426,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: source-observer
 ---
@@ -1436,7 +1436,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook
   namespace: knative-eventing
@@ -1455,7 +1455,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-controller
 roleRef:
@@ -1473,7 +1473,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-controller-crossnamespace-subscriber
 roleRef:
@@ -1491,7 +1491,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-controller-manipulator
 roleRef:
@@ -1509,7 +1509,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-controller-resolver
 roleRef:
@@ -1527,7 +1527,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-controller-source-observer
 roleRef:
@@ -1545,7 +1545,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-controller-sources-controller
 roleRef:
@@ -1563,7 +1563,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook
 roleRef:
@@ -1581,7 +1581,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook-podspecable-binding
 roleRef:
@@ -1599,7 +1599,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook-resolver
 roleRef:
@@ -1617,7 +1617,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-job-sink
 roleRef:
@@ -1635,7 +1635,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-pingsource-mt-adapter
 roleRef:
@@ -1653,7 +1653,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: knative-eventing-request-reply
 roleRef:
@@ -1675,7 +1675,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: config-br-default-channel
   namespace: knative-eventing
@@ -1698,7 +1698,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: config-br-defaults
   namespace: knative-eventing
@@ -1708,6 +1708,7 @@ data:
   authentication-oidc: disabled
   cross-namespace-event-links: disabled
   default-authorization-mode: allow-same-namespace
+  delivery-backoff-max: disabled
   delivery-retryafter: disabled
   delivery-timeout: enabled
   eventtype-auto-create: disabled
@@ -1720,7 +1721,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     knative.dev/config-category: eventing
     knative.dev/config-propagation: original
     kustomize.component: knative
@@ -1806,7 +1807,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: config-leader-election
   namespace: knative-eventing
@@ -1842,7 +1843,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     knative.dev/config-category: eventing
     knative.dev/config-propagation: original
     kustomize.component: knative
@@ -1915,7 +1916,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     knative.dev/config-category: eventing
     knative.dev/config-propagation: original
     kustomize.component: knative
@@ -1947,7 +1948,7 @@ kind: ConfigMap
 metadata:
   annotations:
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     knative.dev/example-checksum: 9185c153
   labels:
     app.kubernetes.io/component: knative-eventing
@@ -1995,7 +1996,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: config-sugar
   namespace: knative-eventing
@@ -2015,7 +2016,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     knative.dev/config-category: eventing
     knative.dev/config-propagation: original
     kustomize.component: knative
@@ -2037,42 +2038,42 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: default-ch-webhook
   namespace: knative-eventing
 ---
 apiVersion: v1
 data:
-  aws-ddb-streams-source: gcr.io/knative-releases/aws-ddb-streams-source@sha256:a39dbc38c68c102864ac4cb928d26d0404ccd11fcc4438a2d90d857fefdece6d
-  aws-eventbridge-sink: gcr.io/knative-releases/aws-eventbridge-sink@sha256:2c6ef87d3626f350007f69205353d13e843514fb2fd29f149622804226d9709e
-  aws-s3-sink: gcr.io/knative-releases/aws-s3-sink@sha256:d708b2e9f39eb499493d8d826a9c234512389f9c94bde5e04b5d22ffd8085e9b
-  aws-s3-source: gcr.io/knative-releases/aws-s3-source@sha256:33c9493835b27b75e86b29ca863d205577d7940b0f42b3597c60a8fecf43e1fa
-  aws-sns-sink: gcr.io/knative-releases/aws-sns-sink@sha256:9ed7021806261d40bf2cf4ee7aaf28a613c7f5dff3b3e8fe340c5fd1dae2874a
-  aws-sqs-sink: gcr.io/knative-releases/aws-sqs-sink@sha256:108dd5bbbab656c91b27fd6bcc21b9b9020e20d09a3dfe93030d7342e4ac5d98
-  aws-sqs-source: gcr.io/knative-releases/aws-sqs-source@sha256:853297af896258e3ac6a88a9a753343d0348fa1aa2a8c7092ff189c5b26e3550
-  jsonata-transformer: gcr.io/knative-releases/jsonata-transformer@sha256:4a228c239abcffac4e21080eb7c792732fad8baa2ceaf54ed4de38b1121db43e
-  log-sink: gcr.io/knative-releases/log-sink@sha256:cb037ddb2cc71d369983e223cdeef3b30f1045e827200fc33bcccac4f3cf993b
-  timer-source: gcr.io/knative-releases/timer-source@sha256:45af6d4df89c379656ef482f048d559cd8d8d4e286b3e440ef9a6c94fcc8d920
+  aws-ddb-streams-source: gcr.io/knative-releases/aws-ddb-streams-source@sha256:22cad51385b9eac08c831c11a63fcd666a5026f1d2984fdb1ae530f9f4c9a839
+  aws-eventbridge-sink: gcr.io/knative-releases/aws-eventbridge-sink@sha256:707373f77bb7f707a4b2599f7417c664b488f4d3ee6ddd8c5ee5c6d6c96450f5
+  aws-s3-sink: gcr.io/knative-releases/aws-s3-sink@sha256:9c51fe321babee0694c3008ead7031762c482db0bf6d7a29577717198a465b01
+  aws-s3-source: gcr.io/knative-releases/aws-s3-source@sha256:1726cb92066e094127014a1a42974c557cbdf26f9be7ae410848857fd23c8bb6
+  aws-sns-sink: gcr.io/knative-releases/aws-sns-sink@sha256:856754c0b5230ae84c293ec74b486da4ade6f721cb2b1e5f9418ad761467a303
+  aws-sqs-sink: gcr.io/knative-releases/aws-sqs-sink@sha256:d302a8ce04de3169a2d22a32826948543f38c02c599e6499cdd6915e449a3e9b
+  aws-sqs-source: gcr.io/knative-releases/aws-sqs-source@sha256:10815ad42da6a7b619887d3782067a7623cb163086529c17f43d541224247c8a
+  jsonata-transformer: gcr.io/knative-releases/jsonata-transformer@sha256:c106f92640a91e8272c5498b41be3b8cbef2eed201fd1f9d052b0a70bef3789b
+  log-sink: gcr.io/knative-releases/log-sink@sha256:e79ccd2c26fd32858ea55e10153b621d0f4391541576dbef3dab7c8b149a30cc
+  timer-source: gcr.io/knative-releases/timer-source@sha256:b82a74f4f859afe52b347d92f4bc4455b68275632b6a139b35aa582a544d54ad
 kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: v1.23.0
+    app.kubernetes.io/version: v1.24.0
     kustomize.component: knative
   name: eventing-integrations-images
   namespace: knative-eventing
 ---
 apiVersion: v1
 data:
-  transform-jsonata: gcr.io/knative-releases/transform-jsonata@sha256:39c98808cb212b6b2fa61e0f449cac9b21bf7319fb81efe9ce4ba5926f2cafa0
+  transform-jsonata: gcr.io/knative-releases/transform-jsonata@sha256:6eb3dacf467374a029aca26717498e85ccfaee289cc1918f240d0cc3727654df
 kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: v1.23.0
+    app.kubernetes.io/version: v1.24.0
     kustomize.component: knative
   name: eventing-transformations-images
   namespace: knative-eventing
@@ -2083,7 +2084,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook-certs
   namespace: knative-eventing
@@ -2094,7 +2095,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     eventing.knative.dev/part-of: request-reply
     kustomize.component: knative
   name: request-reply-keys
@@ -2106,7 +2107,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     role: eventing-webhook
   name: eventing-webhook
@@ -2128,7 +2129,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
     sinks.knative.dev/sink: job-sink
   name: job-sink
@@ -2159,7 +2160,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     eventing.knative.dev/part-of: request-reply
     kustomize.component: knative
   name: request-reply
@@ -2186,7 +2187,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     bindings.knative.dev/exclude: 'true'
     knative.dev/high-availability: 'true'
     kustomize.component: knative
@@ -2205,7 +2206,7 @@ spec:
         app: eventing-controller
         app.kubernetes.io/component: knative-eventing
         app.kubernetes.io/name: knative-eventing
-        app.kubernetes.io/version: 1.23.0
+        app.kubernetes.io/version: 1.24.0
         kustomize.component: knative
     spec:
       affinity:
@@ -2233,9 +2234,9 @@ spec:
         - name: METRICS_DOMAIN
           value: knative.dev/eventing
         - name: APISERVER_RA_IMAGE
-          value: gcr.io/knative-releases/knative.dev/eventing/cmd/apiserver_receive_adapter@sha256:2ddc326c4d780c27db5f9ebb0eff2e09eea1800eae9fb93d234c0e50ecc3be38
+          value: gcr.io/knative-releases/knative.dev/eventing/cmd/apiserver_receive_adapter@sha256:0c553761a4b6553186bce7e39a5cdb225093e428393c5c4ee0ae724d83169941
         - name: AUTH_PROXY_IMAGE
-          value: gcr.io/knative-releases/knative.dev/eventing/cmd/auth_proxy@sha256:7013b93c4edf29019b588191c3a666058e514d4c2acda3720e1cbf01050ab73f
+          value: gcr.io/knative-releases/knative.dev/eventing/cmd/auth_proxy@sha256:4d771d0838a4cd759f0e4ef4c7182ddfe6fa752a9266b706255951a1602e964c
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -2285,7 +2286,7 @@ spec:
             configMapKeyRef:
               key: aws-sns-sink
               name: eventing-integrations-images
-        image: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:dd385d5632b8ce1a49c45421a3a11db91837c8fb12ea56c7ebde4f9aad2e825c
+        image: gcr.io/knative-releases/knative.dev/eventing/cmd/controller@sha256:2a411f7ce81ebd483071e2b85af99e9ee62a8e8fee049c32a0a52c9ce2819ec4
         livenessProbe:
           httpGet:
             path: /health
@@ -2333,7 +2334,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     bindings.knative.dev/exclude: 'true'
     kustomize.component: knative
   name: eventing-webhook
@@ -2352,7 +2353,7 @@ spec:
         app: eventing-webhook
         app.kubernetes.io/component: knative-eventing
         app.kubernetes.io/name: knative-eventing
-        app.kubernetes.io/version: 1.23.0
+        app.kubernetes.io/version: 1.24.0
         kustomize.component: knative
         role: eventing-webhook
     spec:
@@ -2388,7 +2389,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        image: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:3f6dfc52cfaf0b5a8e0c098f83f60eb237d3b8bfbbd4d0faea7c08fad98a1215
+        image: gcr.io/knative-releases/knative.dev/eventing/cmd/webhook@sha256:6537c9764d04372abdef88d576ee44bf718b83b55e5b07375710ea0e215633fe
         livenessProbe:
           httpGet:
             httpHeaders:
@@ -2441,7 +2442,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: job-sink
   namespace: knative-eventing
@@ -2458,7 +2459,7 @@ spec:
       labels:
         app.kubernetes.io/component: knative-eventing
         app.kubernetes.io/name: knative-eventing
-        app.kubernetes.io/version: 1.23.0
+        app.kubernetes.io/version: 1.24.0
         kustomize.component: knative
         sinks.knative.dev/sink: job-sink
     spec:
@@ -2502,7 +2503,7 @@ spec:
           value: '8080'
         - name: INGRESS_PORT_HTTPS
           value: '8443'
-        image: gcr.io/knative-releases/knative.dev/eventing/cmd/jobsink@sha256:bb9777c85adbf4238e60f9e99f236cc9224b92baaa68a115867e88d086eede1f
+        image: gcr.io/knative-releases/knative.dev/eventing/cmd/jobsink@sha256:d3db25a74681dbc9b13f9e97648e4250a845b78215bcef406eb94d8ca40ebfa1
         livenessProbe:
           failureThreshold: 3
           httpGet:
@@ -2560,7 +2561,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     bindings.knative.dev/exclude: 'true'
     kustomize.component: knative
   name: pingsource-mt-adapter
@@ -2578,7 +2579,7 @@ spec:
       labels:
         app.kubernetes.io/component: knative-eventing
         app.kubernetes.io/name: knative-eventing
-        app.kubernetes.io/version: 1.23.0
+        app.kubernetes.io/version: 1.24.0
         eventing.knative.dev/source: ping-source-controller
         kustomize.component: knative
         sources.knative.dev/role: adapter
@@ -2610,7 +2611,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:2fc8713fb4807df0f5d8f9506d03c16c168eed61f19c04e04092266248bd0353
+        image: gcr.io/knative-releases/knative.dev/eventing/cmd/mtping@sha256:14aa2fec23011c08c3ed5a9e6db99b171f49a7744685a0a85ed9313dd168c045
         livenessProbe:
           httpGet:
             path: /health
@@ -2659,7 +2660,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: request-reply
   namespace: knative-eventing
@@ -2676,7 +2677,7 @@ spec:
       labels:
         app.kubernetes.io/component: knative-eventing
         app.kubernetes.io/name: knative-eventing
-        app.kubernetes.io/version: 1.23.0
+        app.kubernetes.io/version: 1.24.0
         eventing.knative.dev/part-of: request-reply
         kustomize.component: knative
     spec:
@@ -2700,7 +2701,7 @@ spec:
           value: config-logging
         - name: CONFIG_OBSERVABILITY_NAME
           value: config-observability
-        image: gcr.io/knative-releases/knative.dev/eventing/cmd/requestreply@sha256:0e9e6d121e9bcd57b01beb33124bb5387b70d4820caebe326264db92db1e1336
+        image: gcr.io/knative-releases/knative.dev/eventing/cmd/requestreply@sha256:e8ed257ac9531472ee59912477481dc811973aeecad5680a900f0062fdf6ce94
         name: request-reply
         ports:
         - containerPort: 8080
@@ -2733,7 +2734,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook
   namespace: knative-eventing
@@ -2752,7 +2753,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: eventing-webhook
   namespace: knative-eventing
@@ -2813,7 +2814,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: sinkbindings.webhook.sources.knative.dev
 webhooks:
@@ -2835,7 +2836,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: webhook.eventing.knative.dev
 webhooks:
@@ -2857,7 +2858,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: config.webhook.eventing.knative.dev
 webhooks:
@@ -2885,7 +2886,7 @@ metadata:
   labels:
     app.kubernetes.io/component: knative-eventing
     app.kubernetes.io/name: knative-eventing
-    app.kubernetes.io/version: 1.23.0
+    app.kubernetes.io/version: 1.24.0
     kustomize.component: knative
   name: validation.webhook.eventing.knative.dev
 webhooks:

@@ -7,7 +7,7 @@ metadata:
     app: storage-version-migration-serving
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "1.23.0"
+    app.kubernetes.io/version: "1.24.0"
   name: storage-version-migration-serving
 spec:
   ttlSecondsAfterFinished: 600
@@ -18,14 +18,14 @@ spec:
         app: storage-version-migration-serving
         app.kubernetes.io/name: knative-serving
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "1.23.0"
+        app.kubernetes.io/version: "1.24.0"
         sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: controller
       restartPolicy: OnFailure
       containers:
         - name: migrate
-          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:2016f5ede9fb269c7cdf0085ff106844dfa36e42a4d768e0a2f51464928a0c2d
+          image: gcr.io/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate@sha256:ce9a6e7171f1125949bd936e5891ca853ba9c2ea7e9fc83422a9a6b721722f93
           args:
             - "services.serving.knative.dev"
             - "configurations.serving.knative.dev"

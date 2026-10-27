@@ -2,7 +2,7 @@ apiVersion: v2
 name: knative-serving
 description: Knative Serving with Kubeflow Istio integration
 version: 0.1.0
-appVersion: "1.23.0"
+appVersion: "1.24.0"
 keywords:
   - knative
   - serving
@@ -14,4 +14,4 @@ sources:
   - https://github.com/knative-extensions/net-istio
 annotations:
   licenses: Apache-2.0
-  kubeflow.org/queue-proxy-image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:a3cc71ce80dbc6df8781f15eac2cf3531a4c9815271799afd8776bef9e6aeaf2
+  kubeflow.org/queue-proxy-image: gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:acbd28666cc7eef7f9a3ed2495fb6d9e8fac1180b35a9f22246e3bb69c87a891

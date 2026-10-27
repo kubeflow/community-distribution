@@ -1,6 +1,6 @@
 # Knative Eventing core for Kubeflow
 
-One independent release installs the v1.23.0 distribution security overlay,
+One independent release installs the v1.24.0 distribution security overlay,
 `common/knative/knative-eventing/overlays/security`: 105 objects including 17 API
 definitions. It does not require a Serving release, install the Knative Operator,
 or enable the downloaded but disabled in-memory channel and MT-channel broker

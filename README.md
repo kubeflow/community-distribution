@@ -64,15 +64,15 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.0](https://github.com/kubeflow/notebooks/tree/v1.11.0/) | 43m | 806Mi | 0GB |
 | Kubeflow Dashboard | applications/dashboard/upstream/ | [v2.0.0](https://github.com/kubeflow/dashboard/tree/v2.0.0/) | 10m | 302Mi | 0GB |
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
-| KServe UI | applications/kserve/kserve-ui | [v1.0.5](https://github.com/kserve/models-web-app/tree/v1.0.5/manifests/kustomize) | 6m | 259Mi | 0GB |
+| KServe UI | applications/kserve/kserve-ui | [v1.1.0](https://github.com/kserve/models-web-app/tree/v1.1.0/manifests/kustomize) | 6m | 259Mi | 0GB |
 | KServe | applications/kserve/kserve | [v0.21.0](https://github.com/kserve/kserve/tree/v0.21.0) | 600m | 1200Mi | 0GB |
 | Kubeflow Pipelines | applications/pipeline/upstream | [2.17.3](https://github.com/kubeflow/pipelines/tree/2.17.3/manifests/kustomize) | 970m | 3552Mi | 35GB |
 | Kubeflow Hub | applications/hub/upstream | [v0.3.18](https://github.com/kubeflow/hub/tree/v0.3.18/manifests/kustomize) | 510m | 2112Mi | 20GB |
 | Spark Operator | applications/spark/spark-operator | [2.5.2](https://github.com/kubeflow/spark-operator/tree/v2.5.2) | 9m | 41Mi | 0GB |
 | Istio | common/istio | [1.31.3](https://github.com/istio/istio/releases/tag/1.31.3) | 750m | 2364Mi | 0GB |
-| Knative | common/knative/knative-serving <br /> common/knative/knative-eventing | [v1.23.0](https://github.com/knative/serving/releases/tag/knative-v1.23.0) <br /> [v1.23.0](https://github.com/knative/eventing/releases/tag/knative-v1.23.0) | 1450m | 1038Mi | 0GB |
+| Knative | common/knative/knative-serving <br /> common/knative/knative-eventing | [v1.24.0](https://github.com/knative/serving/releases/tag/knative-v1.24.0) <br /> [v1.24.0](https://github.com/knative/eventing/releases/tag/knative-v1.24.0) | 1450m | 1038Mi | 0GB |
 | Cert Manager | common/cert-manager | [1.21.2](https://github.com/cert-manager/cert-manager/releases/tag/v1.21.2) | 3m | 128Mi | 0GB |
-| Dex | common/dex | [2.46.0](https://github.com/dexidp/dex/releases/tag/v2.46.0) | 3m | 27Mi | 0GB |
+| Dex | common/dex | [2.46.1](https://github.com/dexidp/dex/releases/tag/v2.46.1) | 3m | 27Mi | 0GB |
 | OAuth2-Proxy | common/oauth2-proxy | [7.15.5](https://github.com/oauth2-proxy/oauth2-proxy/releases/tag/v7.15.5) | 3m | 27Mi | 0GB |
 | **Total** | | | **4377m** | **12316Mi** | **65GB** |
 
