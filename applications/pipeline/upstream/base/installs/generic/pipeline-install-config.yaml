@@ -11,7 +11,7 @@ data:
     until the changes take effect. A quick way to restart all deployments in a
     namespace: `kubectl rollout restart deployment -n <your-namespace>`.
   appName: pipeline
-  appVersion: 2.17.3
+  appVersion: 2.18.0
   dbType: mysql
   mysqlHost: mysql
   mysqlPort: "3306"
@@ -61,8 +61,8 @@ data:
   ## cacheImage is the image that the mutating webhook will use to patch
   ## cached steps with. Will be used to echo a message announcing that
   ## the cached step result will be used. If not set it will default to
-  ## 'ghcr.io/containerd/busybox'
-  cacheImage: "ghcr.io/containerd/busybox"
+  ## the pinned Alpine image below (includes package metadata for scanning).
+  cacheImage: "mirror.gcr.io/library/alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63"
   ## cacheNodeRestrictions the dummy container runing if output is cached
   ## will run with the same affinity and node selector as the default pipeline
   ## step. This is defaulted to 'false' to allow the pod to be scheduled on
@@ -100,11 +100,33 @@ data:
   ## Valid values are 'true' and 'false'. Defaults to 'false'.
   ## For more information see: https://github.com/kubeflow/pipelines/pull/11965
   ARTIFACTS_PROXY_ENABLED: "false"
+  ## HTTP_BASE_URL: Operator-approved HTTP(S) base URL for HTTP artifact reads.
+  ## Include the full trusted path prefix, if needed; leave empty to disable HTTP
+  ## artifacts. Shared UI and multi-user artifact proxies receive this same URL.
+  HTTP_BASE_URL: ""
+  ## ALLOWED_ARTIFACT_ENDPOINTS: Comma-separated HTTP(S) origins that secret-backed
+  ## S3-compatible provider configurations may contact in addition to the server's
+  ## configured MinIO and AWS S3 origins. Required when bucketProviders use a custom
+  ## object store; include the exact scheme, host spelling, and optional port, with no
+  ## path or credentials. Multi-user artifact proxies receive the same allowlist.
+  ALLOWED_ARTIFACT_ENDPOINTS: ""
   ## ARTIFACT_RETENTION_DAYS: Defines the retention period (in days) for artifacts stored in SeaweedFS.
   ## - A positive integer specifies the number of days after which the artifact will be automatically deleted.
   ## - A negative integer (e.g., -1) disables automatic deletion, meaning artifacts are retained indefinitely.
   ## Note: The unit of this configuration is always in days.
   ARTIFACT_RETENTION_DAYS: "-1"
+  ## RUNS_RETENTION_TIME: Auto-archive terminal runs after this duration.
+  ## Uses Go duration format (e.g., "720h" for 30 days). Empty disables.
+  RUNS_RETENTION_TIME: ""
+  ## ARCHIVED_RUNS_RETENTION_TIME: Auto-delete archived runs this long after
+  ## they were archived (runs archived before upgrade fall back to their
+  ## completion time). Uses Go duration format (e.g., "2160h" for 90 days).
+  ## Empty disables.
+  ARCHIVED_RUNS_RETENTION_TIME: ""
+  ## RUNS_GC_INTERVAL: Poll interval for the run garbage collector.
+  RUNS_GC_INTERVAL: "6h"
+  ## RUNS_GC_BATCH_SIZE: Maximum rows per GC batch (the collector drains all batches per tick).
+  RUNS_GC_BATCH_SIZE: "100"
   ## Default security context for customer workload containers.
   ## Leave empty to disable (default). When set, SDK-specified values
   ## for the corresponding field are ignored.
@@ -130,3 +152,10 @@ data:
   ## USERID_PREFIX is stripped from the header value before it is used as the user id.
   USERID_HEADER: "kubeflow-userid"
   USERID_PREFIX: ""
+  ## Custom labels and annotations for driver pods (JSON format).
+  ## Useful for enabling Istio sidecar injection or other infrastructure integration.
+  ## Every value must be a JSON string, for example "true" rather than true.
+  ## Keys with the prefix "pipelines.kubeflow.org/" are reserved and will be filtered out.
+  ## Example: '{"sidecar.istio.io/inject":"true"}'
+  DRIVER_POD_LABELS: ""
+  DRIVER_POD_ANNOTATIONS: ""

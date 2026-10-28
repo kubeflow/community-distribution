@@ -217,6 +217,59 @@ class PipelinesHelmChartLifecycleTest(unittest.TestCase):
                         resource["aggregationRule"]["clusterRoleSelectors"], name
                     )
 
+    def test_tensorboard_signing_key_is_initialized_in_both_scenarios(self):
+        for values_file in (
+            "ci/values-platform-database.yaml",
+            "ci/values-platform-k8s-native.yaml",
+        ):
+            with self.subTest(values_file=values_file):
+                result = render_chart("--values", str(CHART_DIRECTORY / values_file))
+                self.assertEqual(result.returncode, 0, result.stderr)
+                resources = load_rendered_resources(result.stdout)
+                secret = next(
+                    resource
+                    for resource in resources
+                    if resource["kind"] == "Secret"
+                    and resource["metadata"]["name"]
+                    == "ml-pipeline-ui-tensorboard-proxy"
+                )
+                self.assertNotIn("data", secret)
+                self.assertNotIn("stringData", secret)
+
+                initializer = next(
+                    resource
+                    for resource in resources
+                    if resource["kind"] == "Job"
+                    and resource["metadata"]["name"].startswith(
+                        "ml-pipeline-ui-signing-key-init-"
+                    )
+                )
+                pod = initializer["spec"]["template"]["spec"]
+                self.assertEqual(
+                    pod["serviceAccountName"], "ml-pipeline-ui-signing-key-init"
+                )
+                self.assertTrue(pod["securityContext"]["runAsNonRoot"])
+
+                deployment = next(
+                    resource
+                    for resource in resources
+                    if resource["kind"] == "Deployment"
+                    and resource["metadata"]["name"] == "ml-pipeline-ui"
+                )
+                container = deployment["spec"]["template"]["spec"]["containers"][0]
+                signing_key = next(
+                    variable
+                    for variable in container["env"]
+                    if variable["name"] == "TENSORBOARD_PROXY_SIGNING_SECRET"
+                )
+                self.assertEqual(
+                    signing_key["valueFrom"]["secretKeyRef"],
+                    {
+                        "name": "ml-pipeline-ui-tensorboard-proxy",
+                        "key": "signing-secret",
+                    },
+                )
+
     def test_explicit_empty_scenario_defaults_to_database(self):
         result = render_chart(
             "--set-string",

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Tests that every Kubeflow Pipelines chart input selects its synchronization replay."""
 
+import re
+import shlex
 import subprocess
 import sys
 import unittest
@@ -46,6 +48,33 @@ class SynchronizationReplaySelectionTest(unittest.TestCase):
             SYNCHRONIZATION_SCRIPT,
             selected_scripts("applications/pipeline/helm/README.md"),
         )
+
+    def test_integration_workflows_use_the_synchronized_sdk_version(self):
+        script = (REPOSITORY_ROOT / SYNCHRONIZATION_SCRIPT).read_text()
+        version_match = re.search(
+            r'^COMPONENT_VERSION="([^"]+)"$', script, re.MULTILINE
+        )
+        self.assertIsNotNone(version_match)
+        version = version_match.group(1)
+
+        workflow_names = (
+            "full_kubeflow_integration_test.yaml",
+            "helm-pipelines-test.yaml",
+            "helm_kubeflow_integration_test.yaml",
+            "pipeline_test.yaml",
+            "spark_pipeline_test.yaml",
+        )
+        for workflow_name in workflow_names:
+            with self.subTest(workflow=workflow_name):
+                workflow = REPOSITORY_ROOT / ".github/workflows" / workflow_name
+                installation_commands = [
+                    shlex.split(line.strip())
+                    for line in workflow.read_text().splitlines()
+                    if "pip3 install" in line and "kfp-kubernetes" in line
+                ]
+                self.assertEqual(len(installation_commands), 1)
+                self.assertIn(f"kfp=={version}", installation_commands[0])
+                self.assertIn(f"kfp-kubernetes=={version}", installation_commands[0])
 
 
 if __name__ == "__main__":

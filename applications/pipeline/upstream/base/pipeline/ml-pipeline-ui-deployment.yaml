@@ -5,6 +5,10 @@ metadata:
     app: ml-pipeline-ui
   name: ml-pipeline-ui
 spec:
+  # First adoption must stop pods using old keys before starting shared-key pods.
+  # Enable rolling updates after migration; see the server configuration guide.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: ml-pipeline-ui
@@ -44,6 +48,11 @@ spec:
           seccompProfile:
             type: RuntimeDefault
         env:
+          - name: TENSORBOARD_PROXY_SIGNING_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: ml-pipeline-ui-tensorboard-proxy
+                key: signing-secret
           - name: VIEWER_TENSORBOARD_POD_TEMPLATE_SPEC_PATH
             value: /etc/config/viewer-pod-template.json
           - name: MINIO_NAMESPACE
@@ -74,9 +83,9 @@ spec:
           # (for example pod logs and other objects legitimately absent from the metadata
           # store). The default "mlmd-then-prefix" derives the owning namespace from the
           # "private-artifacts/<namespace>/" object-key prefix, restoring v1 and v2 artifact
-          # retrieval while still blocking cross-namespace access; an object that carries no
-          # such prefix has no derivable owner and is denied, because nothing is ever written
-          # to the bucket root. Set to "mlmd-only" to enforce the strict guard that denies
+          # retrieval for matching prefixes. An untracked object without that prefix is
+          # denied. This fallback does not establish ownership when MLMD is unavailable.
+          # Set to "mlmd-only" to enforce the existing guard that denies
           # every artifact absent from the metadata store. Deployments with a customized
           # Argo keyFormat / pipeline root can override the expected leading key segment
           # via ARTIFACT_NAMESPACE_KEY_PREFIX (default "private-artifacts").
@@ -107,6 +116,18 @@ spec:
               configMapKeyRef:
                 name: pipeline-install-config
                 key: ARTIFACTS_PROXY_ENABLED
+                optional: true
+          - name: HTTP_BASE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-install-config
+                key: HTTP_BASE_URL
+                optional: true
+          - name: ALLOWED_ARTIFACT_ENDPOINTS
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-install-config
+                key: ALLOWED_ARTIFACT_ENDPOINTS
                 optional: true
         readinessProbe:
           httpGet:

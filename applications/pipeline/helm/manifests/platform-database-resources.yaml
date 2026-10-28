@@ -166,6 +166,15 @@ spec:
             configMapKeyRef:
               key: autoUpdatePipelineDefaultVersion
               name: pipeline-install-config
+        - name: CRON_SCHEDULE_TIMEZONE
+          valueFrom:
+            configMapKeyRef:
+              key: cronScheduleTimezone
+              name: pipeline-install-config
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -254,9 +263,9 @@ spec:
               key: secretkey
               name: mlpipeline-minio-artifact
         - name: V2_DRIVER_IMAGE
-          value: ghcr.io/kubeflow/kfp-driver:2.17.3
+          value: ghcr.io/kubeflow/kfp-driver:2.18.0
         - name: V2_LAUNCHER_IMAGE
-          value: ghcr.io/kubeflow/kfp-launcher:2.17.3
+          value: ghcr.io/kubeflow/kfp-launcher:2.18.0
         - name: COMPILED_PIPELINE_SPEC_PATCH
           value: '{}'
         - name: DEFAULT_SECURITY_CONTEXT_RUN_AS_USER
@@ -295,10 +304,46 @@ spec:
               key: V1_ALLOWED_NAMESPACES
               name: pipeline-install-config
               optional: true
+        - name: DRIVER_POD_LABELS
+          valueFrom:
+            configMapKeyRef:
+              key: DRIVER_POD_LABELS
+              name: pipeline-install-config
+              optional: true
+        - name: DRIVER_POD_ANNOTATIONS
+          valueFrom:
+            configMapKeyRef:
+              key: DRIVER_POD_ANNOTATIONS
+              name: pipeline-install-config
+              optional: true
+        - name: RUNS_RETENTION_TIME
+          valueFrom:
+            configMapKeyRef:
+              key: RUNS_RETENTION_TIME
+              name: pipeline-install-config
+              optional: true
+        - name: ARCHIVED_RUNS_RETENTION_TIME
+          valueFrom:
+            configMapKeyRef:
+              key: ARCHIVED_RUNS_RETENTION_TIME
+              name: pipeline-install-config
+              optional: true
+        - name: RUNS_GC_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              key: RUNS_GC_INTERVAL
+              name: pipeline-install-config
+              optional: true
+        - name: RUNS_GC_BATCH_SIZE
+          valueFrom:
+            configMapKeyRef:
+              key: RUNS_GC_BATCH_SIZE
+              name: pipeline-install-config
+              optional: true
         envFrom:
         - configMapRef:
             name: pipeline-api-server-config-dc9hkg52h6
-        image: ghcr.io/kubeflow/kfp-api-server:2.17.3
+        image: ghcr.io/kubeflow/kfp-api-server:2.18.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

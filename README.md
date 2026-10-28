@@ -66,7 +66,7 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
 | KServe UI | applications/kserve/kserve-ui | [v1.0.5](https://github.com/kserve/models-web-app/tree/v1.0.5/manifests/kustomize) | 6m | 259Mi | 0GB |
 | KServe | applications/kserve/kserve | [v0.21.0](https://github.com/kserve/kserve/tree/v0.21.0) | 600m | 1200Mi | 0GB |
-| Kubeflow Pipelines | applications/pipeline/upstream | [2.17.3](https://github.com/kubeflow/pipelines/tree/2.17.3/manifests/kustomize) | 970m | 3552Mi | 35GB |
+| Kubeflow Pipelines | applications/pipeline/upstream | [2.18.0](https://github.com/kubeflow/pipelines/tree/2.18.0/manifests/kustomize) | 970m | 3552Mi | 35GB |
 | Kubeflow Hub | applications/hub/upstream | [v0.3.18](https://github.com/kubeflow/hub/tree/v0.3.18/manifests/kustomize) | 510m | 2112Mi | 20GB |
 | Spark Operator | applications/spark/spark-operator | [2.5.2](https://github.com/kubeflow/spark-operator/tree/v2.5.2) | 9m | 41Mi | 0GB |
 | Istio | common/istio | [1.31.3](https://github.com/istio/istio/releases/tag/1.31.3) | 750m | 2364Mi | 0GB |
@@ -561,6 +561,12 @@ kubectl delete deployment <name> -n <namespace> --ignore-not-found
 This will cause brief downtime for the affected controller but is safe since the new manifests will recreate it.
 
 ### Version-Specific Upgrade Notes
+
+#### Kubeflow Pipelines 2.18.0
+
+Review the [Pipelines 2.18 upgrade guide](https://github.com/kubeflow/pipelines/blob/2.18.0/docs/operator-guides/upgrade-2.18.md), including custom roles, artifact endpoints, package mirrors, and database preparation. The first adoption of the shared TensorBoard signing key briefly interrupts the Pipelines user interface and invalidates existing TensorBoard URLs; reopen the viewers afterward. Automatic artifact previews can contain sample data or model configuration, and legacy cache entries with unknown ownership are no longer reused by default.
+
+The matching Python packages are `kfp==2.18.0` and `kfp-kubernetes==2.18.0`. The existing version 1 SDK compatibility tests remain separate.
 
 #### 1.9 -> 1.9.1 (oauth2-proxy migration)
 - We switched to oauth2-proxy, which needs additional attention (cleanup istio-system once).

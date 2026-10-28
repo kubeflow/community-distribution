@@ -114,6 +114,16 @@ metadata:
     app.kubernetes.io/component: ml-pipeline
     app.kubernetes.io/name: kubeflow-pipelines
     application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-ui-signing-key-init
+  namespace: kubeflow
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
   name: ml-pipeline-viewer-crd-service-account
   namespace: kubeflow
 ---
@@ -368,6 +378,21 @@ rules:
   - secrets
   verbs:
   - get
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - kfp-apiserver-gc
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -414,6 +439,38 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-schedule-writer-handoff
+  namespace: kubeflow
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - patch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
     app: ml-pipeline-scheduledworkflow-role
     app.kubernetes.io/component: ml-pipeline
     app.kubernetes.io/name: kubeflow-pipelines
@@ -452,6 +509,12 @@ rules:
   - runs
   verbs:
   - create
+- apiGroups:
+  - pipelines.kubeflow.org
+  resources:
+  - pipelines
+  verbs:
+  - get
 - apiGroups:
   - ''
   resources:
@@ -509,6 +572,26 @@ rules:
   verbs:
   - get
   - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-ui-signing-key-init
+  namespace: kubeflow
+rules:
+- apiGroups:
+  - ''
+  resourceNames:
+  - ml-pipeline-ui-tensorboard-proxy
+  resources:
+  - secrets
+  verbs:
+  - get
+  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -690,6 +773,7 @@ rules:
   - unarchive
   - reportMetrics
   - readArtifact
+  - readLog
 - apiGroups:
   - pipelines.kubeflow.org
   resources:
@@ -705,6 +789,13 @@ rules:
   - scheduledworkflows
   verbs:
   - '*'
+- apiGroups:
+  - kubeflow.org
+  resources:
+  - viewers
+  verbs:
+  - create
+  - delete
 - apiGroups:
   - argoproj.io
   resources:
@@ -746,14 +837,13 @@ rules:
   - get
   - list
   - readArtifact
+  - readLog
 - apiGroups:
   - kubeflow.org
   resources:
   - viewers
   verbs:
-  - create
   - get
-  - delete
 - apiGroups:
   - pipelines.kubeflow.org
   resources:
@@ -1236,7 +1326,6 @@ rules:
   resources:
   - workflows
   verbs:
-  - create
   - get
   - list
   - watch
@@ -1249,6 +1338,12 @@ rules:
   - runs
   verbs:
   - create
+- apiGroups:
+  - pipelines.kubeflow.org
+  resources:
+  - pipelines
+  verbs:
+  - get
 - apiGroups:
   - kubeflow.org
   resources:
@@ -1463,6 +1558,27 @@ metadata:
     app.kubernetes.io/component: ml-pipeline
     app.kubernetes.io/name: kubeflow-pipelines
     application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-schedule-writer-handoff
+  namespace: kubeflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ml-pipeline-schedule-writer-handoff
+subjects:
+- kind: ServiceAccount
+  name: ml-pipeline
+  namespace: kubeflow
+- kind: ServiceAccount
+  name: ml-pipeline-scheduledworkflow
+  namespace: kubeflow
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
   name: ml-pipeline-scheduledworkflow-binding
   namespace: kubeflow
 roleRef:
@@ -1491,6 +1607,24 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: ml-pipeline-ui
+  namespace: kubeflow
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-ui-signing-key-init
+  namespace: kubeflow
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ml-pipeline-ui-signing-key-init
+subjects:
+- kind: ServiceAccount
+  name: ml-pipeline-ui-signing-key-init
   namespace: kubeflow
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1701,148 +1835,192 @@ data:
     \ Unless required by applicable law or agreed to in writing, software\n# distributed under the License\
     \ is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express\
     \ or implied.\n# See the License for the specific language governing permissions and\n# limitations\
-    \ under the License.\n\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\nimport json\n\
-    import os\nimport base64\nimport hashlib\n\n# From awscli installed in alpine/k8s image\nimport botocore.session\n\
-    \nS3_BUCKET_NAME = 'mlpipeline'\n\nsession = botocore.session.get_session()\n# S3 client for lifecycle\
-    \ policy and bucket policy management\ns3_endpoint_url = os.environ.get(\"S3_ENDPOINT_URL\", \"http://seaweedfs.kubeflow:8333\"\
-    )\ns3 = session.create_client('s3', region_name='foobar', endpoint_url=s3_endpoint_url)\n\n\ndef _normalize_domain(domain):\n\
-    \    return domain if domain.startswith('.') else '.' + domain\n\n\ndef create_iam_client():\n   \
-    \ # To interact with SeaweedFS user management. Region does not matter.\n    endpoint_url = os.environ.get(\"\
-    AWS_ENDPOINT_URL\")\n    if endpoint_url:\n        return session.create_client('iam', region_name='foobar',\
+    \ under the License.\n\nimport base64\nimport hashlib\nfrom http.server import BaseHTTPRequestHandler\n\
+    from http.server import ThreadingHTTPServer\nimport json\nimport os\n\ntry:\n    import botocore.session\n\
+    except ModuleNotFoundError as error:\n    if error.name != 'botocore':\n        raise\n    # AWS CLI\
+    \ 1.46+ registers its bundled botocore import alias on startup.\n    import awscli  # noqa: F401\n\
+    \    import botocore.session\n\nS3_BUCKET_NAME = 'mlpipeline'\nHEALTHZ_PATH = '/healthz'\n\nsession\
+    \ = botocore.session.get_session()\n# S3 client for lifecycle policy and bucket policy management\n\
+    s3_endpoint_url = os.environ.get(\"S3_ENDPOINT_URL\",\n                                 \"http://seaweedfs.kubeflow:8333\"\
+    )\ns3 = session.create_client(\n    's3', region_name='foobar', endpoint_url=s3_endpoint_url)\n\n\n\
+    def _normalize_domain(domain):\n    return domain if domain.startswith('.') else '.' + domain\n\n\n\
+    def artifact_server_environment(namespace,\n                                cluster_domain,\n    \
+    \                            allowed_artifact_endpoints,\n                                http_base_url=\"\
+    \"):\n    return [\n        {\n            \"name\": \"MINIO_ACCESS_KEY\",\n            \"valueFrom\"\
+    : {\n                \"secretKeyRef\": {\n                    \"key\": \"accesskey\",\n          \
+    \          \"name\": \"mlpipeline-minio-artifact\"\n                }\n            }\n        },\n\
+    \        {\n            \"name\": \"MINIO_SECRET_KEY\",\n            \"valueFrom\": {\n          \
+    \      \"secretKeyRef\": {\n                    \"key\": \"secretkey\",\n                    \"name\"\
+    : \"mlpipeline-minio-artifact\"\n                }\n            }\n        },\n        {\n       \
+    \     \"name\": \"ML_PIPELINE_SERVICE_HOST\",\n            \"value\": f\"ml-pipeline.kubeflow{_normalize_domain(cluster_domain)}\"\
+    \n        },\n        {\n            \"name\": \"ML_PIPELINE_SERVICE_PORT\",\n            \"value\"\
+    : \"8888\"\n        },\n        {\n            \"name\": \"FRONTEND_SERVER_NAMESPACE\",\n        \
+    \    \"value\": namespace,\n        },\n        {\n            \"name\": \"CLUSTER_DOMAIN\",\n   \
+    \         \"value\": cluster_domain,\n        },\n        {\n            \"name\": \"HTTP_BASE_URL\"\
+    ,\n            \"value\": http_base_url,\n        },\n        {\n            \"name\": \"ALLOWED_ARTIFACT_ENDPOINTS\"\
+    ,\n            \"value\": allowed_artifact_endpoints,\n        },\n        # The shared UI server\
+    \ limits each user before proxying. With auth\n        # disabled here, a second limit would key every\
+    \ user by its address.\n        {\n            \"name\": \"ARTIFACTS_RATE_LIMIT_DISABLED\",\n    \
+    \        \"value\": \"true\",\n        },\n    ]\n\n\ndef create_iam_client():\n    # To interact\
+    \ with SeaweedFS user management. Region does not matter.\n    endpoint_url = os.environ.get(\"AWS_ENDPOINT_URL\"\
+    )\n    if endpoint_url:\n        return session.create_client(\n            'iam', region_name='foobar',\
     \ endpoint_url=endpoint_url)\n    return session.create_client('iam', region_name='foobar')\n\n\n\
     iam = create_iam_client()\n\n\ndef main():\n    settings = get_settings_from_env()\n    server = server_factory(**settings)\n\
     \    server.serve_forever()\n\n\ndef get_settings_from_env(controller_port=None,\n               \
     \           frontend_image=None,\n                          frontend_tag=None,\n                 \
     \         disable_istio_sidecar=None,\n                          artifacts_proxy_enabled=None,\n \
-    \                         artifact_retention_days=None,\n                          cluster_domain=None,\n\
-    \                          object_store_host=None):\n    \"\"\"\n    Returns a dict of settings from\
-    \ environment variables relevant to the controller\n\n    Environment settings can be overridden by\
-    \ passing them here as arguments.\n\n    Settings are pulled from the all-caps version of the setting\
-    \ name.  The\n    following defaults are used if those environment variables are not set\n    to enable\
+    \                         allowed_artifact_endpoints=None,\n                          artifact_retention_days=None,\n\
+    \                          cluster_domain=None,\n                          object_store_host=None,\n\
+    \                          http_base_url=None):\n    \"\"\"Returns a dict of settings from environment\
+    \ variables relevant to the\n    controller.\n\n    Environment settings can be overridden by passing\
+    \ them here as arguments.\n\n    Settings are pulled from the all-caps version of the setting name.\
+    \  The\n    following defaults are used if those environment variables are not set\n    to enable\
     \ backwards compatibility with previous versions of this script:\n        frontend_image: ghcr.io/kubeflow/kfp-frontend\n\
     \        frontend_tag: value of KFP_VERSION environment variable\n        disable_istio_sidecar: Required\
     \ (no default)\n    \"\"\"\n    settings = dict()\n    settings[\"controller_port\"] = \\\n      \
     \  controller_port or \\\n        os.environ.get(\"CONTROLLER_PORT\", \"8080\")\n\n    settings[\"\
     frontend_image\"] = \\\n        frontend_image or \\\n        os.environ.get(\"FRONTEND_IMAGE\", \"\
     ghcr.io/kubeflow/kfp-frontend\")\n\n    settings[\"artifacts_proxy_enabled\"] = \\\n        artifacts_proxy_enabled\
-    \ or \\\n        os.environ.get(\"ARTIFACTS_PROXY_ENABLED\", \"false\")\n\n    settings[\"artifact_retention_days\"\
-    ] = \\\n        artifact_retention_days or \\\n        os.environ.get(\"ARTIFACT_RETENTION_DAYS\"\
-    , -1)\n\n    settings[\"cluster_domain\"] = \\\n        cluster_domain or \\\n        os.environ.get(\"\
-    CLUSTER_DOMAIN\", \".svc.cluster.local\")\n\n    settings[\"object_store_host\"] = \\\n        object_store_host\
-    \ or \\\n        os.environ.get(\"OBJECT_STORE_HOST\", \"seaweedfs\")\n\n    # Look for specific tags\
-    \ for each image first, falling back to\n    # previously used KFP_VERSION environment variable for\
-    \ backwards\n    # compatibility\n    settings[\"frontend_tag\"] = \\\n        frontend_tag or \\\n\
-    \        os.environ.get(\"FRONTEND_TAG\") or \\\n        os.environ[\"KFP_VERSION\"]\n\n    settings[\"\
-    disable_istio_sidecar\"] = \\\n        disable_istio_sidecar if disable_istio_sidecar is not None\
-    \ \\\n            else os.environ.get(\"DISABLE_ISTIO_SIDECAR\") == \"true\"\n\n    return settings\n\
-    \n\ndef server_factory(frontend_image,\n                   frontend_tag,\n                   disable_istio_sidecar,\n\
-    \                   artifacts_proxy_enabled,\n                   artifact_retention_days,\n      \
-    \             cluster_domain=\".svc.cluster.local\",\n                   object_store_host=\"seaweedfs\"\
-    ,\n                   url=\"\",\n                   controller_port=8080):\n    \"\"\"\n    Returns\
-    \ an HTTPServer populated with Handler with customized settings\n    \"\"\"\n    class Controller(BaseHTTPRequestHandler):\n\
-    \        def upsert_lifecycle_policy(self, bucket_name, artifact_retention_days):\n            \"\"\
-    \"Configures or deletes the lifecycle policy based on the artifact_retention_days string.\"\"\"\n\
+    \ or \\\n        os.environ.get(\"ARTIFACTS_PROXY_ENABLED\", \"false\")\n\n    settings[\n       \
+    \ \"http_base_url\"] = http_base_url if http_base_url is not None else os.environ.get(\n         \
+    \   \"HTTP_BASE_URL\", \"\")\n\n    settings[\"allowed_artifact_endpoints\"] = \\\n        allowed_artifact_endpoints\
+    \ if allowed_artifact_endpoints is not None \\\n            else os.environ.get(\"ALLOWED_ARTIFACT_ENDPOINTS\"\
+    , \"\")\n\n    settings[\"artifact_retention_days\"] = \\\n        artifact_retention_days or \\\n\
+    \        os.environ.get(\"ARTIFACT_RETENTION_DAYS\", -1)\n\n    settings[\"cluster_domain\"] = \\\n\
+    \        cluster_domain or \\\n        os.environ.get(\"CLUSTER_DOMAIN\", \".svc.cluster.local\")\n\
+    \n    settings[\"object_store_host\"] = \\\n        object_store_host or \\\n        os.environ.get(\"\
+    OBJECT_STORE_HOST\", \"seaweedfs\")\n\n    # Look for specific tags for each image first, falling\
+    \ back to\n    # previously used KFP_VERSION environment variable for backwards\n    # compatibility\n\
+    \    settings[\"frontend_tag\"] = \\\n        frontend_tag or \\\n        os.environ.get(\"FRONTEND_TAG\"\
+    ) or \\\n        os.environ[\"KFP_VERSION\"]\n\n    settings[\"disable_istio_sidecar\"] = \\\n   \
+    \     disable_istio_sidecar if disable_istio_sidecar is not None \\\n            else os.environ.get(\"\
+    DISABLE_ISTIO_SIDECAR\") == \"true\"\n\n    return settings\n\n\ndef server_factory(frontend_image,\n\
+    \                   frontend_tag,\n                   disable_istio_sidecar,\n                   artifacts_proxy_enabled,\n\
+    \                   artifact_retention_days,\n                   allowed_artifact_endpoints=\"\",\n\
+    \                   cluster_domain=\".svc.cluster.local\",\n                   object_store_host=\"\
+    seaweedfs\",\n                   url=\"\",\n                   controller_port=8080,\n           \
+    \        http_base_url=\"\"):\n    \"\"\"Returns a ThreadingHTTPServer populated with Handler with\
+    \ customized\n    settings.\"\"\"\n\n    class Controller(BaseHTTPRequestHandler):\n\n        def\
+    \ upsert_lifecycle_policy(self, bucket_name, artifact_retention_days):\n            \"\"\"Configures\
+    \ or deletes the lifecycle policy based on the\n            artifact_retention_days string.\"\"\"\n\
     \            try:\n                retention_days = int(artifact_retention_days)\n            except\
-    \ ValueError:\n                print(f\"ERROR: ARTIFACT_RETENTION_DAYS value '{artifact_retention_days}'\
-    \ is not a valid integer. Aborting policy update.\")\n                return\n\n            # To disable\
-    \ lifecycle policy we need to delete it\n            if retention_days <= 0:\n                print(f\"\
-    ARTIFACT_RETENTION_DAYS is non-positive ({retention_days} days). Attempting to delete lifecycle policy.\"\
-    )\n                try:\n                    response = s3.get_bucket_lifecycle_configuration(Bucket=bucket_name)\n\
-    \                    # Check if there are any enabled rules\n                    has_enabled_rules\
-    \ = any(rule.get('Status') == 'Enabled' for rule in response.get('Rules', []))\n\n               \
+    \ ValueError:\n                print(\n                    f\"ERROR: ARTIFACT_RETENTION_DAYS value\
+    \ '{artifact_retention_days}' is not a valid integer. Aborting policy update.\"\n                )\n\
+    \                return\n\n            # To disable lifecycle policy we need to delete it\n      \
+    \      if retention_days <= 0:\n                print(\n                    f\"ARTIFACT_RETENTION_DAYS\
+    \ is non-positive ({retention_days} days). Attempting to delete lifecycle policy.\"\n            \
+    \    )\n                try:\n                    response = s3.get_bucket_lifecycle_configuration(\n\
+    \                        Bucket=bucket_name)\n                    # Check if there are any enabled\
+    \ rules\n                    has_enabled_rules = any(\n                        rule.get('Status')\
+    \ == 'Enabled'\n                        for rule in response.get('Rules', []))\n\n               \
     \     if has_enabled_rules:\n                        s3.delete_bucket_lifecycle(Bucket=bucket_name)\n\
     \                        print(\"Successfully deleted lifecycle policy.\")\n                    else:\n\
     \                        print(\"No enabled lifecycle rules found to delete.\")\n                except\
     \ Exception:\n                    print(f\"Warning: No lifecycle policy exists\")\n              \
     \  return\n\n            # Create/update lifecycle policy\n            life_cycle_policy = {\n   \
-    \             \"Rules\": [\n                    {\n                        \"Status\": \"Enabled\"\
-    ,\n                        \"Filter\": {\"Prefix\": \"private-artifacts\"},\n                    \
-    \    \"Expiration\": {\"Days\": retention_days},\n                        \"ID\": \"private-artifacts\"\
-    ,\n                    },\n                ]\n            }\n            print('upsert_lifecycle_policy:',\
-    \ life_cycle_policy)\n\n            try:\n                api_response = s3.put_bucket_lifecycle_configuration(\n\
-    \                    Bucket=bucket_name,\n                    LifecycleConfiguration = life_cycle_policy\n\
-    \                )\n                print('Lifecycle policy configured successfully:', api_response)\n\
-    \            except Exception as exception:\n                if hasattr(exception, 'response') and\
-    \ 'Error' in exception.response:\n                    print(f\"ERROR: Failed to configure lifecycle\
-    \ policy: {exception.response['Error']['Code']} - {exception}\")\n                else:\n        \
-    \            print(f\"ERROR: Failed to configure lifecycle policy: {exception}\")\n\n        def ensure_bucket_list_policy(self,\
-    \ bucket_name):\n            \"\"\"Bucket-wide ListBucket isolation, keyed on ${aws:username}.\n\n\
-    \            Top-level folder browsing is allowed for everyone; listing deeper\n            inside\
-    \ another namespace's private prefix is denied. HeadBucket\n            (KServe storage-initializer)\
-    \ is allowed. Set as a bucket policy\n            because the embedded user-policy engine is Allow-only\
-    \ and cannot\n            express Deny; SeaweedFS evaluates the bucket policy before it.\n       \
+    \             \"Rules\": [{\n                    \"Status\": \"Enabled\",\n                    \"\
+    Filter\": {\n                        \"Prefix\": \"private-artifacts\"\n                    },\n \
+    \                   \"Expiration\": {\n                        \"Days\": retention_days\n        \
+    \            },\n                    \"ID\": \"private-artifacts\",\n                },]\n       \
+    \     }\n            print('upsert_lifecycle_policy:', life_cycle_policy)\n\n            try:\n  \
+    \              api_response = s3.put_bucket_lifecycle_configuration(\n                    Bucket=bucket_name,\n\
+    \                    LifecycleConfiguration=life_cycle_policy)\n                print('Lifecycle policy\
+    \ configured successfully:', api_response)\n            except Exception as exception:\n         \
+    \       if hasattr(exception,\n                           'response') and 'Error' in exception.response:\n\
+    \                    print(\n                        f\"ERROR: Failed to configure lifecycle policy:\
+    \ {exception.response['Error']['Code']} - {exception}\"\n                    )\n                else:\n\
+    \                    print(\n                        f\"ERROR: Failed to configure lifecycle policy:\
+    \ {exception}\"\n                    )\n\n        def ensure_bucket_list_policy(self, bucket_name):\n\
+    \            \"\"\"Bucket-wide ListBucket isolation, keyed on ${aws:username}.\n\n            Top-level\
+    \ folder browsing is allowed for everyone; listing\n            deeper inside another namespace's\
+    \ private prefix is denied.\n            HeadBucket (KServe storage-initializer) is allowed. Set as\
+    \ a\n            bucket policy because the embedded user-policy engine is\n            Allow-only\
+    \ and cannot express Deny; SeaweedFS evaluates the\n            bucket policy before it.\n       \
     \     \"\"\"\n            bucket_arn = f\"arn:aws:s3:::{bucket_name}\"\n            desired = {\n\
-    \                \"Version\": \"2012-10-17\",\n                \"Statement\": [\n                \
-    \    {\n                        \"Sid\": \"AllowOwnDeepList\",\n                        \"Effect\"\
-    : \"Allow\",\n                        \"Principal\": \"*\",\n                        \"Action\": \"\
-    s3:ListBucket\",\n                        \"Resource\": bucket_arn,\n                        \"Condition\"\
-    : {\"StringLike\": {\"s3:prefix\": [\n                            \"private-artifacts/${aws:username}/*\"\
-    ,\n                            \"private/${aws:username}/*\",\n                            \"artifacts/*\"\
-    ,\n                            \"shared/*\",\n                        ]}},\n                    },\n\
-    \                    {\n                        \"Sid\": \"AllowHeadBucket\",\n                  \
-    \      \"Effect\": \"Allow\",\n                        \"Principal\": \"*\",\n                   \
-    \     \"Action\": \"s3:ListBucket\",\n                        \"Resource\": bucket_arn,\n        \
-    \                \"Condition\": {\"StringEquals\": {\"s3:RequestMethod\": \"HEAD\"}},\n          \
-    \          },\n                    {\n                        \"Sid\": \"AllowTopLevelDelimitedBrowse\"\
-    ,\n                        \"Effect\": \"Allow\",\n                        \"Principal\": \"*\",\n\
+    \                \"Version\":\n                    \"2012-10-17\",\n                \"Statement\"\
+    : [\n                    {\n                        \"Sid\": \"AllowOwnDeepList\",\n             \
+    \           \"Effect\": \"Allow\",\n                        \"Principal\": \"*\",\n              \
+    \          \"Action\": \"s3:ListBucket\",\n                        \"Resource\": bucket_arn,\n   \
+    \                     \"Condition\": {\n                            \"StringLike\": {\n          \
+    \                      \"s3:prefix\": [\n                                    \"private-artifacts/${aws:username}/*\"\
+    ,\n                                    \"private/${aws:username}/*\",\n                          \
+    \          \"artifacts/*\",\n                                    \"shared/*\",\n                 \
+    \               ]\n                            }\n                        },\n                   \
+    \ },\n                    {\n                        \"Sid\": \"AllowHeadBucket\",\n             \
+    \           \"Effect\": \"Allow\",\n                        \"Principal\": \"*\",\n              \
+    \          \"Action\": \"s3:ListBucket\",\n                        \"Resource\": bucket_arn,\n   \
+    \                     \"Condition\": {\n                            \"StringEquals\": {\n        \
+    \                        \"s3:RequestMethod\": \"HEAD\"\n                            }\n         \
+    \               },\n                    },\n                    {\n                        \"Sid\"\
+    : \"AllowTopLevelDelimitedBrowse\",\n                        \"Effect\": \"Allow\",\n            \
+    \            \"Principal\": \"*\",\n                        \"Action\": \"s3:ListBucket\",\n     \
+    \                   \"Resource\": bucket_arn,\n                        \"Condition\": {\n        \
+    \                    \"Null\": {\n                                \"s3:prefix\": \"true\"\n      \
+    \                      },\n                            \"StringEquals\": {\n                     \
+    \           \"s3:delimiter\": \"/\"\n                            },\n                        },\n\
+    \                    },\n                    {\n                        \"Sid\": \"DenyOtherDeepList\"\
+    ,\n                        \"Effect\": \"Deny\",\n                        \"Principal\": \"*\",\n\
     \                        \"Action\": \"s3:ListBucket\",\n                        \"Resource\": bucket_arn,\n\
-    \                        \"Condition\": {\n                            \"Null\": {\"s3:prefix\": \"\
-    true\"},\n                            \"StringEquals\": {\"s3:delimiter\": \"/\"},\n             \
-    \           },\n                    },\n                    {\n                        \"Sid\": \"\
-    DenyOtherDeepList\",\n                        \"Effect\": \"Deny\",\n                        \"Principal\"\
-    : \"*\",\n                        \"Action\": \"s3:ListBucket\",\n                        \"Resource\"\
-    : bucket_arn,\n                        \"Condition\": {\n                            \"StringLike\"\
-    : {\"s3:prefix\": [\"private-artifacts/*\", \"private/*\"]},\n                            \"StringNotLike\"\
-    : {\"s3:prefix\": [\n                                \"private-artifacts/${aws:username}/*\",\n  \
-    \                              \"private/${aws:username}/*\",\n                            ]},\n \
-    \                       },\n                    },\n                ],\n            }\n          \
-    \  desired_json = json.dumps(desired, sort_keys=True)\n\n            try:\n                current\
-    \ = s3.get_bucket_policy(Bucket=bucket_name).get(\"Policy\", \"\")\n                if current and\
-    \ json.dumps(json.loads(current), sort_keys=True) == desired_json:\n                    return\n \
-    \           except Exception:\n                pass\n\n            try:\n                s3.put_bucket_policy(Bucket=bucket_name,\
-    \ Policy=json.dumps(desired))\n                print(f\"Set ListBucket isolation bucket policy on\
-    \ {bucket_name}\")\n            except Exception as exception:\n                if hasattr(exception,\
-    \ 'response') and 'Error' in exception.response:\n                    print(f\"ERROR: Failed to set\
-    \ bucket policy: {exception.response['Error']['Code']} - {exception}\")\n                else:\n \
-    \                   print(f\"ERROR: Failed to set bucket policy: {exception}\")\n\n        def sync(self,\
-    \ parent, attachments):\n            # parent is a namespace\n            namespace = parent.get(\"\
-    metadata\", {}).get(\"name\")\n\n            pipeline_enabled = parent.get(\"metadata\", {}).get(\n\
-    \                \"labels\", {}).get(\"pipelines.kubeflow.org/enabled\")\n\n            if pipeline_enabled\
-    \ != \"true\":\n                return {\"status\": {}, \"attachments\": []}\n\n            # Compute\
-    \ status based on observed state.\n            desired_status = {\n                \"kubeflow-pipelines-ready\"\
+    \                        \"Condition\": {\n                            \"StringLike\": {\n       \
+    \                         \"s3:prefix\": [\n                                    \"private-artifacts/*\"\
+    , \"private/*\"\n                                ]\n                            },\n             \
+    \               \"StringNotLike\": {\n                                \"s3:prefix\": [\n         \
+    \                           \"private-artifacts/${aws:username}/*\",\n                           \
+    \         \"private/${aws:username}/*\",\n                                ]\n                    \
+    \        },\n                        },\n                    },\n                ],\n            }\n\
+    \            desired_json = json.dumps(desired, sort_keys=True)\n\n            try:\n            \
+    \    current = s3.get_bucket_policy(Bucket=bucket_name).get(\n                    \"Policy\", \"\"\
+    )\n                if current and json.dumps(\n                        json.loads(current), sort_keys=True)\
+    \ == desired_json:\n                    return\n            except Exception:\n                pass\n\
+    \n            try:\n                s3.put_bucket_policy(\n                    Bucket=bucket_name,\
+    \ Policy=json.dumps(desired))\n                print(\n                    f\"Set ListBucket isolation\
+    \ bucket policy on {bucket_name}\")\n            except Exception as exception:\n                if\
+    \ hasattr(exception,\n                           'response') and 'Error' in exception.response:\n\
+    \                    print(\n                        f\"ERROR: Failed to set bucket policy: {exception.response['Error']['Code']}\
+    \ - {exception}\"\n                    )\n                else:\n                    print(f\"ERROR:\
+    \ Failed to set bucket policy: {exception}\")\n\n        def sync(self, parent, attachments):\n  \
+    \          # parent is a namespace\n            namespace = parent.get(\"metadata\", {}).get(\"name\"\
+    )\n\n            pipeline_enabled = parent.get(\"metadata\", {}).get(\n                \"labels\"\
+    , {}).get(\"pipelines.kubeflow.org/enabled\")\n\n            if pipeline_enabled != \"true\":\n  \
+    \              return {\"status\": {}, \"attachments\": []}\n\n            # Compute status based\
+    \ on observed state.\n            desired_status = {\n                \"kubeflow-pipelines-ready\"\
     :\n                    len(attachments[\"Secret.v1\"]) == 1 and\n                    len(attachments[\"\
-    ConfigMap.v1\"]) == 3 and\n                    len(attachments[\"Deployment.apps/v1\"]) == (1 if artifacts_proxy_enabled.lower()\
-    \ == \"true\" else 0) and\n                    len(attachments[\"Service.v1\"]) == (1 if artifacts_proxy_enabled.lower()\
+    ConfigMap.v1\"]) == 3 and\n                    len(attachments[\"Deployment.apps/v1\"]) ==\n     \
+    \               (1 if artifacts_proxy_enabled.lower() == \"true\" else 0) and\n                  \
+    \  len(attachments[\"Service.v1\"]) ==\n                    (1 if artifacts_proxy_enabled.lower()\
     \ == \"true\" else 0) and\n                    \"True\" or \"False\"\n            }\n\n          \
     \  # Generate the desired attachment object(s).\n            desired_resources = [\n             \
     \   {\n                    \"apiVersion\": \"v1\",\n                    \"kind\": \"ConfigMap\",\n\
     \                    \"metadata\": {\n                        \"name\": \"kfp-launcher\",\n      \
     \                  \"namespace\": namespace,\n                    },\n                    \"data\"\
-    : {\n                        \"defaultPipelineRoot\": f\"minio://{S3_BUCKET_NAME}/private-artifacts/{namespace}/v2/artifacts\"\
-    ,\n                        \"clusterDomain\": cluster_domain,\n                    },\n          \
-    \      },\n                {\n                    \"apiVersion\": \"v1\",\n                    \"\
-    kind\": \"ConfigMap\",\n                    \"metadata\": {\n                        \"name\": \"\
-    metadata-grpc-configmap\",\n                        \"namespace\": namespace,\n                  \
-    \  },\n                    \"data\": {\n                        \"METADATA_GRPC_SERVICE_HOST\":\n\
-    \                            \"metadata-grpc-service.kubeflow\",\n                        \"METADATA_GRPC_SERVICE_PORT\"\
-    : \"8080\",\n                    },\n                },\n                {\n                    \"\
-    apiVersion\": \"v1\",\n                    \"kind\": \"ConfigMap\",\n                    \"metadata\"\
-    : {\n                        \"name\": \"artifact-repositories\",\n                        \"namespace\"\
-    : namespace,\n                        \"annotations\": {\n                            \"workflows.argoproj.io/default-artifact-repository\"\
-    : \"default-namespaced\"\n                        }\n                    },\n                    \"\
-    data\": {\n                        \"default-namespaced\": json.dumps({\n                        \
-    \    \"archiveLogs\": True,\n                            \"s3\": {\n                             \
-    \   \"endpoint\": f\"{object_store_host}.kubeflow{_normalize_domain(cluster_domain)}:9000\",\n   \
-    \                             \"bucket\": S3_BUCKET_NAME,\n                                \"keyFormat\"\
-    : f\"private-artifacts/{namespace}/{{{{workflow.name}}}}/{{{{workflow.creationTimestamp.Y}}}}/{{{{workflow.creationTimestamp.m}}}}/{{{{workflow.creationTimestamp.d}}}}/{{{{pod.name}}}}\"\
-    ,\n                                \"insecure\": True,\n                                \"accessKeySecret\"\
-    : {\n                                    \"name\": \"mlpipeline-minio-artifact\",\n              \
-    \                      \"key\": \"accesskey\",\n                                },\n             \
-    \                   \"secretKeySecret\": {\n                                    \"name\": \"mlpipeline-minio-artifact\"\
-    ,\n                                    \"key\": \"secretkey\",\n                                }\n\
-    \                            }\n                        })\n                    }\n              \
-    \  },\n            ]\n\n            # Add artifact fetcher related resources if enabled\n        \
-    \    if artifacts_proxy_enabled.lower() == \"true\":\n                desired_resources.extend([\n\
+    : {\n                        \"defaultPipelineRoot\":\n                            f\"minio://{S3_BUCKET_NAME}/private-artifacts/{namespace}/v2/artifacts\"\
+    ,\n                        \"clusterDomain\":\n                            cluster_domain,\n     \
+    \               },\n                },\n                {\n                    \"apiVersion\": \"\
+    v1\",\n                    \"kind\": \"ConfigMap\",\n                    \"metadata\": {\n       \
+    \                 \"name\": \"metadata-grpc-configmap\",\n                        \"namespace\": namespace,\n\
+    \                    },\n                    \"data\": {\n                        \"METADATA_GRPC_SERVICE_HOST\"\
+    :\n                            \"metadata-grpc-service.kubeflow\",\n                        \"METADATA_GRPC_SERVICE_PORT\"\
+    :\n                            \"8080\",\n                    },\n                },\n           \
+    \     {\n                    \"apiVersion\": \"v1\",\n                    \"kind\": \"ConfigMap\"\
+    ,\n                    \"metadata\": {\n                        \"name\": \"artifact-repositories\"\
+    ,\n                        \"namespace\": namespace,\n                        \"annotations\": {\n\
+    \                            \"workflows.argoproj.io/default-artifact-repository\":\n            \
+    \                    \"default-namespaced\"\n                        }\n                    },\n \
+    \                   \"data\": {\n                        \"default-namespaced\":\n               \
+    \             json.dumps({\n                                \"archiveLogs\": True,\n             \
+    \                   \"s3\": {\n                                    \"endpoint\":\n               \
+    \                         f\"{object_store_host}.kubeflow{_normalize_domain(cluster_domain)}:9000\"\
+    ,\n                                    \"bucket\":\n                                        S3_BUCKET_NAME,\n\
+    \                                    \"keyFormat\":\n                                        f\"private-artifacts/{namespace}/{{{{workflow.name}}}}/{{{{workflow.creationTimestamp.Y}}}}/{{{{workflow.creationTimestamp.m}}}}/{{{{workflow.creationTimestamp.d}}}}/{{{{pod.name}}}}\"\
+    ,\n                                    \"insecure\":\n                                        True,\n\
+    \                                    \"accessKeySecret\": {\n                                    \
+    \    \"name\": \"mlpipeline-minio-artifact\",\n                                        \"key\": \"\
+    accesskey\",\n                                    },\n                                    \"secretKeySecret\"\
+    : {\n                                        \"name\": \"mlpipeline-minio-artifact\",\n          \
+    \                              \"key\": \"secretkey\",\n                                    }\n  \
+    \                              }\n                            })\n                    }\n        \
+    \        },\n            ]\n\n            # Add artifact fetcher related resources if enabled\n  \
+    \          if artifacts_proxy_enabled.lower() == \"true\":\n                desired_resources.extend([\n\
     \                    {\n                        \"apiVersion\": \"apps/v1\",\n                   \
     \     \"kind\": \"Deployment\",\n                        \"metadata\": {\n                       \
     \     \"labels\": {\n                                \"app\": \"ml-pipeline-ui-artifact\"\n      \
@@ -1854,100 +2032,91 @@ data:
     template\": {\n                                \"metadata\": {\n                                 \
     \   \"labels\": {\n                                        \"app\": \"ml-pipeline-ui-artifact\"\n\
     \                                    },\n                                    \"annotations\": {\n\
-    \                                        **({\"sidecar.istio.io/inject\": \"false\"} if disable_istio_sidecar\
-    \ else {}),\n                                        \"kubeflow-pipelines/image-spec-hash\": hashlib.sha256(f\"\
-    {frontend_image}:{frontend_tag}\".encode()).hexdigest()[:16],\n                                  \
-    \  },\n                                },\n                                \"spec\": {\n         \
-    \                           \"containers\": [{\n                                        \"name\":\n\
-    \                                            \"ml-pipeline-ui-artifact\",\n                      \
-    \                  \"image\": f\"{frontend_image}:{frontend_tag}\",\n                            \
-    \            \"imagePullPolicy\":\n                                            \"IfNotPresent\",\n\
-    \                                        \"ports\": [{\n                                         \
-    \   \"containerPort\": 3000\n                                        }],\n                       \
-    \                 \"env\": [\n                                            {\n                    \
-    \                            \"name\": \"MINIO_ACCESS_KEY\",\n                                   \
-    \             \"valueFrom\": {\n                                                    \"secretKeyRef\"\
-    : {\n                                                        \"key\": \"accesskey\",\n           \
-    \                                             \"name\": \"mlpipeline-minio-artifact\"\n          \
-    \                                          }\n                                                }\n\
-    \                                            },\n                                            {\n \
-    \                                               \"name\": \"MINIO_SECRET_KEY\",\n                \
-    \                                \"valueFrom\": {\n                                              \
-    \      \"secretKeyRef\": {\n                                                        \"key\": \"secretkey\"\
-    ,\n                                                        \"name\": \"mlpipeline-minio-artifact\"\
-    \n                                                    }\n                                        \
-    \        }\n                                            },\n                                     \
-    \       {\n                                                \"name\": \"ML_PIPELINE_SERVICE_HOST\"\
-    ,\n                                                \"value\": f\"ml-pipeline.kubeflow{_normalize_domain(cluster_domain)}\"\
-    \n                                            },\n                                            {\n\
-    \                                                \"name\": \"ML_PIPELINE_SERVICE_PORT\",\n       \
-    \                                         \"value\": \"8888\"\n                                  \
-    \          },\n                                            {\n                                   \
-    \             \"name\": \"FRONTEND_SERVER_NAMESPACE\",\n                                         \
-    \       \"value\": namespace,\n                                            },\n                  \
-    \                          {\n                                                \"name\": \"CLUSTER_DOMAIN\"\
-    ,\n                                                \"value\": cluster_domain,\n                  \
-    \                          }\n                                        ],\n                       \
-    \                 \"resources\": {\n                                            \"requests\": {\n\
-    \                                                \"cpu\": \"10m\",\n                             \
-    \                   \"memory\": \"70Mi\"\n                                            },\n       \
-    \                                     \"limits\": {\n                                            \
-    \    \"cpu\": \"100m\",\n                                                \"memory\": \"500Mi\"\n \
-    \                                           },\n                                        }\n      \
-    \                              }],\n                                    \"serviceAccountName\":\n\
-    \                                        \"default-editor\"\n                                }\n \
-    \                           }\n                        }\n                    },\n               \
-    \     {\n                        \"apiVersion\": \"v1\",\n                        \"kind\": \"Service\"\
-    ,\n                        \"metadata\": {\n                            \"name\": \"ml-pipeline-ui-artifact\"\
-    ,\n                            \"namespace\": namespace,\n                            \"labels\":\
-    \ {\n                                \"app\": \"ml-pipeline-ui-artifact\"\n                      \
-    \      }\n                        },\n                        \"spec\": {\n                      \
-    \      \"ports\": [{\n                                \"name\":\n                                \
-    \    \"http\",  # name is required to let istio understand request protocol\n                    \
-    \            \"port\": 80,\n                                \"protocol\": \"TCP\",\n             \
-    \                   \"targetPort\": 3000\n                            }],\n                      \
-    \      \"selector\": {\n                                \"app\": \"ml-pipeline-ui-artifact\"\n   \
-    \                         }\n                        }\n                    },\n                ])\n\
-    \n            print('Received request:\\n', json.dumps(parent, sort_keys=True))\n            print('Desired\
-    \ resources except secrets:\\n', json.dumps(desired_resources, sort_keys=True))\n\n            # Moved\
-    \ after the print argument because this is sensitive data.\n\n            # Check if secret is already\
-    \ there when the controller made the request. If yes, then\n            # use it. Else create a new\
-    \ credentials on seaweedfs for the namespace.\n            if s3_secret := attachments[\"Secret.v1\"\
-    ].get(f\"{namespace}/mlpipeline-minio-artifact\"):\n                desired_resources.append(s3_secret)\n\
-    \                print('Using existing secret')\n            else:\n                print('Creating\
-    \ new access key.')\n                s3_access_key = iam.create_access_key(UserName=namespace)\n\n\
-    \                # Per-user policy grants object access only. ListBucket scoping is\n            \
-    \    # handled by the bucket policy (ensure_bucket_list_policy) because\n                # the embedded\
-    \ user-policy engine is Allow-only and cannot Deny.\n                iam.put_user_policy(\n      \
-    \              UserName=namespace,\n                    PolicyName=f\"KubeflowProject{namespace}\"\
-    ,\n                    PolicyDocument=json.dumps(\n                        {\n                   \
-    \         \"Version\": \"2012-10-17\",\n                            \"Statement\": [\n           \
-    \                     {\n                                    \"Effect\": \"Allow\",\n            \
-    \                        \"Action\": [\n                                        \"s3:Put*\",\n   \
-    \                                     \"s3:Get*\",\n                                        \"s3:List*\"\
-    ,\n                                        \"s3:DeleteObject\"\n                                 \
-    \   ],\n                                    \"Resource\": [\n                                    \
-    \    f\"arn:aws:s3:::{S3_BUCKET_NAME}/artifacts/*\",\n                                        f\"\
-    arn:aws:s3:::{S3_BUCKET_NAME}/private-artifacts/{namespace}/*\",\n                               \
-    \         f\"arn:aws:s3:::{S3_BUCKET_NAME}/private/{namespace}/*\",\n                            \
-    \            f\"arn:aws:s3:::{S3_BUCKET_NAME}/shared/*\",\n                                    ]\n\
-    \                                }\n                            ]\n                        })\n  \
-    \              )\n\n                self.ensure_bucket_list_policy(S3_BUCKET_NAME)\n\n           \
-    \     self.upsert_lifecycle_policy(S3_BUCKET_NAME, artifact_retention_days)\n\n                desired_resources.insert(\n\
-    \                    0,\n                    {\n                        \"apiVersion\": \"v1\",\n\
-    \                        \"kind\": \"Secret\",\n                        \"metadata\": {\n        \
-    \                    \"name\": \"mlpipeline-minio-artifact\",\n                            \"namespace\"\
-    : namespace,\n                        },\n                        \"data\": {\n                  \
-    \          \"accesskey\": base64.b64encode(s3_access_key[\"AccessKey\"][\"AccessKeyId\"].encode('utf-8')).decode(\"\
-    utf-8\"),\n                            \"secretkey\": base64.b64encode(s3_access_key[\"AccessKey\"\
-    ][\"SecretAccessKey\"].encode('utf-8')).decode(\"utf-8\"),\n                    },\n             \
-    \   })\n\n            return {\"status\": desired_status, \"attachments\": desired_resources}\n\n\
-    \        def do_POST(self):\n            # Serve the sync() function as a JSON webhook.\n        \
-    \    observed = json.loads(\n                self.rfile.read(int(self.headers.get(\"content-length\"\
+    \                                        **({\n                                            \"sidecar.istio.io/inject\"\
+    : \"false\"\n                                        } if disable_istio_sidecar else {}),\n      \
+    \                                  \"kubeflow-pipelines/image-spec-hash\":\n                     \
+    \                       hashlib.sha256(\n                                                f\"{frontend_image}:{frontend_tag}\"\
+    \n                                                .encode()).hexdigest()[:16],\n                 \
+    \                   },\n                                },\n                                \"spec\"\
+    : {\n                                    \"containers\": [{\n                                    \
+    \    \"name\":\n                                            \"ml-pipeline-ui-artifact\",\n       \
+    \                                 \"image\":\n                                            f\"{frontend_image}:{frontend_tag}\"\
+    ,\n                                        \"imagePullPolicy\":\n                                \
+    \            \"IfNotPresent\",\n                                        \"ports\": [{\n          \
+    \                                  \"containerPort\": 3000\n                                     \
+    \   }],\n                                        \"env\":\n                                      \
+    \      artifact_server_environment(\n                                                namespace,\n\
+    \                                                cluster_domain,\n                               \
+    \                 allowed_artifact_endpoints,\n                                                http_base_url,\n\
+    \                                            ),\n                                        \"resources\"\
+    : {\n                                            \"requests\": {\n                               \
+    \                 \"cpu\": \"10m\",\n                                                \"memory\": \"\
+    70Mi\"\n                                            },\n                                         \
+    \   \"limits\": {\n                                                \"cpu\": \"100m\",\n          \
+    \                                      \"memory\": \"500Mi\"\n                                   \
+    \         },\n                                        }\n                                    }],\n\
+    \                                    \"serviceAccountName\": \"default-editor\"\n                \
+    \                }\n                            }\n                        }\n                   \
+    \ },\n                    {\n                        \"apiVersion\": \"v1\",\n                   \
+    \     \"kind\": \"Service\",\n                        \"metadata\": {\n                          \
+    \  \"name\": \"ml-pipeline-ui-artifact\",\n                            \"namespace\": namespace,\n\
+    \                            \"labels\": {\n                                \"app\": \"ml-pipeline-ui-artifact\"\
+    \n                            }\n                        },\n                        \"spec\": {\n\
+    \                            \"ports\": [{\n                                \"name\":\n          \
+    \                          \"http\",  # name is required to let istio understand request protocol\n\
+    \                                \"port\": 80,\n                                \"protocol\": \"TCP\"\
+    ,\n                                \"targetPort\": 3000\n                            }],\n       \
+    \                     \"selector\": {\n                                \"app\": \"ml-pipeline-ui-artifact\"\
+    \n                            }\n                        }\n                    },\n             \
+    \   ])\n\n            print('Received request:\\n', json.dumps(parent, sort_keys=True))\n        \
+    \    print('Desired resources except secrets:\\n',\n                  json.dumps(desired_resources,\
+    \ sort_keys=True))\n\n            # Moved after the print argument because this is sensitive data.\n\
+    \n            # Check if secret is already there when the controller made the request. If yes, then\n\
+    \            # use it. Else create a new credentials on seaweedfs for the namespace.\n           \
+    \ if s3_secret := attachments[\"Secret.v1\"].get(\n                    f\"{namespace}/mlpipeline-minio-artifact\"\
+    ):\n                desired_resources.append(s3_secret)\n                print('Using existing secret')\n\
+    \            else:\n                print('Creating new access key.')\n                s3_access_key\
+    \ = iam.create_access_key(UserName=namespace)\n\n                # Per-user policy grants object access\
+    \ only. ListBucket scoping is\n                # handled by the bucket policy (ensure_bucket_list_policy)\
+    \ because\n                # the embedded user-policy engine is Allow-only and cannot Deny.\n    \
+    \            iam.put_user_policy(\n                    UserName=namespace,\n                    PolicyName=f\"\
+    KubeflowProject{namespace}\",\n                    PolicyDocument=json.dumps({\n                 \
+    \       \"Version\":\n                            \"2012-10-17\",\n                        \"Statement\"\
+    : [{\n                            \"Effect\":\n                                \"Allow\",\n      \
+    \                      \"Action\": [\n                                \"s3:Put*\", \"s3:Get*\", \"\
+    s3:List*\",\n                                \"s3:DeleteObject\"\n                            ],\n\
+    \                            \"Resource\": [\n                                f\"arn:aws:s3:::{S3_BUCKET_NAME}/artifacts/*\"\
+    ,\n                                f\"arn:aws:s3:::{S3_BUCKET_NAME}/private-artifacts/{namespace}/*\"\
+    ,\n                                f\"arn:aws:s3:::{S3_BUCKET_NAME}/private/{namespace}/*\",\n   \
+    \                             f\"arn:aws:s3:::{S3_BUCKET_NAME}/shared/*\",\n                     \
+    \       ]\n                        }]\n                    }))\n\n                self.ensure_bucket_list_policy(S3_BUCKET_NAME)\n\
+    \n                self.upsert_lifecycle_policy(S3_BUCKET_NAME,\n                                 \
+    \            artifact_retention_days)\n\n                desired_resources.insert(\n             \
+    \       0, {\n                        \"apiVersion\": \"v1\",\n                        \"kind\": \"\
+    Secret\",\n                        \"metadata\": {\n                            \"name\": \"mlpipeline-minio-artifact\"\
+    ,\n                            \"namespace\": namespace,\n                        },\n           \
+    \             \"data\": {\n                            \"accesskey\":\n                          \
+    \      base64.b64encode(s3_access_key[\"AccessKey\"]\n                                           \
+    \      [\"AccessKeyId\"].encode('utf-8')\n                                                ).decode(\"\
+    utf-8\"),\n                            \"secretkey\":\n                                base64.b64encode(\n\
+    \                                    s3_access_key[\"AccessKey\"]\n                              \
+    \      [\"SecretAccessKey\"].encode('utf-8')\n                                ).decode(\"utf-8\"),\n\
+    \                        },\n                    })\n\n            return {\"status\": desired_status,\
+    \ \"attachments\": desired_resources}\n\n        def do_GET(self):\n            # Liveness/readiness\
+    \ endpoint; must not call external services.\n            if self.path.split(\"?\", 1)[0] == HEALTHZ_PATH:\n\
+    \                self.send_response(200)\n                self.send_header(\"Content-type\", \"text/plain\"\
+    )\n                self.end_headers()\n                self.wfile.write(b\"ok\")\n            else:\n\
+    \                self.send_error(404)\n\n        def log_request(self, code=\"-\", size=\"-\"):\n\
+    \            # Skip probe requests so they don't flood the controller logs.\n            # Malformed\
+    \ requests are logged before `command`/`path` are set.\n            is_probe = (\n               \
+    \ getattr(self, \"command\", None) == \"GET\" and\n                getattr(self, \"path\", \"\").split(\"\
+    ?\", 1)[0] == HEALTHZ_PATH)\n            if not is_probe:\n                super().log_request(code,\
+    \ size)\n\n        def do_POST(self):\n            # Serve the sync() function as a JSON webhook.\n\
+    \            observed = json.loads(\n                self.rfile.read(int(self.headers.get(\"content-length\"\
     ))))\n            desired = self.sync(observed[\"object\"], observed[\"attachments\"])\n\n       \
     \     self.send_response(200)\n            self.send_header(\"Content-type\", \"application/json\"\
     )\n            self.end_headers()\n            self.wfile.write(bytes(json.dumps(desired), 'utf-8'))\n\
-    \n    return HTTPServer((url, int(controller_port)), Controller)\n\n\nif __name__ == \"__main__\"\
+    \n    return ThreadingHTTPServer((url, int(controller_port)), Controller)\n\n\nif __name__ == \"__main__\"\
     :\n    main()\n"
 kind: ConfigMap
 metadata:
@@ -1956,7 +2125,7 @@ metadata:
     app.kubernetes.io/component: ml-pipeline
     app.kubernetes.io/name: kubeflow-pipelines
     application-crd-id: kubeflow-pipelines
-  name: kubeflow-pipelines-profile-controller-code-df96649tdt
+  name: kubeflow-pipelines-profile-controller-code-fmm4f9td4m
   namespace: kubeflow
 ---
 apiVersion: v1
@@ -1974,7 +2143,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  kubeflow_pipelines_version: v2.17.3
+  kubeflow_pipelines_version: v2.18.0
 kind: ConfigMap
 metadata:
   labels:
@@ -2049,6 +2218,36 @@ metadata:
 ---
 apiVersion: v1
 data:
+  image: ghcr.io/kubeflow/kfp-frontend:2.18.0
+  job-template: "apiVersion: batch/v1\nkind: Job\nmetadata:\n  # The generated ConfigMap hash also names\
+    \ the Job, allowing image/template upgrades.\n  name: ml-pipeline-ui-signing-key-init\nspec:\n  backoffLimit:\
+    \ 3\n  activeDeadlineSeconds: 300\n  template:\n    metadata:\n      labels:\n        sidecar.istio.io/inject:\
+    \ \"false\"\n    spec:\n      serviceAccountName: ml-pipeline-ui-signing-key-init\n      restartPolicy:\
+    \ Never\n      securityContext:\n        runAsNonRoot: true\n        runAsUser: 1000\n        seccompProfile:\n\
+    \          type: RuntimeDefault\n      containers:\n        - name: initialize\n          image: ghcr.io/kubeflow/kfp-frontend:dummy\n\
+    \          imagePullPolicy: IfNotPresent\n          workingDir: /server\n          command: [node,\
+    \ dist/initialize-tensorboard-signing-key.js]\n          env:\n            - name: POD_NAMESPACE\n\
+    \              valueFrom:\n                fieldRef:\n                  fieldPath: metadata.namespace\n\
+    \            - name: SIGNING_SECRET_NAME\n              valueFrom:\n                configMapKeyRef:\n\
+    \                  name: ml-pipeline-ui-signing-key-init\n                  key: secretName\n    \
+    \        - name: SIGNING_SECRET_KEY\n              valueFrom:\n                configMapKeyRef:\n\
+    \                  name: ml-pipeline-ui-signing-key-init\n                  key: secretKey\n     \
+    \     resources:\n            requests:\n              cpu: 10m\n              memory: 64Mi\n    \
+    \        limits:\n              memory: 128Mi\n          securityContext:\n            allowPrivilegeEscalation:\
+    \ false\n            capabilities:\n              drop: [ALL]\n"
+  secretKey: signing-secret
+  secretName: ml-pipeline-ui-tensorboard-proxy
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-ui-signing-key-init-ckk2d4958b
+  namespace: kubeflow
+---
+apiVersion: v1
+data:
   DEFAULTPIPELINERUNNERSERVICEACCOUNT: default-editor
   MULTIUSER: 'true'
   VISUALIZATIONSERVICE_NAME: ml-pipeline-visualizationserver
@@ -2064,22 +2263,30 @@ metadata:
 ---
 apiVersion: v1
 data:
+  ALLOWED_ARTIFACT_ENDPOINTS: ''
+  ARCHIVED_RUNS_RETENTION_TIME: ''
   ARTIFACT_RETENTION_DAYS: '-1'
   ARTIFACTS_PROXY_ENABLED: 'false'
   BLOCK_V1_PIPELINES: 'false'
   ConMaxLifeTime: 120s
   DEFAULT_CACHE_STALENESS: ''
+  DRIVER_POD_ANNOTATIONS: ''
+  DRIVER_POD_LABELS: ''
+  HTTP_BASE_URL: ''
   LOG_LEVEL: info
   MAXIMUM_CACHE_STALENESS: ''
+  RUNS_GC_BATCH_SIZE: '100'
+  RUNS_GC_INTERVAL: 6h
+  RUNS_RETENTION_TIME: ''
   USERID_HEADER: kubeflow-userid
   USERID_PREFIX: ''
   V1_ALLOWED_NAMESPACES: ''
   appName: pipeline
-  appVersion: 2.17.3
+  appVersion: 2.18.0
   autoUpdatePipelineDefaultVersion: 'true'
   bucketName: mlpipeline
   cacheDb: cachedb
-  cacheImage: ghcr.io/containerd/busybox
+  cacheImage: mirror.gcr.io/library/alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63
   cacheNodeRestrictions: 'false'
   cronScheduleTimezone: UTC
   dbType: mysql
@@ -2140,6 +2347,17 @@ metadata:
     application-crd-id: kubeflow-pipelines
   name: workflow-controller-configmap
   namespace: kubeflow
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-ui-tensorboard-proxy
+  namespace: kubeflow
+type: Opaque
 ---
 apiVersion: v1
 kind: Secret
@@ -2469,7 +2687,7 @@ spec:
               name: mysql-secret
         - name: WEBHOOK_PORT
           value: '8443'
-        image: ghcr.io/kubeflow/kfp-cache-server:2.17.3
+        image: ghcr.io/kubeflow/kfp-cache-server:2.18.0
         imagePullPolicy: Always
         name: server
         ports:
@@ -2564,6 +2782,18 @@ spec:
               key: ARTIFACTS_PROXY_ENABLED
               name: pipeline-install-config
               optional: true
+        - name: HTTP_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              key: HTTP_BASE_URL
+              name: pipeline-install-config
+              optional: true
+        - name: ALLOWED_ARTIFACT_ENDPOINTS
+          valueFrom:
+            configMapKeyRef:
+              key: ALLOWED_ARTIFACT_ENDPOINTS
+              name: pipeline-install-config
+              optional: true
         - name: OBJECT_STORE_HOST
           value: seaweedfs
         - name: ARTIFACT_RETENTION_DAYS
@@ -2574,10 +2804,24 @@ spec:
         envFrom:
         - configMapRef:
             name: kubeflow-pipelines-profile-controller-env-5252m69c4c
-        image: docker.io/alpine/k8s:1.36.2
+        image: docker.io/alpine/k8s:1.37.1
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
         name: profile-controller
         ports:
         - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -2597,7 +2841,7 @@ spec:
           type: RuntimeDefault
       volumes:
       - configMap:
-          name: kubeflow-pipelines-profile-controller-code-df96649tdt
+          name: kubeflow-pipelines-profile-controller-code-fmm4f9td4m
         name: hooks
 ---
 apiVersion: apps/v1
@@ -2624,13 +2868,27 @@ spec:
       containers:
       - args:
         - /etc/envoy/envoy-config.yaml
-        image: ghcr.io/kubeflow/kfp-metadata-envoy:2.17.3
+        image: ghcr.io/kubeflow/kfp-metadata-envoy:2.18.0
+        livenessProbe:
+          httpGet:
+            path: /server_info
+            port: envoy-admin
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
         name: container
         ports:
         - containerPort: 9090
           name: md-envoy
         - containerPort: 9901
           name: envoy-admin
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: envoy-admin
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -2814,7 +3072,7 @@ spec:
       - env:
         - name: NAMESPACE_TO_WATCH
           value: ''
-        image: ghcr.io/kubeflow/kfp-metadata-writer:2.17.3
+        image: ghcr.io/kubeflow/kfp-metadata-writer:2.18.0
         name: main
         securityContext:
           allowPrivilegeEscalation: false
@@ -2903,7 +3161,7 @@ spec:
           value: '2'
         - name: LOG_LEVEL
           value: info
-        image: ghcr.io/kubeflow/kfp-persistence-agent:2.17.3
+        image: ghcr.io/kubeflow/kfp-persistence-agent:2.18.0
         imagePullPolicy: IfNotPresent
         name: ml-pipeline-persistenceagent
         resources:
@@ -3000,6 +3258,8 @@ spec:
     spec:
       containers:
       - env:
+        - name: MULTIUSER
+          value: 'true'
         - name: NAMESPACE
           value: ''
         - name: NAMESPACE_SELF
@@ -3028,12 +3288,20 @@ spec:
           value: '20'
         - name: LOG_LEVEL
           value: info
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         - name: CRON_SCHEDULE_TIMEZONE
           valueFrom:
             configMapKeyRef:
               key: cronScheduleTimezone
               name: pipeline-install-config
-        image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.17.3
+        image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.18.0
         imagePullPolicy: IfNotPresent
         name: ml-pipeline-scheduledworkflow
         ports:
@@ -3117,6 +3385,8 @@ spec:
       app.kubernetes.io/component: ml-pipeline
       app.kubernetes.io/name: kubeflow-pipelines
       application-crd-id: kubeflow-pipelines
+  strategy:
+    type: Recreate
   template:
     metadata:
       annotations:
@@ -3157,6 +3427,11 @@ spec:
               key: USERID_PREFIX
               name: pipeline-install-config
               optional: true
+        - name: TENSORBOARD_PROXY_SIGNING_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: signing-secret
+              name: ml-pipeline-ui-tensorboard-proxy
         - name: MINIO_NAMESPACE
           valueFrom:
             fieldRef:
@@ -3199,7 +3474,19 @@ spec:
               key: CLUSTER_DOMAIN
               name: pipeline-install-config
               optional: true
-        image: ghcr.io/kubeflow/kfp-frontend:2.17.3
+        - name: HTTP_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              key: HTTP_BASE_URL
+              name: pipeline-install-config
+              optional: true
+        - name: ALLOWED_ARTIFACT_ENDPOINTS
+          valueFrom:
+            configMapKeyRef:
+              key: ALLOWED_ARTIFACT_ENDPOINTS
+              name: pipeline-install-config
+              optional: true
+        image: ghcr.io/kubeflow/kfp-frontend:2.18.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -3279,7 +3566,7 @@ spec:
           value: ''
         - name: MAX_NUM_VIEWERS
           value: '50'
-        image: ghcr.io/kubeflow/kfp-viewer-crd-controller:2.17.3
+        image: ghcr.io/kubeflow/kfp-viewer-crd-controller:2.18.0
         imagePullPolicy: Always
         name: ml-pipeline-viewer-crd
         securityContext:
@@ -3326,7 +3613,7 @@ spec:
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
-      - image: ghcr.io/kubeflow/kfp-visualization-server:2.17.3
+      - image: ghcr.io/kubeflow/kfp-visualization-server:2.18.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -3464,7 +3751,7 @@ spec:
         envFrom:
         - secretRef:
             name: mlpipeline-minio-artifact
-        image: ghcr.io/chrislusf/seaweedfs:4.34
+        image: ghcr.io/chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8
         lifecycle:
           postStart:
             exec:
@@ -3577,7 +3864,7 @@ spec:
         - --configmap
         - workflow-controller-configmap
         - --executor-image
-        - quay.io/argoproj/argoexec:v4.0.6
+        - quay.io/argoproj/argoexec:v4.1.6
         command:
         - workflow-controller
         env:
@@ -3588,7 +3875,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
-        image: quay.io/argoproj/workflow-controller:v4.0.6
+        image: quay.io/argoproj/workflow-controller:v4.1.6
         livenessProbe:
           failureThreshold: 3
           httpGet:
@@ -3655,7 +3942,7 @@ spec:
         - --discovery-interval=3600s
         command:
         - /usr/bin/metacontroller
-        image: ghcr.io/metacontroller/metacontroller:v4.16.2
+        image: ghcr.io/metacontroller/metacontroller:v4.17.6@sha256:1c083f7587130f611dc1330b898c49d78cc223674570c223b8081d7ca4b197dd
         livenessProbe:
           httpGet:
             path: /healthz
@@ -3689,6 +3976,68 @@ spec:
           type: RuntimeDefault
       serviceAccountName: meta-controller-service
   volumeClaimTemplates: []
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-ui-signing-key-init-ckk2d4958b
+  namespace: kubeflow
+spec:
+  activeDeadlineSeconds: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: ml-pipeline
+        app.kubernetes.io/name: kubeflow-pipelines
+        application-crd-id: kubeflow-pipelines
+        sidecar.istio.io/inject: 'false'
+    spec:
+      containers:
+      - command:
+        - node
+        - dist/initialize-tensorboard-signing-key.js
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: SIGNING_SECRET_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: secretName
+              name: ml-pipeline-ui-signing-key-init-ckk2d4958b
+        - name: SIGNING_SECRET_KEY
+          valueFrom:
+            configMapKeyRef:
+              key: secretKey
+              name: ml-pipeline-ui-signing-key-init-ckk2d4958b
+        image: ghcr.io/kubeflow/kfp-frontend:2.18.0
+        imagePullPolicy: IfNotPresent
+        name: initialize
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        workingDir: /server
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: ml-pipeline-ui-signing-key-init
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -3906,6 +4255,37 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
+    app: kubeflow-pipelines-profile-controller
+    app.kubernetes.io/component: ml-pipeline
+    app.kubernetes.io/name: kubeflow-pipelines
+    application-crd-id: kubeflow-pipelines
+  name: kubeflow-pipelines-profile-controller
+  namespace: kubeflow
+spec:
+  ingress:
+  - from:
+    - podSelector:
+        matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - metacontroller
+    ports:
+    - port: 8080
+      protocol: TCP
+  podSelector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - kubeflow-pipelines-profile-controller
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
     application-crd-id: kubeflow-pipelines
   name: seaweedfs
   namespace: kubeflow
@@ -3931,6 +4311,13 @@ spec:
     - podSelector: {}
     ports:
     - port: 8333
+  - from:
+    - podSelector:
+        matchLabels:
+          app: kubeflow-pipelines-profile-controller
+          application-crd-id: kubeflow-pipelines
+    ports:
+    - port: 8111
   podSelector:
     matchExpressions:
     - key: app

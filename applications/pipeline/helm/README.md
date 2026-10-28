@@ -80,6 +80,14 @@ waits for every Deployment of the release. The scenario argument is required.
 
 ## Upgrade
 
+Pipelines 2.18.0 introduces a Job that initializes a shared TensorBoard signing
+key in `Secret/ml-pipeline-ui-tensorboard-proxy`. The user interface requires
+that key and uses the `Recreate` deployment strategy: first adoption briefly
+interrupts access and invalidates existing TensorBoard URLs. See the upstream
+[upgrade guide](https://github.com/kubeflow/pipelines/blob/2.18.0/docs/operator-guides/upgrade-2.18.md)
+before upgrading. An upgrade from an earlier application version has not been
+verified on a cluster with this chart.
+
 While the payload shipped `rules: []` for the aggregated ClusterRoles
 `kubeflow-pipelines-edit` and `kubeflow-pipelines-view`, an unchanged
 `helm upgrade` of the installed release failed on these two ClusterRoles with
