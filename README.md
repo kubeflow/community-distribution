@@ -26,6 +26,7 @@ We try to BEST-EFFORT support each release for 6 months as community. There is [
   - [Change Default User Name](#change-default-user-name)
   - [Change Default User Password](#change-default-user-password)
 - [Upgrading and Extending](#upgrading-and-extending)
+  - [Version-Specific Upgrade Notes](#version-specific-upgrade-notes)
 - [Release Process](#release-process)
 - [Security](#security)
 - [Pre-commit Hooks](#pre-commit-hooks)
