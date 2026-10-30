@@ -823,6 +823,11 @@ kubectl delete clusterrolebinding meta-controller-cluster-role-binding
    ```
    Version-specific hashed ConfigMaps can be left untouched.
 
+2. **Kubeflow Pipelines user interface** ([#3661](https://github.com/kubeflow/community-distribution/issues/3661)): The `ml-pipeline-ui` Deployment now uses the `Recreate` update strategy. Kubernetes stored the default rolling update parameters in the existing Deployment, and `kubectl apply --server-side` does not remove them, so applying the new manifests fails with `spec.strategy.rollingUpdate: Forbidden`. Switch the update strategy before applying the new manifests. The command changes nothing when the Deployment already uses `Recreate`:
+   ```sh
+   kubectl patch deployment ml-pipeline-ui -n kubeflow --type=merge --patch '{"spec":{"strategy":{"type":"Recreate","rollingUpdate":null}}}'
+   ```
+
 ## Release Process
 
 [Kubeflow release handbook](https://github.com/kubeflow/community-distribution/blob/master/releases/kubeflow-community-distribution-release-handbook.md).
