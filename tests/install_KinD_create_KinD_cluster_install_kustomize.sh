@@ -17,6 +17,14 @@ export PATH="${USER_BINARY_DIRECTORY}:${PATH}"
 
 echo "Install KinD..."
 
+# KinD nodes share the host user quota; apply the README prerequisite locally and in CI.
+if [ "$(sysctl -n fs.inotify.max_user_instances)" -lt 2280 ]; then
+    sudo sysctl -w fs.inotify.max_user_instances=2280
+fi
+if [ "$(sysctl -n fs.inotify.max_user_watches)" -lt 1255360 ]; then
+  sudo sysctl -w fs.inotify.max_user_watches=1255360
+fi
+
 # https://github.com/nektos/act
 # This conditional helps running GitHub Workflows through
 if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then

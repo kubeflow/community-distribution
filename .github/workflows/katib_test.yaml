@@ -89,10 +89,11 @@ jobs:
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
         kubectl get experiments.kubeflow.org -n "${KF_PROFILE}" -o yaml > logs/katib-experiments.yaml 2>&1 || true
         kubectl get trials.kubeflow.org -n "${KF_PROFILE}" -o yaml > logs/katib-trials.yaml 2>&1 || true
-        for namespace in kubeflow istio-system cert-manager auth kubeflow-user-example-com; do
-            kubectl describe pods -n $namespace > logs/$namespace-pods.txt
-            for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
-                kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true
+        for namespace in kubeflow istio-system cert-manager auth "${KF_PROFILE}"; do
+            kubectl get pods -n "$namespace" -o yaml > "logs/$namespace-pods.yaml" 2>&1 || true
+            kubectl describe pods -n "$namespace" > "logs/$namespace-pods.txt" 2>&1 || true
+            for pod in $(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].metadata.name}'); do
+                kubectl logs -n "$namespace" "$pod" --all-containers=true --prefix=true --tail=100 > "logs/$namespace-$pod.txt" 2>&1 || true
             done
         done
 

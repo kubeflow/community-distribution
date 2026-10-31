@@ -145,20 +145,21 @@ jobs:
         fi
         kubectl get secret mlpipeline-minio-artifact -n "$KF_PROFILE" -o json | jq -r '.data | keys[] as $k | "\($k): \(. | .[$k] | @base64d)"' | tr '\n' ' '
 
-    - name: Install lib2to3 for KFP V1 SDK with Python3.12 (lib2to3 has been removed from python 3.12)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3-lib2to3
+    # The legacy SDK needs lib2to3, which Python removed in 3.13.
+    - name: Set up Python for pipeline SDK tests
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.12'
 
     - name: V1 Pipeline Test
       run: |
-        pip3 install "kfp>=1.8.24,<2.0.0"
+        python3 -m pip install "kfp>=1.8.24,<2.0.0"
         TOKEN="$(kubectl -n $KF_PROFILE create token default-editor)"
         python3 tests/pipeline_v1_test.py "${TOKEN}" "${KF_PROFILE}"
 
     - name: V2 Pipeline Test
       run: |
-        pip3 install -U "kfp==2.18.0" "kfp-kubernetes==2.18.0"
+        python3 -m pip install -U "kfp==2.18.0" "kfp-kubernetes==2.18.0"
         TOKEN="$(kubectl -n $KF_PROFILE create token default-editor)"
         python3 tests/pipeline_v2_test.py run_pipeline "${TOKEN}" "${KF_PROFILE}"
 

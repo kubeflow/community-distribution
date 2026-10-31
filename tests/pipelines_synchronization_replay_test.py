@@ -70,7 +70,8 @@ class SynchronizationReplaySelectionTest(unittest.TestCase):
                 installation_commands = [
                     shlex.split(line.strip())
                     for line in workflow.read_text().splitlines()
-                    if "pip3 install" in line and "kfp-kubernetes" in line
+                    if "kfp-kubernetes" in line
+                    and ("pip3 install" in line or "python3 -m pip install" in line)
                 ]
                 self.assertEqual(len(installation_commands), 1)
                 self.assertIn(f"kfp=={version}", installation_commands[0])
