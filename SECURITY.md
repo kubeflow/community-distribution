@@ -15,8 +15,8 @@ improvements.
 
 ## Reporting a Vulnerability
 
-We're extremely grateful for security researchers and users that report vulnerabilities to the
-Kubeflow Open Source Community. All reports are thoroughly investigated by Kubeflow projects owners.
+We are extremely grateful to security researchers and users who report vulnerabilities to the
+Kubeflow open-source community. All reports are thoroughly investigated by the owners of Kubeflow projects.
 
 You can use the following ways to report security vulnerabilities privately:
 
@@ -29,7 +29,7 @@ Please provide detailed information to help us understand and address the issue 
 
 **Acknowledgment**: We will acknowledge receipt of your report within 10 business days.
 
-**Assessment**: The Kubeflow projects owners will investigate the reported issue to determine its
+**Assessment**: The owners of Kubeflow projects will investigate the reported issue to determine its
 validity and severity.
 
 **Resolution**: If the issue is confirmed, we will work on a fix and prepare a release.
@@ -55,7 +55,7 @@ address known vulnerabilities.
 
 ## Communication Channels
 
-For the general questions please join the following resources:
+For general questions, use the following resources:
 
 - Kubeflow [Slack channels](https://www.kubeflow.org/docs/about/community/#kubeflow-slack-channels).
 

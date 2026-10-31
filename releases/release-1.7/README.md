@@ -24,7 +24,7 @@ The 1.7 release cycle is proposed as follows
 - **Wednesday, Feb 15th 2023**: Week 20 - Manifests Testing Ends
 - **Wednesday, Feb 15th 2023**: Week 20 - Distribution Testing Starts
 - **Wednesday, Mar 22st 2023**: Week 23 - Distribution Testing Ends
-- **Tuesday, Mar 28th 2023**: Week 24 - Docs Update Ends
+- **Tuesday, Mar 28th 2023**: Week 24 - Documentation Updates End
 - **Wednesday, Mar 29th 2023**: Week 24 - Kubeflow v1.7 Released
 
 ## Timeline
@@ -38,7 +38,7 @@ The 1.7 release cycle is proposed as follows
 | Wed Oct 19th 2022 | Week 4 | Community | Roadmaps are Finalized |
 | Wed Jan 25th 2023 | Week 18 | Release Team | [Feature Freeze](../handbook.md#feature-freeze-2-weeks) |
 | Wed Jan 25th 2023 | Week 18 | Manifest WG | [v1.7-rc.0 Released](../handbook.md#feature-freeze-2-weeks) |
-| Wed Jan 25th 2023 | Week 18 | Docs Lead | [Documentation](../handbook.md#documentation) |
+| Wed Jan 25th 2023 | Week 18 | Documentation Lead | [Documentation](../handbook.md#documentation) |
 | Wed Feb 1st 2023 | Week 19 | Release Team | [Manifests Testing](../handbook.md#manifests-testing-1-week) |
 | Wed Feb 1st 2023 | Week 19 | Release Team | [v1.7-rc.1 Released](../handbook.md#feature-freeze-2-weeks) |
 | Wed Feb 8th 2023 | Week 20 | Release Team | End of [Manifests Testing](../handbook.md#manifests-testing-1-week) |
@@ -46,7 +46,7 @@ The 1.7 release cycle is proposed as follows
 | Wed Feb 8th 2023 | Week 20 | Release Team and Distribution Representative | [Distribution Testing](../handbook.md#distribution-testing-3-weeks) |
 | Wed Mar 1st 2023 | Week 23 | Release Team and Distribution Representative | End of [Distribution Testing](../handbook.md#distribution-testing-3-weeks) |
 | Wed Mar 1st 2023 | Week 23 | Manifest WG | (optional) [v1.7-rc.3 Released](../handbook.md#distribution-testing-3-weeks) |
-| Wed Mar 7th 2023 | Week 24 | Docs Lead | End of [Documentation](../handbook.md#documentation) |
+| Wed Mar 7th 2023 | Week 24 | Documentation Lead | End of [Documentation](../handbook.md#documentation) |
 | Wed Mar 8th 2023 | Week 24 | Release Team | **v1.7** [Release Day](../handbook.md/#release) |
 | Wed Mar 8th 2023 | Week 24 | Release Team | Publish Release Blog |
 | Mon Mar 13th 2023 | Week 24 | Release Team | Release Retrospective |

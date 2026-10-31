@@ -185,7 +185,7 @@ different field manager conflicts with `kubeflow-crd-maintenance` as well.
 
 **Reinstall with `--skip-crds` once the definitions are administrator-managed**,
 with compatible definitions present first. Pass it to `helm install`, and to
-`helm upgrade --install` because its install side behaves the same. Without it,
+`helm upgrade --install` because its installation path behaves the same. Without it,
 Helm applies the bundled definitions again as `helm`, without force. When they
 differ from the maintained ones, the installation fails before it creates a
 release, with `conflict with "kubeflow-crd-maintenance": .spec.versions`. When

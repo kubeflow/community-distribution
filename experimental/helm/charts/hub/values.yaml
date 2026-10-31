@@ -556,7 +556,7 @@ security:
   podSecurityPolicy:
     # -- Enable PodSecurityPolicy
     enabled: false
-    # -- PodSecurityPolicy spec
+    # -- PodSecurityPolicy specification
     spec: {}
 
 # RBAC configuration

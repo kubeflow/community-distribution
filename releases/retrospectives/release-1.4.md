@@ -26,14 +26,14 @@ The release team will go over the provided feedback on Monday, November 8th, pro
 - [Kimonas Sotirchos] A dedicated release team
 - [Kimonas Sotirchos] Regular meetings to discuss the progress of the release
   - **[Action Item]** Any announcement the release team send out, include links to release resources - add to release handbook
-  - **[Action Item]** Add release info to the website for visibility - create an issue to track
+  - **[Action Item]** Add release information to the website for visibility; create an issue to track this work.
 - [Josh Bottum] Better communication with the distribution owners
 - [Josh Bottum] Better quality of the release
   - [Kimonas Sotirchos] Release timeline went well with WG timelines
   - **[Action Item]** Get release schedule feedback from WG - add to release handbook
 - [Josh Bottum] Feature roadmap presentation for the community in the beginning of the release
   - [Anna] It could help the WGs to start having the release in mind and start planning
-  - [Andrey] Some WG might not have a new release synced with the KF release. Let’s not enforce that WGs also sync their releases with KF
+  - [Andrey] Some Working Groups might not have a new release synchronized with the Kubeflow release. Let us not require Working Groups to synchronize releases with Kubeflow.
   - [Kimonas] Lets actually discuss this more after we do a first feedback meet with WGs
 
 ## What could have gone better ⚠️
@@ -43,22 +43,22 @@ The release team will go over the provided feedback on Monday, November 8th, pro
   - [Anna] We could also create slack groups
   - [Kimonas] Lets try to keep the context in GitHub though, even if we use slack
   - **[Action Item]** Duplicate kubeflow-discuss announcements in slack - add to release handbook
-- [Kimonas Sotirchos] An automated way of syncing manifests from other repos to the manifests repo
+- [Kimonas Sotirchos] An automated way to synchronize manifests from other repositories to the Manifests repository
 - [Kimonas Sotirchos] We had a manual process for testing the provided manifests, which required cycles
   - [Kimonas] The AutoML WG leads had created a notebook that the GCP folks used for evaluating their distro. We could convert to a py script and run it with prow [https://github.com/kubeflow/pipelines/blob/master/samples/contrib/kubeflow-e2e-mnist/kubeflow-e2e-mnist.ipynb](https://github.com/kubeflow/pipelines/blob/master/samples/contrib/kubeflow-e2e-mnist/kubeflow-e2e-mnist.ipynb)
   - [Juana] Maybe we could only run this nightly
-  - [Andrew Scribner] Conformance tests were raised in the kubeflow conformance program discussion.  It would be ideal if these tests were sync’d as the goal of the tests sound very similar - we are trying to prove we have a fully functioning kubeflow **(Discussed in Part 2)**
+  - [Andrew Scribner] Conformance tests were raised in the Kubeflow conformance program discussion. It would be ideal to synchronize these tests, as the goals sound very similar: we are trying to prove that Kubeflow is fully functional. **(Discussed in Part 2)**
     - [Anna] Shouldn’t the provided manifests after each release also pass the conformance tests? +1 Kimonas
     - [Kimonas] We could make this more explicit as we go forward
 - [Andrew Scribner] Create an issue to track [the release] +1 Kimonas **(Discussed in Part 2)**
   - **[Action Item]** Add the step to create an issue in the handbook
-- [Kimonas Sotirchos] We should have cut the branch for 1.3 previous release early on. The 1.3 docs ended up having some content that corresponded to 1.4
-  - **[Action Item]** Update docs for versioning/cutting branch for the release to follow the new process
-- [Kimonas Sotirchos] A lot of docs PRs still happened in the end of the release timeline
-  - [Shannon] Provide guideline on how doc process/reviews work
+- [Kimonas Sotirchos] We should have created the branch for the previous 1.3 release earlier. The 1.3 documentation ended up including some content for 1.4.
+  - **[Action Item]** Update the documentation for versioning and release-branch creation to follow the new process.
+- [Kimonas Sotirchos] Many documentation pull requests still arrived at the end of the release timeline.
+  - [Shannon] Provide guidelines on the documentation process and reviews.
   - [Andrey] Define owners for each website file
-  - [Anna] We could have prow to check if a PR has a corresponding docs PR
-  - **[Action Item]** Remove documentation phase and enforce WG to have docs as part of development phase - propose to WG leads
+  - [Anna] Prow could check whether a pull request has a corresponding documentation pull request.
+  - **[Action Item]** Propose to Working Group leads that the separate documentation phase be removed and documentation be required during development.
 
 # Part 2
 - [Josh Bottum] Document the process for the release blog post
@@ -70,7 +70,7 @@ The release team will go over the provided feedback on Monday, November 8th, pro
   - [kimonas] Lets also write down the main criteria for reducing feature freeze:
     - Having enough CI/CD in place to run tests in an automated manner
     - Ask if the WG leads feel comfortable stabilizing their components with the proposed time frame (for example 1 week of Feature Freeze in the future)
-    - [Andrey] It would be good to have the big PRs merged even before the feature freeze, since we will also be tackling the docs PRs for these features in parallel +1 Kimonas
+    - [Andrey] It would be good to merge large pull requests before the feature freeze, since documentation pull requests for these features will be handled in parallel. +1 Kimonas
     - [Anna] It’s also good to explicitly mention the deadlines
 - [Anna Jung] Team selection process
   - [Anna] Should we keep on having nominations? +1 Kimonas
@@ -83,7 +83,7 @@ The release team will go over the provided feedback on Monday, November 8th, pro
   - [Anna] Let’s also ensure we ask new members if they would like to lead following releases
   - [Kimonas] Let’s think about removing one of the Release Team member or Shadow roles
 - [Anna Jung] Add release candidates to the timeline
-  - Let's add this information in the tables in the [timeline](https://github.com/kubeflow/community-distribution/tree/master/docs/releases/release-1.4#timeline) and [handbook](https://github.com/kubeflow/community-distribution/blob/master/docs/releases/handbook.md#timeline)
-- Move release docs to community rep? [Anna Jung]
+  - Let us add this information to the tables in the [timeline](https://github.com/kubeflow/community-distribution/tree/master/docs/releases/release-1.4#timeline) and [handbook](https://github.com/kubeflow/community-distribution/blob/master/docs/releases/handbook.md#timeline)
+- Move release documentation to the community repository? [Anna Jung]
   - **[Action Item]** Create an issue to move the kubeflow/community-distribution/docs/releases folder under kubeflow/community
   - [Kimonas] Let’s ensure that the OWNERS file will include the release team to allow us to keep on iterating fast

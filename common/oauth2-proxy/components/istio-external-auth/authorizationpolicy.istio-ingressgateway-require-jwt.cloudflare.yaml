@@ -9,7 +9,7 @@ spec:
     matchLabels:
       app: istio-ingressgateway
   rules:
-  # Deny requests that don't have a verified JWT (from a RequestAuthentication)
+  # Deny requests without a verified JWT (from a RequestAuthentication).
   # Note, even user requests that have been authenticated by oauth2-proxy will have a JWT,
   # because oauth2-proxy injects a Dex JWT into the request.
   - from:
@@ -18,7 +18,7 @@ spec:
     to:
     - operation:
         notPaths:
-        # Exclude dex paths, otherwise users won't be able to log in.
+        # Exclude Dex paths; otherwise, users will not be able to log in.
         - /dex/*
         - /dex/**
         - /oauth2/*

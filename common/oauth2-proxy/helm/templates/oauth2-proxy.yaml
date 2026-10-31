@@ -7,7 +7,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  oauth2_proxy.cfg: |-
+  oauth2_proxy.cfg: |
 {{ .Files.Get "files/oauth2_proxy.cfg" | indent 4 }}
 kind: ConfigMap
 metadata:

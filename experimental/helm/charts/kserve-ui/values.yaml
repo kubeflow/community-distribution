@@ -14,11 +14,11 @@ commonAnnotations: {}
 
 # Global settings
 global:
-  # -- Namespace for the KServe Models Web App
+  # -- Namespace for the KServe Models Web Application
   namespace: kserve
-  # -- Image registry for KServe Models Web App images
+  # -- Image registry for KServe Models Web Application images
   imageRegistry: ghcr.io/kserve
-  # -- Global image tag for KServe Models Web App
+  # -- Global image tag for KServe Models Web Application
   imageTag: 1.1.0
   # -- Global image pull policy
   imagePullPolicy: Always
@@ -31,7 +31,7 @@ global:
 
 # Application configuration
 app:
-  # -- Enable the KServe Models Web App
+  # -- Enable the KServe Models Web Application
   enabled: true
   # -- Number of replicas
   replicas: 1
@@ -46,7 +46,7 @@ app:
 
   # -- Application configuration
   config:
-    # -- Disable authentication for the web app
+    # -- Disable authentication for the web application
     disableAuth: true
     # -- Header name for user ID (used in Kubeflow integration)
     useridHeader: "kubeflow-userid"

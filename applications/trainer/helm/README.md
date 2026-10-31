@@ -114,8 +114,8 @@ migrated. Helm does not enforce this preflight. Catalog uninstall deletes only i
 ordinary owned runtime objects; administrator-created runtimes with other names,
 TrainJobs and snapshots are not release resources and are not selected for pruning.
 
-The API release deliberately uses retained templated definitions rather than
-Helm's install-once `crds/` directory, allowing explicit schema upgrades.
+The API release deliberately uses retained templated definitions to support explicit
+schema upgrades, rather than Helm's `crds/` directory, which installs definitions only once.
 `helm uninstall trainer-apis --namespace kubeflow-system` retains all four
 CRDs and their objects, leaving the definitions outside an active release.
 Recover with the same `trainer-apis` release and namespace after verifying

@@ -21,11 +21,11 @@ The release team will go over the provided feedback, provide a summary and sort 
 * [Julius] We added massive amounts of automatic tests
 * [Diego Lovison] CNCF (progress)
 * [Josh] good communications, consistent well attended meetings, good meeting notes, kept pretty close to schedule, minimal last minute additions, quality seemed good, few complaints
-* [Andrey] Doc's update for this release is AMAZING. Thanks all!
+* [Andrey] The documentation update for this release is AMAZING. Thanks, everyone!
 
 ## What could have gone better ⚠️
 
-* [Julius] Release more often with smaller changes, maybe even rolling rolling releases
+* [Julius] Release more often with smaller changes, maybe even rolling releases
   * [Julius] Release only when ready and not strictly by timeline
   * [Andrey] Should we stick to releasing the whole Kubeflow stack?
   * [Andrew] Although user can use individual components, Kubeflow distribution is the proof of compatibility between components
@@ -56,7 +56,7 @@ The release team will go over the provided feedback, provide a summary and sort 
 * [Ricardo] Kubeflow release is more complex than I thought
 * [Matteo Mortari] maybe difficult to participate weekly, Ricardo did an amazing work in following up with the WG leads, but maybe there could be an improved process to “ping” the WGs or other groups?
 * [Stefano] We need a better process to handoff roadmap insights from one release team to the next. When we started with 1.9, we had little knowledge about what should happen next for each working group. We can do a much better job both at keeping track of each WG’s roadmap (upcoming, and future) and also tracking broader user feedback as a release team.
-* [Stefano] Keeping technical docs separate from the component codebase makes it much harder to keep them up to date and quickly merge improvements.
+* [Stefano] Keeping technical documentation separate from the component codebase makes it much harder to keep the documentation up to date and merge improvements quickly.
 * [Josh] Watch schedule for holidays and vacations conflicts, especially near end of release, initial release date should be beginning of month (so if we slip a few weeks, we stay in month)
 
 ## Action items

@@ -36,7 +36,7 @@ Kubeflow 1.3 Release Retrospective
 # Current Processes
 
 - \[yanniszark] Most of the process is documented in issue:<https://github.com/kubeflow/community-distribution/issues/1777>
-- \[yanniszark] This old doc from kubeflow/kubeflow is mostly obsolete, but provides some good info on docs:<https://github.com/kubeflow/kubeflow/blob/2d845ee97da9650171701126ad56b34fddd51a7c/docs_dev/releasing.md>
+- \[yanniszark] This old document from kubeflow/kubeflow is mostly obsolete but provides useful information about documentation: <https://github.com/kubeflow/kubeflow/blob/2d845ee97da9650171701126ad56b34fddd51a7c/docs_dev/releasing.md>
 
 
 # What went well in 1.3
@@ -54,7 +54,7 @@ Kubeflow 1.3 Release Retrospective
 
 - \[josh] Meeting notes were better documented and sent to the mailing list
 
-- \[rui] Great docs completely new docs on KFP contributed by Google
+- \[rui] Google contributed excellent, completely new documentation for KFP.
 
 - \[rui] Openness to refactor very high level things like Getting Started and good collaboration between organizations
 
@@ -72,9 +72,9 @@ Kubeflow 1.3 Release Retrospective
 
   - **ACTION:Terminology about release phases. For example, what exactly does “Release Candidate” mean? Define it strictly.**
 
-- \[davidvanderspek and Juana Nakfour ] Automate the way we sync the manifests repo by defining how versions of Kubeflow relate to versions of individual components.
+- \[davidvanderspek and Juana Nakfour ] Automate synchronization of the Manifests repository by defining how Kubeflow versions relate to individual component versions.
 
-- \[yanniszark] We scheduled some deadlines on days OTHER than community meetings. Deadlines SHOULD always be scheduled on the day of a community meeting OR the one after it, so that we have a chance to sync about the deliverable as a community. -- agree! Malini; mid-week actually good - it protects weekend and Monday holidays
+- \[yanniszark] We scheduled some deadlines on days OTHER than community meetings. Deadlines SHOULD always be scheduled on the day of a community meeting OR the following day so that we can discuss the deliverable as a community. -- Agreed! Malini; midweek is good because it protects weekends and Monday holidays.
 
   - \[jamesliu] If we do it on the next day, will people chase the deadline?
 
@@ -112,17 +112,17 @@ This also helps with aspirational goals of items they want fixed and what actual
 
 - \[yanniszark] Many WGs had no established process in place for releasing manifests. Most have adopted a process with release branches, which allow for minor releases without slowing down development in master:<https://github.com/kubeflow/katib/issues/1474>
 
-  - **ACTION:** Make sure that each WG has a clear, documented release process defined for their repos.
+  - **ACTION:** Make sure that each Working Group has a clear, documented release process for its repositories.
   - \[Andrey Velichkevich] could all WGs adopt the same process for manifest release. Branches and tags.
   - \[yannis] a first step would be to document what is currently in place in WG and then compare.
 
-- \[yanniszark] When cutting a new release branch in a repo, Prow testing is not enabled.
+- \[yanniszark] When creating a new release branch in a repository, Prow testing is not enabled.
 
   - **ACTION:** Document the exact process. See: <https://github.com/kubeflow/testing/pull/936>
 
 - \[jbottum] we should consider producing a changelog or similar for each release. It would be nice to have a count of issues and PR closed in each release. +1 Malini
 
-  - \[malini] github tag for user related issues, they do it k8s (?)
+  - \[malini] A GitHub label for user-related issues, as in Kubernetes (?)
   - \[yanniszark] changelog per wg?
   - Concept and purpose:[https://github.com/github-changelog-generator/github-changelog-generator
     ](https://github.com/github-changelog-generator/github-changelog-generator)\[Bobgy]: KFP had some painful memories using github-changelog-generator, for context:[\[Release\] Changelog Process after 1.0 · Issue #3920 · kubeflow/pipelines](https://github.com/kubeflow/pipelines/issues/3920)
@@ -138,7 +138,7 @@ This also helps with aspirational goals of items they want fixed and what actual
 
 - \[jbottum] we should request the Working Groups to provide a status to the Release Manager, potentially in writing if they are not going to attend the weekly status call, even if the update is “no change”. Also having a WG just send an update to the kubeflow-discuss list can be a good way for WGs whoo can’t attend a status call to just send an update asynchronously. +1 Malini
 
-- These dependencies per sub-project is a list of dependenciesand their their version. Want consistency on dependency version consistency across all the sub-projects.
+- Each subproject has a list of dependencies and their versions. Dependency versions should be consistent across all subprojects.
 
   -
 
@@ -169,7 +169,7 @@ in a Tuesday Community Meeting.
 
 - \[Malini] libraries of third party dependencies too - example boto3.
 
-- \[yannis] PR in test repo too.
+- \[yannis] A pull request in the testing repository, too.
 
 - \[nakfour] The time between KF 1.3 first cut and distribution support was too short, I think 1-2wks
 
@@ -198,42 +198,42 @@ in a Tuesday Community Meeting.
   - Clear plan for all WGs to follow a single release process? Do we want a single release process?
 
 
-## Docs
+## Documentation
 
-- \[yanniszark] In our current process, we first release and then focus on docs. Should we instead focus on docs when a feature goes in and not release until we have good documentation? \[+1 Rui]
+- \[yanniszark] In our current process, we first release and then focus on documentation. Should we instead focus on documentation when a feature is introduced and wait to release until good documentation is available? \[+1 Rui]
 
 - \[yanniszark] Is the[current process](https://github.com/kubeflow/kubeflow/blob/2d845ee97da9650171701126ad56b34fddd51a7c/docs_dev/releasing.md#version-the-website) for the website up-to-date? Who has the permissions to follow it?
 
   - \[rui] Not 100% up to date, but still very relevant
 
-- \[rui] WG ownership of their docs was low. We had things like training operators outdated for months
+- \[rui] Working Groups had limited ownership of documentation. Training operator documentation, for example, remained outdated for months.
 
-- \[malini] would it make sense to have advertised doc hackathon days? To get all eyes on it.
+- \[malini] Would it make sense to advertise documentation hackathon days to attract more reviewers?
 
-- \[shannon Bradshaw] pro-actively call out updates that will break some doc obsolete - impact of features on doc
+- \[shannon Bradshaw] Proactively identify updates that make documentation obsolete and explain how features affect documentation.
 
-- \[david] code-doc if they co-reside, more likely they will be in sync as opposed to a separate website.
-  -\[Bobgy] +100 to this, ideally PRs should contain both doc and code changes at the same time.[Breaking up the website to each WG is a prerequisite.](https://github.com/kubeflow/website/issues/2293#issuecomment-718481321)
+- \[david] Code and documentation are more likely to remain synchronized if both reside together rather than on a separate website.
+  - \[Bobgy] +100 to this. Ideally, pull requests should contain both documentation and code changes. [Dividing website ownership among Working Groups is a prerequisite.](https://github.com/kubeflow/website/issues/2293#issuecomment-718481321)
 
-- \[yannis] would like to suggest that WG consider doc writing as part of feature release as opposed to a separate after step. Completeness is implementation with its docs. - Shannon, Malini etc agree on this.
+- \[yannis] I suggest that Working Groups consider documentation part of a feature release rather than a separate subsequent step. An implementation is complete when its documentation is included. Shannon, Malini, and others agree.
 
-- \[josh] how much does the open source documentation have to do given there may be different plugins/implementations. Should we articulate some template/minimum expectations wrt docs.
+- \[josh] How much should open-source documentation cover, given the different plugins and implementations? Should we define a template or minimum documentation requirements?
 
-- \[david] what parts of the docs fall in the purview of KF and what falls into the distros.
+- \[david] Which parts of the documentation fall under Kubeflow, and which belong to the distributions?
 
 - \[yannis] identify an issue that is extreme to clarify the above as example.
 
-- \[josh] Users should provide feedback about whether some docs are adequate. Users should be part of the release process to look at the docs on par with developers. Users to QA/vet the docs - perhaps when the RC goes out. A comment period.
+- \[josh] Users should provide feedback on documentation quality and review documentation alongside developers during the release process. A comment period when the release candidate is published could provide an opportunity for user review.
 
 - \[yannis] distros are our first users. But end users who consume it all.
 
-- \[josh] we get dinged on docs, let us formally invite them to be part of the process for testing it. There are 2 sets of users, beta and GA users, giving feedback during document creation.
+- \[josh] Users criticize the documentation, so let us formally invite users to participate in testing it. Two sets of users, beta and GA users, provide feedback during documentation development.
 
-- \[malini]the docs do have links within to help people file issues.
+- \[malini] The documentation includes links to help people file issues.
 
 - \[yannis] demonstrated what is available
 
-- \[josh]**docs sprints** -- users/everyone take a look and provide comments. A lot of this has fallen on Rui and do not want to overload him, people to help.
+- \[josh] **Documentation sprints** -- Invite users and other contributors to review and comment. Much of this work has fallen on Rui; more contributors should help to avoid overloading him.
 
 - \[kimonas] feature complete requires documentation. A template too for new feature proposal, what all it affects -- APIs/tests, documentation, performance.
 

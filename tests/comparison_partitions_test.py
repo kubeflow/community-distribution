@@ -151,7 +151,7 @@ def write_member(
         )
         (chart / "templates").mkdir(exist_ok=True)
         if dependency_crds_directory:
-            # Install-once content inside the dependency instead of a template.
+            # Content installed only once inside the dependency instead of a template.
             (payload_chart / "templates" / "objects.yaml").unlink()
             (payload_chart / "crds").mkdir()
             (payload_chart / "crds" / "objects.yaml").write_text(dump(objects))
@@ -373,14 +373,14 @@ class PartitionGroupTest(unittest.TestCase):
 
         self.assertProblem(
             self.verify(),
-            "example example-helm-crds: install-once crds/ content is not "
+            "example example-helm-crds: crds/ content is installed only once and is not "
             "supported in a partition group; render definitions from templates: "
             "widgets.example.org",
         )
 
     def test_install_once_crds_content_inside_a_dependency_is_rejected(self):
         """--include-crds renders a dependency's crds/ too, so the release would
-        pass ownership while the definitions had the install-once lifecycle."""
+        pass ownership while the definitions were installed only once."""
         selection, owned = MEMBERS["helm-crds"]
         for declared in (False, True):
             with self.subTest(declared_dependency=declared):
@@ -397,7 +397,7 @@ class PartitionGroupTest(unittest.TestCase):
 
                 self.assertProblem(
                     self.verify(),
-                    "example example-helm-crds: install-once crds/ content is not "
+                    "example example-helm-crds: crds/ content is installed only once and is not "
                     "supported in a partition group; render definitions from "
                     "templates: widgets.example.org",
                 )
