@@ -3,7 +3,7 @@
 | **Role** | **Name** (**GitHub / Slack ID**) |
 |----------|----------------------------------|
 | Release Manager | Ricardo Martinelli (Github: [@rimolive](https://github.com/rimolive) / Slack: `Ricardo Martinelli de Oliveira`)|
-| Docs Lead | Diego Lovison (Github: [@diegolovison](https://github.com/diegolovison)) / Slack: `Diego Lovison` and Helber Belmiro (Github: [@hbelmiro](https://github.com/hbelmiro)) / Slack: `Helber Belmiro` |
+| Documentation Lead | Diego Lovison (GitHub: [@diegolovison](https://github.com/diegolovison)) / Slack: `Diego Lovison` and Helber Belmiro (GitHub: [@hbelmiro](https://github.com/hbelmiro)) / Slack: `Helber Belmiro` |
 | Product Manager | Stefano Fioravanzo (GitHub: [@StefanoFioravanzo](https://github.com/StefanoFioravanzo) / Slack: `Stefano Fioravanzo`)|
 | Product Manager Shadows | TBD |
 | AutoML and Training WG Liaison(s) | Ajay Nagar (Github: [@nagar-ajay](https://github.com/nagar-ajay) / Slack: `Ajay Nagar`)|

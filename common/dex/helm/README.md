@@ -154,7 +154,7 @@ place CustomResourceDefinitions in a chart `crds/` directory. Helm's own
 documentation states that there is *"no support at this time for upgrading or
 deleting CRDs using Helm"*
 ([CRD best practices](https://helm.sh/docs/chart_best_practices/custom_resource_definitions/)),
-so a resource in `crds/` keeps its first-install schema forever; `helm template`
+so a resource in `crds/` retains the schema from its first installation indefinitely; `helm template`
 renders it only when `--include-crds` is passed, and `--dry-run` never validates
 it. Rendering from `templates/` means
 `helm upgrade` updates the schema, while `helm.sh/resource-policy: keep` stops

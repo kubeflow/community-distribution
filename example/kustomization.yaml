@@ -93,7 +93,7 @@ resources:
 # Here is the internal documentation for Ray: - ../experimental/ray/README.md
 # - ../experimental/ray/kuberay-operator/overlays/kubeflow
 
-# Notebooks v1 (legacy, superseeded by Kubeflow Workspaces)
+# Notebooks v1 (legacy, superseded by Kubeflow Workspaces)
 # Notebooks 1.0 is disabled by default in `example/kustomization.yaml` and will be removed in Kubeflow 27.03.
 # To enable it, also enable its Central Dashboard menu component below.
 # - ../applications/notebooks-v1/overlays/istio

@@ -186,7 +186,7 @@ baseline object selected by exactly one member. Objects are identified by API
 group, kind, namespace and name; for a kind the baseline's own
 `CustomResourceDefinition` declares cluster-scoped, a stray `metadata.namespace`
 is not part of the identity. A member cannot `skip` objects or declare
-`helmOnlyResources`, cannot ship install-once `crds/` content at any dependency
+`helmOnlyResources`, cannot ship `crds/` content installed only once at any dependency
 depth (`helm show crds` on the prepared chart must list nothing), and cannot
 render Helm hooks: those mechanisms are outside what the check can prove, so they are
 rejected rather than modelled.

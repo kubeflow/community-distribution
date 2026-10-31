@@ -105,8 +105,8 @@ def save_images(working_group, images, version):
 
 def validate_semantic_version(version):
     """Validate a semantic version string (e.g., '0.1.2' or 'latest')."""
-    regex = r"^[0-9]+\.[0-9]+\.[0-9]+$"
-    if re.match(regex, version) or version == "latest":
+    semantic_version_pattern = r"^[0-9]+\.[0-9]+\.[0-9]+$"
+    if re.match(semantic_version_pattern, version) or version == "latest":
         return version
     else:
         raise ValueError(f"Invalid semantic version: '{version}'")
@@ -199,8 +199,8 @@ def extract_images(version):
 
                         subdirectories.clear()
 
-                        # Use regex to find lines with 'image: <image-name>:<version>' or 'image: <image-name>'
-                        # and '- image: <image-name>:<version>' but avoid environment variables
+                        # Use a regular expression to match image declarations and list entries,
+                        # excluding environment variable substitutions.
                         kustomize_images = re.findall(
                             r"^\s*-?\s*image:\s*([^$\s:]+(?:\:[^\s]+)?)$",
                             result.stdout,

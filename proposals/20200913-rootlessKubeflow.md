@@ -4,29 +4,29 @@ Authors: Julius von Kohout (@juliusvonkohout)
 
 ### Goals
 
-We want to run Kubeflow as rootless as possible according to CNCF/Kubernetes best practices.
+We want to run Kubeflow with as few root privileges as possible, in accordance with CNCF and Kubernetes best practices.
 Most enterprise environments will require this as well.
 
 ### Implementation details
-The main steps are adding an additional profile for istio-cni and later ambient mesh, updating the documentation and manifest generation process.
-Only istio-cni or istio ambient mesh can run rootless as explained here https://istio.io/latest/docs/setup/additional-setup/cni/.
-Istio-cni will still need a daemonset in kube-system, but that is completely isolated from user workloads.
-The ambient mesh should get rid of this as well and also has the benefit of removing the istio initcontainers and sidecars altogether.
-Then adding the baseline and restricted PSS as kustomize component to `/contrib` and extending the profile controller to annotate user namespaces with configurable PSS labels.
+The main steps are to add a profile for Istio CNI and later the ambient mesh, and to update the documentation and manifest generation process.
+Only Istio CNI or the Istio ambient mesh can run without root privileges, as explained at https://istio.io/latest/docs/setup/additional-setup/cni/.
+Istio CNI will still need a DaemonSet in `kube-system`, but that is isolated from user workloads.
+The ambient mesh should remove this requirement and also remove the Istio initialization containers and sidecars.
+The next step is to add the baseline and restricted PSS as a Kustomize component under `/contrib` and extend the Profile controller to annotate user namespaces with configurable PSS labels.
 
 We want to use a staged approach.
 
 #### First Stage:
-1. Implement Istio 1.17.5 and use it by default, because 1.17. is what we have planned to use for Kubeflow 1.8.
-2. Implement istio-cni (`--set components.cni.enabled=true --set components.cni.namespace=kube-system`) as second option.
-3. Add simple tests similar to `tests/gh-actions/install_istio.sh` and `tests/gh-actions/install_knative.sh` for istio-cni and support both rootfull and rootless istio at the same time and give users one release to test
+1. Implement Istio 1.17.5 and use it by default, because 1.17 is the version planned for Kubeflow 1.8.
+2. Implement Istio CNI (`--set components.cni.enabled=true --set components.cni.namespace=kube-system`) as a second option.
+3. Add simple tests similar to `tests/gh-actions/install_istio.sh` and `tests/gh-actions/install_knative.sh` for Istio CNI. Support both rootful and rootless Istio at the same time and give users one release for testing.
 
 #### Second stage:
 4. Add pod security standards (https://kubernetes.io/docs/concepts/security/pod-security-standards/) `base/restricted` to `manifests/contrib`
-5. Enforce PSS baseline (Adavanced users can still build OCI containers via Podman and buildah, but not Docker in Docker). The baseline PSS should works with any istio. If not we will move this item to the third stage after istio-cni or the ambient mesh is the default.
-7. Enable Warnings for violations of restricted PSS
-8. Add tests to make sure that the PSS are used and tested in the CICD
-9. Optionally Enforce PSS restricted (this is where minor corner cases are affected)
+5. Enforce baseline PSS (advanced users can still build OCI containers with Podman and Buildah, but not Docker-in-Docker). Baseline PSS should work with any Istio configuration. Otherwise, we will move this item to the third stage, after Istio CNI or the ambient mesh becomes the default.
+7. Enable warnings for violations of restricted PSS.
+8. Add tests to make sure that PSS are used and tested in continuous integration.
+9. Optionally enforce restricted PSS, which may affect minor corner cases.
 
 #### Third stage:
 9. Upgrade Istio to 1.19 to make the ambient mesh available
@@ -36,13 +36,13 @@ We want to use a staged approach.
 11. Use the ambient service mesh by default in Kubeflow 1.10.
 
 ### Non-Goals
-This does not cover Application level CVEs, only cluster level security.
+This covers cluster-level security, not application-level CVEs.
 
 ### Does this break any existing functionality?
-So far not. Only PSS restricted may block the security-wise dangerous Docker in Docker.
+Not so far. Only restricted PSS may block Docker-in-Docker, which poses security risks.
 This is a rarely used feature from the KFP SDK.
-With PSS baseline you can still build OCI images with Podman for example.
-We should replace Docker with the cli compatible podman in the KFP SDK https://kubeflow-pipelines.readthedocs.io/en/1.8.22/source/kfp.containers.html?highlight=kfp.containers.build_image_from_working_dir#kfp.containers.build_image_from_working_dir.
+With baseline PSS, you can still build OCI images with tools such as Podman.
+We should replace Docker with Podman, which has a compatible command-line interface, in the KFP SDK: https://kubeflow-pipelines.readthedocs.io/en/1.8.22/source/kfp.containers.html?highlight=kfp.containers.build_image_from_working_dir#kfp.containers.build_image_from_working_dir.
 
 
 ### Does this fix/solve any outstanding issues?

@@ -8,6 +8,6 @@ in Authorization Bearer tokens when the JWT issuer matches the one in `RequestAu
 default setup uses Kubernetes' self-served OIDC issuer with self-signed certificates.
 
 In Kubernetes clusters managed by platform providers, the OIDC issuer is usually managed by the
-provider and served behind publicly trusted certificates. In these cases, it's advisable to use
+provider and served behind publicly trusted certificates. In these cases, it is advisable to use
 the platform-managed Kubernetes OIDC issuer in the `RequestAuthentication` for seamless integration
 and authentication compliance with the platform's security standards.

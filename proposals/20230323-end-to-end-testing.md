@@ -5,22 +5,22 @@ Sotirchos ([@kimwnasptd](https://github.com/kimwnasptd)), and Anna Jung ([@annaj
 
 ## Background
 
-Previously, the Kubeflow community leveraged prow optional-test-infra for e2e testing with credit from AWS. After the
-optional test infrastructure deprecation notice, all WGs moved their test to GitHub Actions as a temporary solution. Due
-to resource constraints of GitHub-hosted runners, the Kubeflow community stopped supporting e2e tests as part of the
+Previously, the Kubeflow community used Prow's `optional-test-infra` for end-to-end testing with credits from AWS. After the
+optional test infrastructure deprecation notice, all Working Groups moved their tests to GitHub Actions as a temporary solution. Due
+to resource constraints of GitHub-hosted runners, the Kubeflow community stopped supporting end-to-end tests as part of the
 migration. In partnership with Amazon, a new AWS account has been created with sponsored credits. With the new AWS
-account, the Kubeflow community is no longer limited by resource constraints posed by GitHub Actions. To enable the e2e
-test for the Manifest repo, this doc proposes a design to set up the infrastructure needed to run the necessary tests.
+account, the Kubeflow community is no longer limited by resource constraints posed by GitHub Actions. To enable end-to-end
+tests for the Manifests repository, this document proposes the infrastructure needed to run the tests.
 
 References
 
-- [Optional Test Infra Deprecation Notice](https://github.com/kubeflow/testing/issues/993)
+- [Optional Test Infrastructure Deprecation Notice](https://github.com/kubeflow/testing/issues/993)
 - [Alternative solution to removal of test on optional-test-infra](https://github.com/kubeflow/testing/issues/1006)
 
 ## Goal
 
-Enable the e2e testing for the Manifest repo and leverage it to shorten the manifest testing phase of the Kubeflow
-release cycle and to increase quality of the Kubeflow release by ensuring Kubeflow components and dependencies work
+Enable end-to-end testing for the Manifests repository to shorten the manifest testing phase of the Kubeflow
+release cycle and improve release quality by ensuring Kubeflow components and dependencies work
 correctly together.
 
 ## Proposal
@@ -30,17 +30,17 @@ spawn an EC2 instance with enough resources to deploy the complete Kubeflow solu
 
 ## Implementation
 
-Below lists steps the GitHub actions will perform to complete end-to-end testing
+GitHub Actions will perform the following steps to complete end-to-end testing:
 
-- [Create Credentials required by the AWS](#create-credentials-required-by-the-aws)
+- [Create AWS credentials](#create-aws-credentials)
 - [Create an EC2 instance](#create-an-ec2-instance)
-- [Install a Kubernetes on the instance](#install-a-kubernetes-on-the-instance)
+- [Install Kubernetes on the instance](#install-kubernetes-on-the-instance)
 - [Deploy Kubeflow](#deploy-kubeflow)
 - [Run tests](#run-tests)
 - [Log and report errors](#log-and-report-errors)
 - [Clean up](#clean-up)
 
-### Create credentials required by the AWS
+### Create AWS Credentials
 
 To leverage AWS, two credentials are required:
 
@@ -48,7 +48,7 @@ To leverage AWS, two credentials are required:
 - `AWS_SECRET_ACCESS_KEY`: Specifies the secret key associated with the access key. This is essentially the "password"
   for the access key.
 
-Both credentials needs to
+Both credentials need to
 be [stored as secrets on GitHub](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
 and will be accessed in a workflow as environment variables.
 
@@ -60,10 +60,10 @@ env:
 
 ### Create an EC2 instance
 
-Access the AWS credentials (stored as GH Secrets) and create an EC2 instance
+Access the AWS credentials stored as GitHub secrets and create an EC2 instance.
 
-Using [juju](https://juju.is/) as an orchestration, configure AWS credentials and deploy an EC2 instance with the
-following configurations
+Using [Juju](https://juju.is/) for orchestration, configure AWS credentials and deploy an EC2 instance with the
+following configuration:
 
 - Image: Ubuntu Server (latest)
 - Type: t3a.xlarge
@@ -75,12 +75,12 @@ following configurations
 Juju allows easy configuration to various cloud providers. In the future, if there comes a reason to shift to another
 infrastructure provider, it would allow us to pivot quickly.
 
-While juju provides more capability, the proposal is to use the tool as config management and a medium to deploy and
-connect with EC2 instances.
+While Juju provides more capabilities, this proposal uses the tool for configuration management and to deploy and
+connect to EC2 instances.
 
 **Note**: Using GitHub Secrets to store AWS credentials will not allow any forked repositories to access the secrets.
 
-### Install a Kubernetes on the Instance
+### Install Kubernetes on the Instance
 
 Install Kubernetes on the EC2 instance where Kubeflow will be deployed and tested
 
@@ -123,7 +123,7 @@ kind create cluster --config ./tests/gh-actions/kind-cluster.yaml
 
 While many tools can be leveraged to deploy Kubernetes, Manifest WG already leverages KinD to run both core and contrib
 component tests. By reusing the tool, we can leverage the existing KinD configuration and keep the similarity between
-component and e2e testing.
+component and end-to-end testing.
 
 **Note**: KinD is a subproject of Kubernetes but does not automatically release with a new Kubernetes version and does
 not follow the Kubernetes release cadence. More details can be found at
@@ -131,13 +131,13 @@ not follow the Kubernetes release cadence. More details can be found at
 
 ### Deploy Kubeflow
 
-Deploy Kubeflow, in the same manner, the manifests WG documents.
+Deploy Kubeflow as documented by the Manifests Working Group.
 
-Copy the manifest repo to the AWS instance and use Kustomize to run the Kubeflow installation. After Kustomize
+Copy the Manifests repository to the AWS instance and use Kustomize to run the Kubeflow installation. After Kustomize
 installation is complete, verify all pods are running.
 
-Manifest installation may result in an infinite while loop; therefore, a time limit of 45mins should be set to ensure
-installation exits when a problem occurs with Kubeflow installation.
+Manifest installation may result in an infinite while loop; therefore, a time limit of 45 minutes should be set so
+the process exits if an installation problem occurs.
 
 ### Run Tests
 
@@ -210,7 +210,7 @@ Step to run e2e notebook from the workflow:
         data_formatted = np.array2string(data, separator=",", formatter={"float": lambda x: "%.1f" % x})
         json_request = '{{ "instances" : {} }}'.format(data_formatted)
 
-        # Specify the prediction URL. If you are runing this notebook outside of Kubernetes cluster, you should set the Cluster IP.
+        # Specify the prediction URL. If you are running this notebook outside a Kubernetes cluster, set the cluster IP address.
         url = "http://{}-predictor-default.{}.svc.cluster.local/v1/models/{}:predict".format(name, namespace, name)
 
         time.sleep(60)
@@ -332,9 +332,9 @@ an AWS EC2 instance.
 
 **Notes**:
 
-- GitHub secrets are limited to the Manifest repo and do not cascade to forked repositories. To debug, users must set up
+- GitHub secrets are limited to the Manifests repository and do not cascade to forked repositories. To debug, users must set up
   their own AWS secrets.
-- To debug the AWS EC2 instance without ssh into the GitHub system, you must have access to AWS credentials. Access to
+- To debug the AWS EC2 instance without connecting to the GitHub system through SSH, you must have access to AWS credentials. Access to
   AWS credentials is limited to [Manifest WG approvers](https://github.com/kubeflow/community-distribution/blob/master/OWNERS).
 
 ## Proof of Concept Workflow
@@ -348,10 +348,10 @@ The proposed end-to-end workflow has been tested with the following Kubernetes a
 
 - 1.22 Kubernetes and [1.6.1 Kubeflow release](https://github.com/kubeflow/community-distribution/releases/tag/v1.6.1) (microk8s)
 - 1.24 Kubernetes and main branch of the manifest
-  repo ([last commit](https://github.com/DomFleischmann/manifests/commit/8e5714171f1fd5b00f59f436e9ab8cb45a0f30e3)) (
+  repository ([last commit](https://github.com/DomFleischmann/manifests/commit/8e5714171f1fd5b00f59f436e9ab8cb45a0f30e3)) (
   microk8s)
-- 1.25 Kuberentes and main branch of the manifest
-  repo ([last commit](https://github.com/DomFleischmann/manifests/commit/8e5714171f1fd5b00f59f436e9ab8cb45a0f30e3)) (
+- 1.25 Kubernetes and the main branch of the Manifests
+  repository ([last commit](https://github.com/DomFleischmann/manifests/commit/8e5714171f1fd5b00f59f436e9ab8cb45a0f30e3)) (
   kind)
 
 ### Alternative solutions considered

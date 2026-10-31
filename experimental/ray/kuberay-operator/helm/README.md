@@ -113,7 +113,7 @@ helm install kuberay-operator experimental/ray/kuberay-operator/helm \
 RAY_CRDS_MANAGED_EXTERNALLY=true ./tests/ray_helm_install.sh
 ```
 
-The same option matters for the install side of `helm upgrade --install`.
+The same option matters for the installation path of `helm upgrade --install`.
 A rollback is safe only when the installed schemas and existing resources remain
 compatible with the older operator. Reinstalling a compatible release restores
 reconciliation; it does not recreate resources deleted independently.

@@ -9,7 +9,7 @@ The cluster-local-gateway provides internal (cluster-local) routing for services
 ## Important: knative-local-gateway Service
 
 ### The Naming Confusion
-When investigating the gateway architecture, you'll notice that:
+When investigating the gateway architecture, you will notice that:
 - KServe and Knative reference a service called `knative-local-gateway`
 - There are no pods with the label `app=knative-local-gateway`
 - The `knative-local-gateway` service actually routes to `cluster-local-gateway` pods

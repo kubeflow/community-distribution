@@ -54,7 +54,7 @@ jobs:
         To fix these errors, refer to the YAML formatting rules at:
         https://yamllint.readthedocs.io/en/stable/rules.html#
 
-        Search for the keyword inside the brackets [] in the error message. In this example, it's 'indentation'.
+        Search for the keyword inside the brackets [] in the error message. In this example, it is 'indentation'.
         Note: Some rules have been customized in the '.yamllint.yaml' file.
         "
 

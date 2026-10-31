@@ -106,7 +106,7 @@ kubectl wait --for=condition=complete job/storage-version-migration-serving -n k
 ```
 
 The Job has a fixed name and a 600-second TTL. Delete its previous completed Job
-before deliberately rerunning it. It is not an install/uninstall hook. Check
+before deliberately rerunning it. It is not an installation or uninstallation hook. Check
 Knative's version-specific upgrade guidance before changing stored API versions.
 
 ## Validation and draft boundaries

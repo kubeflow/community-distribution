@@ -4,7 +4,7 @@
 | **Role** | **Name** (**GitHub / Slack ID**) |
 |----------|----------------------------------|
 | Release Manager | Anna Jung (GitHub: [@annajung](https://github.com/annajung) / Slack: `@annajung`) |
-| Docs Lead | Vedant Padwal (GitHub: [@js-ts](https://github.com/js-ts) / Slack: `Vedant Padwal`) |
+| Documentation Lead | Vedant Padwal (GitHub: [@js-ts](https://github.com/js-ts) / Slack: `Vedant Padwal`) |
 | Product Manager | Josh Bottum (GitHub: [@jbottum](https://github.com/jbottum) / Slack: `@JoshBottum`)|
 | Product Manager Shadows | Amber Graner (GitHub: [@akgraner](https://github.com/akgraner) / Slack: `@akgraner`), Dominik Fleischmann (GitHub: [@DomFleischmann](https://github.com/DomFleischmann) / Slack: `@Dominik Fleischmann`) |
 | AutoML WG Liaison(s) | Anna Jung (GitHub: [@annajung](https://github.com/annajung) / Slack: `@annajung`), Kimonas Sotirchos (GitHub: [@kimwnasptd](https://github.com/kimwnasptd) / Slack: `@kimwnasptd`) |

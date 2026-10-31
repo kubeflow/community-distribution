@@ -11,7 +11,7 @@ spec:
     matchLabels:
       app: istio-ingressgateway
   rules:
-  # We ONLY authenticate requests that DON'T have an `Authorization` header using oauth2-proxy.
+  # Use OAuth2-Proxy to authenticate only requests without an `Authorization` header.
   # This is because we use RequestAuthentication to authenticate requests with an `Authorization` header.
   - when:
     - key: request.headers[authorization]
@@ -19,7 +19,7 @@ spec:
     to:
     - operation:
         notPaths:
-        # Exclude dex paths, otherwise users won't be able to log in.
+        # Exclude Dex paths; otherwise, users will not be able to log in.
         - /dex/*
         - /dex/**
         - /oauth2/*

@@ -160,7 +160,7 @@ jobs:
       run: |
         # Create AuthorizationPolicy to allow traffic within the test namespace
         # This is needed because Istio has a global deny-all policy
-        # The profile controller doesn't create this automatically
+        # The Profile controller does not create this automatically.
         cat <<EOF | kubectl apply -f -
         apiVersion: security.istio.io/v1beta1
         kind: AuthorizationPolicy
