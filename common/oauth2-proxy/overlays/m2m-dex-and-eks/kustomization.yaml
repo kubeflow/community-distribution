@@ -17,7 +17,7 @@ configMapGenerator:
 
 patches:
 # patch the 'm2m-token-issuer' RequestAuthentication with correct `issuer`
-# NOTE: we are using kustomize components, so we can't use the outer `configMapGenerator` to
+# NOTE: We use Kustomize components, so we cannot use the outer `configMapGenerator` to
 #       patch the inner one, so we are stuck with using a `patch` instead
 - patch: |-
     - op: replace

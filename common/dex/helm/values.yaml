@@ -51,13 +51,13 @@ staticPassword:
   # -- Bcrypt hash for the default Dex static user password.
   hash: REPLACE_ME_STATIC_PASSWORD_HASH
 
-# -- Names of existing Secrets in the auth namespace whose keys are exposed to
+# -- Names of existing Secrets in the `auth` namespace whose keys are exposed to
 # Dex as environment variables. Connector configuration references them as
 # $VARIABLE, so credentials never appear in values.yaml. The Secrets must exist
 # before the release is installed; this chart does not create them.
 extraEnvironmentSecrets: []
 
-# -- Name of an existing Secret in the auth namespace holding certificate
+# -- Name of an existing Secret in the `auth` namespace holding certificate
 # authority certificates, mounted read-only at
 # /etc/dex/certificate-authorities. Set this when the identity provider serves
 # a certificate issued by a private authority, and list the mounted files in the

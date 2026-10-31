@@ -74,7 +74,7 @@ clone_and_checkout() {
   local commit="$4"
   mkdir -p "$source_directory"
   cd "$source_directory"
-  # Clone repository if it doesn't exist
+  # Clone the repository if it does not exist.
   if [ ! -d "$repository_directory/.git" ]; then
     git clone "$repository_url" "$repository_directory"
   fi

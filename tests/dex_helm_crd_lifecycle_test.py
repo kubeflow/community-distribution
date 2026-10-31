@@ -134,8 +134,8 @@ class DexCustomResourceDefinitionLifecycleTest(unittest.TestCase):
         """Helm never upgrades or deletes anything in a chart's crds directory."""
         self.assertFalse(
             (CHART_DIRECTORY / "crds").exists(),
-            "common/dex/helm/crds must not exist; Helm freezes those resources at "
-            "first-install schema forever.",
+            "common/dex/helm/crds must not exist; Helm preserves the schema from "
+            "the first installation indefinitely.",
         )
 
 

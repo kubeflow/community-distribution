@@ -9,7 +9,7 @@ spec:
   #  - having no selector will apply to the RequestAuthentication to ALL
   #    Pods in the mesh, even ones which are not part of Kubeflow
   #  - some Kubeflow services accept direct connections with Kubernetes JWTs,
-  #    and we don't want to require that users configure Istio to verify Kubernetes JWTs
+  #    and we do not want to require users to configure Istio to verify Kubernetes JWTs
   #    as there is no method to do this which works on all distributions.
   selector:
     matchLabels:

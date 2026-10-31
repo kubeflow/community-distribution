@@ -33,7 +33,7 @@ when a client calls the API to list the KF Pipeline runs:
    6. `ResourceManager.IsAuthorized` first tries to authenticate over every available authenticator, which are the `TokenReviewAuthenticator` and `HTTPHeaderAuthenticator`
       * here the user identity is either the user email provided directly in the `kubeflow-userid` header or the user identity obtained from provided token
       * https://github.com/kubeflow/pipelines/blob/master/backend/src/apiserver/resource/resource_manager.go#L1667
-   7. `TokenReviewAuthenticator.GetUserIdentity` gets the token from `Authorization` header and calls the K8s Auth `authv1.TokenReview` with given token which in return provides `userInfo := review.Status.User`. `GetUserIdentity` return `userInfo.Username` which at this point is the `system:serviceaccount:default:default`.
+  7. `TokenReviewAuthenticator.GetUserIdentity` gets the token from the `Authorization` header and calls the Kubernetes authentication API, `authv1.TokenReview`, with that token. The result provides `userInfo := review.Status.User`. `GetUserIdentity` returns `userInfo.Username`, which at this point is `system:serviceaccount:default:default`.
       * https://github.com/kubeflow/pipelines/blob/2.0.5/backend/src/apiserver/auth/authenticator_token_review.go#L53
    8. Next in `ResourceManager.IsAuthorized` a SubjectAccessReview is created with `r.subjectAccessReviewClient.Create` with arguments specifying RBAC verbs provided in code definition of `RunServer.listRuns`. If the user (sa) is not authorized, an error is thrown
       * https://github.com/kubeflow/pipelines/blob/master/backend/src/apiserver/resource/resource_manager.go#L1703
@@ -65,12 +65,12 @@ when a client calls the API to list the KF Pipeline runs:
      ```
 
 ### Authentication and Authorization analysis diagram for Kubeflow Pipelines
-![Kubeflow Auth Diagram](./components/kubeflow_auth_diagram.svg)
+![Kubeflow authentication diagram](./components/kubeflow_auth_diagram.svg)
 
 ### Change the default authentication from "Dex + Oauth2-proxy" to "Oauth2-proxy" only
 
 The authentication in Kubeflow evolved over time and we dropped envoyfilters and oidc-authservice in favor of RequestAuthentication and Oauth2-proxy in Kubeflow 1.9.
-![auth-flow](components/oauth2-flow.svg)
+![Authentication flow](components/oauth2-flow.svg)
 
 You can adjust OAuth2 Proxy to directly connect to your own IDP(Identity Provider) such as GCP, [AWS](https://docs.aws.amazon.com/cognito/latest/developerguide/federation-endpoints-oauth-grants.html), Azure etc:
 
@@ -216,8 +216,8 @@ print(client.list_runs(namespace="your-profile-name"))
 
 ## Known Issues:
 
-Some openidc providers such as Azure provide too large JWTs / Cookies that exceed the limit of most GRPC and gunicorn web application deployments in Kubeflow.
-If removing the groups claim in oauth2-proxy is not enough then you can add an envrionment variable to all web applications
+Some OIDC providers, such as Azure, issue JWTs or cookies that exceed the request-header limits of gRPC and Gunicorn web applications in Kubeflow.
+If removing the groups claim in OAuth2 Proxy is not enough, you can add an environment variable to all web applications:
 
 ```
 apiVersion: apps/v1
@@ -259,12 +259,12 @@ to fix `received initial metadata size exceeds limit`.
 
 The underlying mechanism is the same as in Kubeflow Pipelines.
 
-Similarly, to explain how it works, let's analyze the code step by step, starting from the api route definition
+To explain how it works, we will analyze the code step by step, starting with the API route
 for listing notebooks:
 
-* list notebooks api route definition
+* Notebook-listing API route definition
   * https://github.com/kubeflow/kubeflow/blob/v1.8.0/components/crud-web-apps/jupyter/backend/apps/common/routes/get.py#L53
-  * this calls `crud_backend/api/notebook.py::list_notebooks`
+  * This calls `crud_backend/api/notebook.py::list_notebooks`
 * `crud_backend/api/notebook.py::list_notebooks` calls `authz.ensure_authorized`
   * https://github.com/kubeflow/kubeflow/blob/v1.8.0/components/crud-web-apps/common/backend/kubeflow/kubeflow/crud_backend/api/notebook.py#L24
 * `crud_backend/authz.py::ensure_authorized` calls `crud_backend/authn.py::get_username`

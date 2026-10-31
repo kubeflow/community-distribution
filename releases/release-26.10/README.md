@@ -31,7 +31,7 @@ The 26.10 release cycle is proposed as follows:
 | | Week 11 | 14 Sep | | |
 | **Yes** | Week 12 | 21 Sep | Release Decision - RC1 final or cut RC2? | |
 | | Week 13 | 28 Sep | | |
-| **Yes** | Week 14 | 05 Oct | Release Prep; Documentation, Blog Post, Website | Open Source Summit EU |
+| **Yes** | Week 14 | 05 Oct | Release Preparation; Documentation, Blog Post, Website | Open Source Summit EU |
 | | Week 15 | 12 Oct | | |
 | **Yes** | Week 16 | 19 Oct | | |
 | | Week 17 | 26 Oct | 26.10 release | |

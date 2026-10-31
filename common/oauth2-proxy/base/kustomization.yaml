@@ -32,7 +32,7 @@ configMapGenerator:
 - name: oauth2-proxy-parameters
   literals:
   # This will configure oauth2-proxy option --cookie-secure which can force
-  # auth redirect with redirect_uri parameter using https.
+  # authentication redirect with the redirect_uri parameter using HTTPS.
   - FORCE_HTTPS=false
 
   # If Kubernetes is managed by kind, vCluster, minikube or similar tool,

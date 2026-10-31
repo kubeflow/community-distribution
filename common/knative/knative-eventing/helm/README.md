@@ -93,7 +93,7 @@ kubectl apply -k common/knative/knative-eventing-post-install-jobs/base
 kubectl wait --for=condition=complete job/storage-version-migration-eventing -n knative-eventing --timeout=10m
 ```
 
-The fixed-name Job has a 600-second TTL and is not an install/uninstall hook. Check
+The fixed-name Job has a 600-second TTL and is not an installation or uninstallation hook. Check
 Knative's version-specific upgrade guidance before modifying stored API versions.
 The request-reply StatefulSet has no persistent volume in this baseline; this
 chart adds no durability guarantees beyond the distribution's resources.
@@ -133,8 +133,8 @@ fails. A controller-template change is not proof of cross-version schema
 downgrade safety.
 
 Local parity, chart behavior and release-size tests do not establish these live
-properties. Keep the pull request a draft until the clean-install and full live
-lifecycle gates have passed and their evidence is recorded. This implementation
+properties. Keep the pull request a draft until tests of a clean installation and
+the full live release lifecycle have passed and their evidence is recorded. This implementation
 makes no claim that its cluster scripts have already run.
 
 The shared Knative synchronizer updates both components from their own pinned

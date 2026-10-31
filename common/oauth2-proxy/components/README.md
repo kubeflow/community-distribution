@@ -1,6 +1,6 @@
 # Kubeflow with oauth2-proxy and envoyExtAuthzHttp
 
-For a quick install, see [Example installation](#example-installation).
+For a quick installation, see [Example installation](#example-installation).
 
 
 ## Description
@@ -29,7 +29,7 @@ The adoption of `envoyExtAuthzHttp` for authentication offers several advantages
   like `AuthorizationPolicy` and `VirtualService`, enabling smoother integration within
   Istio's ecosystem and taking advantage of its architecture and capabilities.
 * **Future-Proofing**: There is a high likelihood that Kubeflow's internal authentication
-  decisions will transition to relying directly on JWTs instead of custom auth headers.
+  decisions will transition to relying directly on JWTs instead of custom authentication headers.
 
 Additional information on the benefits of moving away from `EnvoyFilter` can be found in these
 resources:
@@ -77,7 +77,7 @@ This issue can be resolved by defining a set of assets in the Istio `Authorizati
 that do not require authentication. An example `AuthorizationPolicy` for this purpose is
 provided in the file `authorizationpolicy.istio-ingressgateway-oauth2-proxy.cloudflare.yaml`.
 
-## Explaining the Auth Routine
+## Explaining the Authentication Routine
 
 1. Istio is configured with the `envoyExtAuthzHttp` extension provider pointing to the
    `oauth2-proxy` service. This configuration enables the use of this extension in
@@ -119,7 +119,7 @@ option `--cookie-secure`, ensuring redirection occurs with `https`.
 
 ## Istio JWT Public Key Refresh Interval
 
-In the initial setup of Kubeflow, it's common for `istiod` to become available before `dex`.
+In the initial setup of Kubeflow, it is common for `istiod` to become available before `dex`.
 Istio's `RequestAuthentication` is configured to retrieve the JWT Public Key from the Issuer
 URL. If the Issuer is not yet operational, placeholder keys are set, which can render the
 setup nonfunctional until Istio can access the correct JWT Public Key. To address this,

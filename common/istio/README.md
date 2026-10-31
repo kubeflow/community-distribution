@@ -35,7 +35,7 @@ kubectl apply -k istio-install/overlays/ambient-oauth2-proxy-gke
 **Note:** Ambient mode uses Kustomize components (`components/ambient-mode/`) for composable configuration without duplication.
 
 ### Insecure Istio (CNI-disabled)
-For environments that don't support CNI:
+For environments that do not support CNI:
 ```bash
 kubectl apply -k istio-install/overlays/insecure
 ```

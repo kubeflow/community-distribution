@@ -474,8 +474,8 @@ def helm_environment(home):
 def prepare_member(chart, descriptor, work, environment):
     """Copy a member chart once and build its dependencies in the copy.
 
-    The copy is what every scenario renders and what the install-once
-    inspection reads, so dependencies are resolved exactly once and the
+    The copy is what every scenario renders and what the inspection of
+    one-time CRD installation reads, so dependencies are resolved once and the
     checkout is never modified; the isolated Helm directories keep repository
     indexes and downloaded archives out of the developer's Helm home.
     """
@@ -580,7 +580,7 @@ def verify_partition(group, members, root, work):
         definitions = install_once_definitions(prepared[component], environment)
         if definitions:
             problems.append(
-                f"{group} {component}: install-once crds/ content is not supported "
+                f"{group} {component}: crds/ content is installed only once and is not supported "
                 "in a partition group; render definitions from templates: "
                 + ", ".join(definitions)
             )

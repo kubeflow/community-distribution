@@ -1,11 +1,11 @@
 # Unauthenticated Issuer Discovery
 
 If you are using Kubernetes with tools like kind, vCluster, minikube, or similar solutions for local
-development, it's highly likely that the Kubernetes OIDC Issuer operates within the cluster and is
+development, it is highly likely that the Kubernetes OIDC issuer operates within the cluster and is
 secured with self-signed certificates.
 
-To facilitate the use of m2m tokens with `oauth2-proxy` and Istio, both tools must perform OIDC
-Connect Discovery on the Token Issuer. Kubernetes offers OIDC Discovery functionality at a specific
+To facilitate the use of machine-to-machine tokens with `oauth2-proxy` and Istio, both tools must perform OIDC
+discovery for the token issuer. Kubernetes offers OIDC discovery functionality at a specific
 URI:
 ```
 https://kubernetes.default.svc.cluster.local/.well-known/openid-configuration
@@ -30,7 +30,7 @@ $ curl -k https://kubernetes.default.svc.cluster.local/.well-known/openid-config
 {"issuer":"https://oidc.eks.region.amazonaws.com/id/123abc","jwks_uri":"https://ip-1-2-3-4.eu-central-1.compute.internal:443/openid/v1/jwks","response_types_supported":["id_token"],"subject_types_supported":["public"],"id_token_signing_alg_values_supported":["RS256"]}
 ```
 
-If you're operating in a `vCluster`, access to the endpoint specified under `jwks_uri` (for example,
+If you are operating in a `vCluster`, access to the endpoint specified under `jwks_uri` (for example,
 `https://1.2.3.4:6443/openid/v1/jwks`) is managed separately, and merely creating the previously
 mentioned `ClusterRoleBinding` is insufficient. To circumvent this limitation, you can configure the
 `kube-apiserver` to allow anonymous authentication by setting `--anonymous-auth=true`. This is

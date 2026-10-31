@@ -3,7 +3,7 @@
 | **Role** | **Name** (**GitHub / Slack ID**) |
 |----------|----------------------------------|
 | Release Manager | Daniela Plascencia (Github: [@DnPlas](https://github.com/dnplas) / Slack: `@DnPlas`)|
-| Docs Lead | TBD |
+| Documentation Lead | TBD |
 | Product Manager | Josh Bottum (GitHub: [@jbottum](https://github.com/jbottum) / Slack: `@JoshBottum`)|
 | Product Manager Shadows | TBD |
 | AutoML WG Liaison(s) | Ajay Nagar (Github: [@nagar-ajay](https://github.com/nagar-ajay) / Slack: `@Ajay Nagar`)|

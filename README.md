@@ -3,21 +3,21 @@
 ![build checks status](https://github.com/kubeflow/community-distribution/actions/workflows/full_kubeflow_integration_test.yaml/badge.svg?branch=master)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9940/badge)](https://www.bestpractices.dev/projects/9940)
 
-This repository helps you to install Kubeflow Platform in popular Kubernetes clusters such as Kind, Minikube, Rancher, EKS, AKS, and GKE. The manifests include all Kubeflow components (Pipelines, KServe, etc.), the **Kubeflow Central Dashboard**, and other applications that comprise the **Kubeflow Platform**. It is used and adapted around the world by small and large enterprises alike that have strict legal, security and multi-tenancy requirements for their machine learning platforms. Nevertheless it is also beneficial for academic users wanting to explore the end-to-end capabilities of the Kubeflow Platform and contribute to it.
+This repository helps you install the Kubeflow Platform on popular Kubernetes clusters such as KinD, Minikube, Rancher, EKS, AKS, and GKE. The manifests include all Kubeflow components (Pipelines, KServe, etc.), the **Kubeflow Central Dashboard**, and other applications that comprise the **Kubeflow Platform**. The platform is used and adapted around the world by small and large enterprises with strict legal, security, and multi-tenancy requirements for machine learning platforms. It also helps academic users explore the end-to-end capabilities of the Kubeflow Platform and contribute to it.
 
 For a stable and conservative experience, we recommend using the [latest stable release](https://github.com/kubeflow/community-distribution/releases). However, please consult the more up-to-date documentation in the master branch.
 You can also install the master branch of [`kubeflow/community-distribution`](https://github.com/kubeflow/community-distribution) by following the instructions [here](https://github.com/kubeflow/community-distribution?tab=readme-ov-file#installation) and providing us with feedback. Our continuous integration workflow runs end-to-end installation and tests on pull requests and pushes to the `master` branch in the upstream `kubeflow/community-distribution` repository; see the [full Kubeflow integration test workflow](https://github.com/kubeflow/community-distribution/actions/workflows/full_kubeflow_integration_test.yaml) for details.
 
-We are planning to cut 2 releases per year, for example 26.03 and 26.10 before each KubeCon EU and NA.
+We plan to publish two releases per year, for example 26.03 and 26.10, before the corresponding KubeCon events in Europe and North America.
 
-We try to BEST-EFFORT support each release for 6 months as community. There is [commercial support](https://www.kubeflow.org/docs/started/support/#support-from-commercial-providers-in-the-kubeflow-ecosystem) available if needed.
+As a community, we make a best effort to support each release for six months. There is [commercial support](https://www.kubeflow.org/docs/started/support/#support-from-commercial-providers-in-the-kubeflow-ecosystem) available if needed.
 
 ## Table of Contents
 
 <!-- toc -->
 
 - [Overview of the Kubeflow Platform](#overview-of-the-kubeflow-platform)
-- [Kubeflow Components Versions](#kubeflow-components-versions)
+- [Kubeflow Component Versions](#kubeflow-component-versions)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Install with a Single Command](#install-with-a-single-command)
@@ -43,7 +43,7 @@ We try to BEST-EFFORT support each release for 6 months as community. There is [
 - You can also find our [biweekly meetings](https://zoom-lfx.platform.linuxfoundation.org/meeting/92113176338?password=883a2c39-41a9-4395-b9f2-d2bd73e8c39e), including the commentable [Agenda](https://docs.google.com/document/d/1OUWifNf7hZ_QH3m1J3zjSUUk11yKUZnvom1BS2KxrUQ/edit?usp=sharing).
 - If you want to contribute, please take a look at the [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The Kubeflow Platform/Manifests repository is organized under three main directories, which include manifests for installing:
+The Kubeflow Platform/Manifests repository organizes installation manifests into three main directories:
 
 | Directory | Purpose |
 | - | - |
@@ -53,11 +53,11 @@ The Kubeflow Platform/Manifests repository is organized under three main directo
 
 All components are deployable with `kustomize`. In addition, experimental Helm charts for selected components are available under [`experimental/helm/`](experimental/helm/). You can choose to deploy the entire Kubeflow platform or individual components.
 
-## Kubeflow Components Versions
+## Kubeflow Component Versions
 
 ### Kubeflow Version: Master
 
-This repository periodically synchronizes all official Kubeflow components from the respective upstream repositories. The following matrix shows the git version included for each component along with the rough resource requirements for each Kubeflow component, calculated as the maximum of actual usage and configured requests for CPU/memory as well as storage requirements from PVCs:
+This repository periodically synchronizes all official Kubeflow components from the respective upstream repositories. The following matrix shows the Git revision included for each component and its approximate resource requirements. CPU and memory figures are the maximum of actual usage and configured requests; storage figures reflect PVC requirements:
 
 | Component | Local Manifests Path | Upstream Revision | CPU (millicores) | Memory (Mi) | PVC Storage (GB) |
 | - | - | - | - | - | - |
@@ -84,19 +84,19 @@ This section covers the installation from scratch. For the in-place upgrade guid
 
 Although our master branch has extended automated tests and is very stable with trunk-based development, please consider using a stable [release tag/branch](https://github.com/kubeflow/community-distribution/releases) for a more conservative experience.
 
-We provide two options for installing the official Kubeflow components and common services with Kustomize. The aim is to help users install easily and building distributions of Kubeflow by deriving / deviating from the Kubeflow manifests:
+We provide two options for installing the official Kubeflow components and common services with Kustomize. The aim is to simplify installation and help users build Kubeflow distributions by adapting the manifests:
 
 1. Single-command installation of all components under `applications` and `common`
 2. Multi-command, individual component installation for `applications` and `common`
 
-The `example` directory contains an example kustomization for the single command to be able to run.
+The `example` directory contains the Kustomize configuration used by the single-command installation.
 
 :warning: In both options, we use a default email (`user@example.com`) and password (`12341234`). For any production Kubeflow deployment, you should change the default password by following [the relevant section](#change-default-user-password).
 
 ### Prerequisites
 - For the specific Kubernetes version per release, consult the [release notes](https://github.com/kubeflow/community-distribution/releases).
-- Our Kind script below will take care of installing continuously tested Kubernetes, Kustomize and Kubectl versions for you.
-- We use Kind as default but also support Minikube, Rancher, EKS, AKS, and GKE. GKE might need tiny adjustments documented here in this file and OpenShift is also possible.
+- The KinD script below installs the Kubernetes, Kustomize, and kubectl versions tested in continuous integration.
+- We use KinD by default but also support Minikube, Rancher, EKS, AKS, and GKE. GKE may require the adjustments documented here; OpenShift is also an option.
 
 ### ARM64 / aarch64 note
 
@@ -155,7 +155,7 @@ Congratulations! You can now start experimenting and running your end-to-end ML 
 
 In this section, we will install each Kubeflow official component (under `applications`) and each common service (under `common`) separately, using just `kubectl` and `kustomize`. This can help you a lot when debugging your installation or if you are encountering installation problems.
 
-If all the following commands are executed, the result is the same as in the above section of the single command installation. The purpose of this section is to:
+Executing all the following commands produces the same result as the single-command installation above. The purpose of this section is to:
 
 - Provide a description of each component and insight on how it gets installed.
 - Enable the user or distribution owner to pick and choose only the components he needs.
@@ -358,7 +358,7 @@ The KServe control plane and the KServe Models Web Application are installed in 
 
 Kubeflow Pipelines offers two deployment options to choose from, each designed for different use cases and operational preferences. The traditional database-based approach stores pipeline definitions in an external database, while the Kubernetes native API mode leverages Kubernetes custom resources for pipeline definition storage and management.
 
-> The default artifact store is now seaweedfs as explained [here](https://medium.com/@hpotpose26/kubeflow-pipelines-embraces-seaweedfs-9a7e022d5571). All the overlays now sets SeaweedFS as the default S3-compatible artifact store for Pipelines. It replaces `minio-service` to route S3 traffic to SeaweedFS and patches the Argo Workflow controller to use it.
+> The default artifact store is now SeaweedFS, as explained [here](https://medium.com/@hpotpose26/kubeflow-pipelines-embraces-seaweedfs-9a7e022d5571). All overlays now set SeaweedFS as the default S3-compatible artifact store for Pipelines. Each overlay replaces `minio-service` to route S3 traffic to SeaweedFS and patches the Argo Workflow controller to use it.
 
 ##### Pipeline Definitions Stored in the Database
 
@@ -368,7 +368,7 @@ Install the [Multi-User Kubeflow Pipelines](https://www.kubeflow.org/docs/compon
 ./tests/pipelines_install.sh
 ```
 
-This installs Argo with the runasnonroot emissary executor. Please note that you are still responsible for analyzing the security issues that arise when containers are run with root access and for deciding if the Kubeflow pipeline main containers are run as runasnonroot. It is generally strongly recommended that all user-accessible OCI containers run with Pod Security Standards [restricted](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted) and KFP 2.16.0+ has the capability to set runAsNonRoot, runAsUser and runAsGroup via the SDK and the KFP api server configuration.
+This installs Argo with the `runasnonroot` Emissary executor. You remain responsible for assessing the security risks of containers running as root and deciding whether the main Kubeflow Pipelines containers should run without root privileges. We strongly recommend using [restricted](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted) Pod Security Standards for all user-accessible OCI containers. KFP 2.16.0 and later can set `runAsNonRoot`, `runAsUser`, and `runAsGroup` through the SDK and the KFP API server configuration.
 
 ##### Pipeline Definitions Stored as Kubernetes Resources
 
@@ -461,13 +461,13 @@ Exposing your Kubeflow cluster with proper HTTPS is a straightforward process bu
 ---
 **NOTE**
 
-If you absolutely need to expose Kubeflow over HTTP, you can disable the `Secure Cookies` feature by setting the `APP_SECURE_COOKIES` environment variable to `false` in every relevant web app. This is not recommended, as it poses security risks.
+If you absolutely need to expose Kubeflow over HTTP, you can disable the `Secure Cookies` feature by setting the `APP_SECURE_COOKIES` environment variable to `false` in every relevant web application. This is not recommended, as it poses security risks.
 
 ---
 
 ### Change Default User Name
 
-For security reasons, we don't want to use the default username and email for the default Kubeflow user when installing in security-sensitive environments. Instead, you should define your own username and email before deploying. To define it for the default user:
+For security-sensitive installations, replace the default Kubeflow username and email address before deployment. To configure these values for the default user:
 
 1. Edit `common/dex/overlays/oauth2-proxy/config-map.yaml` and fill the relevant field with your email and preferred username:
 
@@ -490,7 +490,7 @@ Pick a password for the default user, with email `user@example.com`, and hash it
     python3 -c 'from passlib.hash import bcrypt; import getpass; print(bcrypt.using(rounds=12, ident="2y").hash(getpass.getpass()))'
     ```
 
-For example, running the above command locally with required packages like _passlib_ would look as follows:
+With the required packages, such as _passlib_, installed, running the command locally prompts for a password and prints its hash:
   ```sh
   python3 -c 'from passlib.hash import bcrypt; import getpass; print(bcrypt.using(rounds=12, ident="2y").hash(getpass.getpass()))'
   Password:       <--- Enter the password here
@@ -509,7 +509,7 @@ For example, running the above command locally with required packages like _pass
 
 #### After Creating the Cluster:
 
-1. Delete the existing secret _dex-passwords_ in the auth namespace using the following command:
+1. Delete the existing secret _dex-passwords_ in the `auth` namespace using the following command:
 
     ```sh
     kubectl delete secret dex-passwords -n auth
@@ -521,7 +521,7 @@ For example, running the above command locally with required packages like _pass
     kubectl create secret generic dex-passwords --from-literal=DEX_USER_PASSWORD='REPLACE_WITH_HASH' -n auth
     ```
 
-3. Recreate the _dex_ pod in the auth namespace using the following command:
+3. Recreate the _dex_ pod in the `auth` namespace using the following command:
 
     ```sh
     kubectl delete pods --all -n auth

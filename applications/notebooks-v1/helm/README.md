@@ -42,9 +42,9 @@ templates, which is a separate change.
 
 ## Caveats
 
-The platform Notebooks v1 Kustomize overlay includes Jupyter Web App, Notebook
-Controller, PVC Viewer Controller, Volumes Web App, Tensorboard Controller and
-Tensorboards Web App. This chart keeps that grouping for parity.
+The platform Notebooks v1 Kustomize overlay includes Jupyter Web Application, Notebook
+Controller, PVC Viewer Controller, Volumes Web Application, Tensorboard Controller, and
+Tensorboards Web Application. This chart keeps that grouping for parity.
 
 `notebooks.kubeflow.org`, `pvcviewers.kubeflow.org` and
 `tensorboards.tensorboard.kubeflow.org` are rendered from `templates/` and carry
