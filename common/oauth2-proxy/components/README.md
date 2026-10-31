@@ -47,23 +47,23 @@ For more details on the `oauth2-proxy`, refer to the [official documentation](ht
 
 Below is a list of the available Kustomize Components with brief descriptions. Click on each for more details.
 
-* **[allow-unauthenticated-issuer-discovery](./allow-unauthenticated-issuer-discovery.md)** -
+* **[allow-unauthenticated-issuer-discovery](./allow-unauthenticated-issuer-discovery/README.md)** -
   Creates a ClusterRoleBinding for anonymous access to Kubernetes OIDC
   discovery.
 
-* **[central-dashboard](./central-dashboard.md)** - Configures the central
-  dashboard to use oauth2-proxy logout URL.
-
-* **[istio-external-auth](./istio-external-auth.md)** - Modifies Istio
+* **[istio-external-auth](./istio-external-auth/)** - Modifies Istio
   configuration to define oauth2-proxy as external authentication middleware via
   envoyExtAuthzHttp extension provider. Adds RequestAuthentication to trust Dex
   as IdP and AuthorizationPolicies to delegate authentication to oauth2-proxy.
 
-* **[istio-m2m](./istio-m2m.md)** - Creates RequestAuthentication for Istio to
+* **[istio-m2m](./istio-m2m/README.md)** - Creates RequestAuthentication for Istio to
   trust the OIDC Issuer specified in parameters. This allows the generation of
   JWTs for authenticating requests, typically as Bearer Tokens in the
   Authorization header. By default, the OIDC Issuer is the in-cluster Kubernetes
   OIDC.
+
+The [Dashboard](../../../applications/dashboard/) uses the OAuth2-Proxy logout URL
+`/oauth2/sign_out` by default; no separate logout component is required.
 
 ## CloudFlare
 

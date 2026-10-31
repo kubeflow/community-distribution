@@ -8,7 +8,7 @@ These roles are currently assigned to users by Profiles (profile-controller and 
 ## How to define role privileges for your Kubeflow application?
 Each application defines its own ClusterRole for each role here in kubeflow-roles. We use [ClusterRole Aggregation](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles) for these application ClusterRoles to be aggregated to their corresponding Kubeflow roles. An example implementation showing the same can be found here:
 
-The example is taken from [istio manifests](../istio/istio/base/cluster-roles.yaml).
+The example is taken from [istio manifests](../istio/kubeflow-istio-resources/base/cluster-roles.yaml).
 ```
 ---
 

@@ -6,7 +6,7 @@
 - [Calendar Invite](https://zoom-lfx.platform.linuxfoundation.org/meeting/92113176338?password=883a2c39-41a9-4395-b9f2-d2bd73e8c39e&invite=true)
 
 ### Resources
-- [Release Handbook](./kubeflow-ai-reference-platform-release-handbook.md)
+- [Release Handbook](./kubeflow-community-distribution-release-handbook.md)
 - [Meeting Recordings](https://www.youtube.com/@Kubeflow)
 
 ### Contact
