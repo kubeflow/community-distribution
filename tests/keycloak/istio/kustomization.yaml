@@ -1,0 +1,11 @@
+# Istio with OAuth2 Proxy as external authorization provider, plus `set-cookie` in
+# headersToDownstreamOnAllow. Without it, Istio drops the session cookie that OAuth2
+# Proxy refreshes on an allowed request, so the browser keeps the original session.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../../common/istio/istio-install/overlays/oauth2-proxy
+
+patches:
+- path: cm.enable-oauth2-proxy-session-refresh.yaml

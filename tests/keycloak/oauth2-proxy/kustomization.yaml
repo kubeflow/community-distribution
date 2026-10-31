@@ -1,0 +1,34 @@
+# OAuth2 Proxy connected directly to Keycloak, without Dex, as documented in
+# common/dex/README.md. Based on the KinD overlay so that Kubernetes service
+# account tokens keep working for machine-to-machine access.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../../common/oauth2-proxy/overlays/m2m-dex-and-kind
+
+configMapGenerator:
+- name: oauth2-proxy
+  behavior: replace
+  files:
+  - oauth2_proxy.cfg
+
+secretGenerator:
+- name: oauth2-proxy
+  behavior: replace
+  literals:
+  - client-id=kubeflow
+  - client-secret=keycloak-test-client-secret
+  - cookie-secret=0f1e2d3c4b5a69788796a5b4c3d2e1f0
+
+patches:
+- target:
+    group: security.istio.io
+    version: v1beta1
+    kind: RequestAuthentication
+    name: dex-jwt
+    namespace: istio-system
+  patch: |-
+    - op: replace
+      path: /spec/jwtRules/0/issuer
+      value: http://keycloak.keycloak.svc.cluster.local:8081/realms/kubeflow

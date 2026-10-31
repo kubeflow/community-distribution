@@ -1,0 +1,65 @@
+{
+  "realm": "kubeflow",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 60,
+  "groups": [
+    {
+      "name": "kubeflow-users"
+    }
+  ],
+  "users": [
+    {
+      "username": "user",
+      "email": "user@example.com",
+      "emailVerified": true,
+      "firstName": "Example",
+      "lastName": "User",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "12341234",
+          "temporary": false
+        }
+      ],
+      "groups": [
+        "/kubeflow-users"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "kubeflow",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "keycloak-test-client-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/oauth2/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:8080"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "claim.name": "groups",
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ]
+}

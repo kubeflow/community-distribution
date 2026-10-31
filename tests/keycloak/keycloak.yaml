@@ -1,0 +1,85 @@
+# A single Keycloak instance in development mode for the integration test in
+# .github/workflows/keycloak_oauth2-proxy_test.yaml. It is not a production deployment.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keycloak
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: keycloak
+        image: quay.io/keycloak/keycloak:26.8.1@sha256:79c623a22abacf3fe6c00a5fb30f5b7843d717b234033b80995891c06116d244
+        args:
+        - start-dev
+        - --import-realm
+        env:
+        # Keycloak derives the issuer from this address. The OAuth2 Proxy Pod, istiod
+        # and the test runner (through a port forward and /etc/hosts) all reach
+        # Keycloak at exactly this address, so the issuer is identical everywhere.
+        - name: KC_HOSTNAME
+          value: http://keycloak.keycloak.svc.cluster.local:8081
+        - name: KC_HEALTH_ENABLED
+          value: "true"
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: management
+          containerPort: 9000
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: management
+          periodSeconds: 5
+          failureThreshold: 60
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: realm
+          mountPath: /opt/keycloak/data/import
+          readOnly: true
+      volumes:
+      - name: realm
+        configMap:
+          name: keycloak-realm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+spec:
+  selector:
+    app: keycloak
+  ports:
+  - name: http
+    port: 8081
+    targetPort: http
