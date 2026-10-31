@@ -77,6 +77,8 @@ You can adjust OAuth2 Proxy to directly connect to your own IDP(Identity Provide
 1. Create an application on your IdP (purple line)
 2. Change your [OAuth2 Proxy issuer](https://github.com/kubeflow/community-distribution/blob/35539f162ea7fafc8c5035d8df0d8d8cf5a9d327/common/oauth2-proxy/base/oauth2-proxy-config.yaml#L10) to your IdP. Of course never ever directly, but with kustomize overlays and components.
 
+For Keycloak, follow [Connect OAuth2 Proxy directly to Keycloak, without Dex](../dex/README.md#connect-oauth2-proxy-directly-to-keycloak-without-dex).
+
 Here is an example of patching oauth2-proxy to connect directly to Azure IDP and skip Dex.
 This is enterprise integration so feel free to hire consultants or pay for commercial distributions if you need more help.
 For example Azure returns rather large headers compared to other IDPs, so maybe you need to annotate the nginx-ingress to support that.

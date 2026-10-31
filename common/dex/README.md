@@ -7,6 +7,156 @@ In addition to the guidelines for GitHub, Google, Microsoft and other OIDC provi
 > ✅ If a realm already exists, there's no need to create one.
 > ✅ As you know, If the first attempt fails, you can just run it again.
 
+## Connect OAuth2 Proxy directly to Keycloak, without Dex
+
+Keycloak is a complete OpenID Connect provider, so Dex is not required between OAuth2 Proxy and Keycloak. This section describes that setup. It keeps the default Kubeflow authentication flow: OAuth2 Proxy checks every browser request as the Istio external authorization provider, places the Keycloak ID token in the `Authorization` header, and the Istio `RequestAuthentication` verifies that token and sets the `kubeflow-userid` and `kubeflow-groups` headers. Only the issuer changes from Dex to Keycloak.
+
+The sections after this one describe the alternative setup with Dex between OAuth2 Proxy and Keycloak.
+
+The [Keycloak integration workflow](../../.github/workflows/keycloak_oauth2-proxy_test.yaml) uses the [test configuration](../../tests/keycloak/) to verify login, claims, namespace access and session refresh. It also runs the existing Workspaces service account access test. The test uses local HTTP and shorter token lifetimes; the example below uses HTTPS and the default Keycloak token lifetime.
+
+### Create the Keycloak client
+
+In your realm, create a client with these settings:
+
+- Client type: `OpenID Connect`
+- Client ID: any value, for example `kubeflow`. The fixed client identifier `kubeflow-oidc-authservice` is only required by the Dex configuration.
+- Client authentication: `On`
+- Authentication flow: `Standard flow` only
+- Valid redirect URIs: `https://kubeflow.example.com/oauth2/callback`
+- Web origins: `https://kubeflow.example.com`
+- Proof Key for Code Exchange method (under Advanced): `S256`, because OAuth2 Proxy sends `code_challenge_method = "S256"`
+
+Note the client secret from the Credentials tab.
+
+### Prepare the claims Kubeflow uses
+
+- **Email:** Kubeflow identifies a user by the `email` claim, which Istio copies into the `kubeflow-userid` header. Every user must have an email address that is marked as verified, because OAuth2 Proxy rejects unverified addresses. For users who log in through an identity provider brokered by Keycloak, enable `Trust Email` on that identity provider. The `spec.owner.name` field of each Kubeflow Profile must match this email address exactly.
+- **Groups (optional):** Keycloak does not include group membership in its tokens by default. To fill the `kubeflow-groups` header, add a `Group Membership` mapper to the dedicated scope of the client, with token claim name `groups`, `Full group path` set to `Off`, and `Add to ID token` set to `On`. Do not request a scope named `groups`: Keycloak has no client scope with that name and rejects the login request with `invalid_scope`.
+
+### Configure OAuth2 Proxy
+
+Create an overlay that replaces the OAuth2 Proxy configuration file and Secret. Never change `common/oauth2-proxy/base` directly.
+
+This example uses `m2m-dex-and-kind`, matching the integration test and preserving Kubernetes service account access on KinD. For another Kubernetes distribution, use the corresponding machine-to-machine overlay, such as `m2m-dex-and-eks`, instead.
+
+```yaml
+# overlays/keycloak/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../common/oauth2-proxy/overlays/m2m-dex-and-kind
+
+configMapGenerator:
+- name: oauth2-proxy
+  behavior: replace
+  files:
+  - oauth2_proxy.cfg
+- name: oauth2-proxy-parameters
+  behavior: merge
+  literals:
+  - FORCE_HTTPS=true
+  # Set to true only if the Keycloak certificate is not trusted by the OAuth2 Proxy image.
+  - ALLOW_SELF_SIGNED_ISSUER=false
+
+secretGenerator:
+- name: oauth2-proxy
+  behavior: replace
+  # Contains client-id, client-secret and cookie-secret.
+  # Create this file from your secret manager and never commit it.
+  envs:
+  - oauth2-proxy.env
+
+patches:
+- target:
+    kind: RequestAuthentication
+    name: dex-jwt
+  patch: |-
+    - op: replace
+      path: /spec/jwtRules/0/issuer
+      value: https://keycloak.example.com/realms/<my-realm>
+```
+
+The `oauth2_proxy.cfg` file in the overlay is based on `common/oauth2-proxy/base/oauth2_proxy.cfg`. It removes the Dex-specific settings: OpenID Connect discovery is enabled again, so `skip_oidc_discovery`, `login_url`, `redeem_url` and `oidc_jwks_url` are removed, `prompt = "none"` is removed because Keycloak answers it with `login_required` when the user has no session yet, and `redirect_url` is an absolute address with `relative_redirect_url = false`, because Keycloak rejects the relative redirect address that Dex accepts with HTTP status 400.
+
+```toml
+provider = "oidc"
+oidc_issuer_url = "https://keycloak.example.com/realms/<my-realm>"
+scope = "openid profile email"
+email_domains = [ "*" ]
+
+upstreams = [ "static://200" ]
+
+api_routes = [
+  "/api/",
+  "/apis/",
+  "^/ml_metadata",
+]
+
+skip_provider_button = false
+provider_display_name = "Keycloak"
+custom_sign_in_logo = "/custom-theme/kubeflow-logo.svg"
+banner = "-"
+footer = "-"
+
+set_authorization_header = true
+set_xauthrequest = true
+
+cookie_name = "oauth2_proxy_kubeflow"
+# Keycloak issues ID tokens that expire after 5 minutes by default (realm setting
+# "Access Token Lifespan"), while Dex issues them for 24 hours. Istio rejects an
+# expired token, so OAuth2 Proxy must refresh the session before the token expires.
+cookie_refresh = "4m"
+# Keep this at or below the realm setting "SSO Session Max" (10 hours by default),
+# after which Keycloak refuses to refresh the session.
+cookie_expire = "10h"
+
+code_challenge_method = "S256"
+
+redirect_url = "https://kubeflow.example.com/oauth2/callback"
+relative_redirect_url = false
+```
+
+The issuer must be identical in three places: the `iss` claim that Keycloak writes into its tokens (derived from the Keycloak hostname configuration), `oidc_issuer_url` in OAuth2 Proxy, and the issuer of the `RequestAuthentication`. OAuth2 Proxy and istiod both fetch the issuer discovery document and signing keys, so both must be able to reach that address. If istiod cannot reach the public Keycloak address or does not trust its certificate, add `jwksUri` with an address istiod can reach, for example `http://keycloak.keycloak.svc.cluster.local:8080/realms/<my-realm>/protocol/openid-connect/certs`.
+
+Apply the overlay:
+
+```bash
+kustomize build overlays/keycloak | kubectl apply -f -
+```
+
+### Let Istio return the refreshed session cookie
+
+When OAuth2 Proxy refreshes the session, it sends the new session cookie in its answer to the Istio external authorization check. The default Istio configuration in `common/oauth2-proxy/components/istio-external-auth-patches/patches/cm.enable-oauth2-proxy.yaml` only forwards `set-cookie` to the browser on denied requests (`headersToDownstreamOnDeny`). With Dex this does not matter, because the Dex tokens are valid for 24 hours and `cookie_refresh = 0` disables the refresh. With Keycloak, the browser keeps the original session cookie, so the refreshed tokens are never stored and every later request depends on the original refresh token. Add `set-cookie` to `headersToDownstreamOnAllow` of the `oauth2-proxy` extension provider in the `istio` ConfigMap of the `istio-system` namespace:
+
+```yaml
+extensionProviders:
+- name: oauth2-proxy
+  envoyExtAuthzHttp:
+    service: oauth2-proxy.oauth2-proxy.svc.cluster.local
+    port: 80
+    headersToDownstreamOnAllow:
+    - set-cookie
+    headersToDownstreamOnDeny:
+    - content-type
+    - set-cookie
+    headersToUpstreamOnAllow:
+    - authorization
+    - path
+    - x-auth-request-email
+    - x-auth-request-groups
+    - x-auth-request-user
+    includeRequestHeadersInCheck:
+    - authorization
+    - cookie
+```
+
+### Known issues without Dex
+
+- **Large cookies:** The OAuth2 Proxy cookie stores the ID token, the access token and the refresh token. A minimal Keycloak realm produces a cookie of about 3.5 kilobytes, but many groups, roles or custom claims can push it beyond 8 kilobytes. Several Kubeflow web applications then answer with HTTP status 431 (Request Header Fields Too Large). Store the session in Redis with `session_store_type = "redis"` so that the cookie only holds a session ticket, or apply the web application changes in the Known Issues section of [common/oauth2-proxy/README.md](../oauth2-proxy/README.md).
+- **Machine-to-machine access:** The `m2m-dex-and-kind` overlay above retains Kubernetes service account token validation for KinD. Other Kubernetes distributions require the corresponding machine-to-machine overlay; `m2m-dex-only` does not provide Kubernetes service account token validation. See [common/oauth2-proxy/README.md](../oauth2-proxy/README.md) for the available overlays. Keycloak client credentials tokens are not covered here: these tokens contain no email claim unless you configure one, so these tokens do not produce a `kubeflow-userid` header.
+
 ## Configure Keycloak
 
 ### Create a Realm
