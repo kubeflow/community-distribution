@@ -12,7 +12,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENT = ROOT / "applications/trainer"
-CHARTS = {"helm-crds": 4, "helm": 35, "helm-runtimes": 8}
+CHARTS = {"helm-crds": 5, "helm": 35, "helm-runtimes": 8}
 
 
 def render(chart, namespace="kubeflow-system"):
