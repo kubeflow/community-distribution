@@ -557,7 +557,7 @@ lifecycle_trainer() {
 identities_trainer() {
     kubectl get namespace kubeflow-system -o jsonpath='{.metadata.name}{" "}{.metadata.uid}{"\n"}'
     kubectl get crd clustertrainingruntimes.trainer.kubeflow.org trainingruntimes.trainer.kubeflow.org \
-        trainjobs.trainer.kubeflow.org jobsets.jobset.x-k8s.io \
+        trainjobs.trainer.kubeflow.org optimizationjobs.trainer.kubeflow.org jobsets.jobset.x-k8s.io \
         -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.metadata.uid}{"\n"}{end}'
     kubectl get "clustertrainingruntime/$TRAINER_CATALOG_RUNTIME" -o jsonpath='{.metadata.name}{" "}{.metadata.uid}{"\n"}'
     kubectl get "trainjob/$TRAINER_FIXTURE" "configmap/$TRAINER_FIXTURE-runtime-snapshot" "jobset/$TRAINER_FIXTURE" \

@@ -14,5 +14,6 @@ retainedCustomResourceDefinitions:
   names:
   - clustertrainingruntimes.trainer.kubeflow.org
   - jobsets.jobset.x-k8s.io
+  - optimizationjobs.trainer.kubeflow.org
   - trainingruntimes.trainer.kubeflow.org
   - trainjobs.trainer.kubeflow.org
