@@ -39,6 +39,7 @@ working_group_directories = {
         "../applications/trainer/overlays",
     ],
     "manifests": [
+        "../common/cert-manager/base",
         "../common/cert-manager/overlays/kubeflow",
         "../common/dex/overlays/oauth2-proxy",
         "../common/istio/cluster-local-gateway/base",
@@ -60,15 +61,15 @@ working_group_directories = {
         "../applications/dashboard/upstream/profile-controller/overlays",
         # kubeflow/notebooks
         "../applications/notebooks-v1/upstream",
+        "../applications/workspaces/overlays/istio",
     ],
     "kserve": [
         "../applications/kserve/kserve",
         "../applications/kserve/kserve-ui",
     ],
     "hub": [
-        "../applications/hub/upstream/options/istio",
-        "../applications/hub/upstream/options/ui/overlays/istio",
-        "../applications/hub/upstream/overlays/db",
+        "../applications/hub/overlays/model-registry",
+        "../applications/hub/overlays/model-catalog",
     ],
     "spark": [
         "../applications/spark/spark-operator/overlays/kubeflow",
@@ -174,7 +175,7 @@ def extract_images(version):
     for working_group, directories in working_group_directories.items():
         working_group_images = set()  # Collect unique images for this workgroup
         for directory_path in directories:
-            for root, _, files in os.walk(directory_path):
+            for root, subdirectories, files in os.walk(directory_path):
                 for file in files:
                     if file in [
                         "kustomization.yaml",
@@ -195,6 +196,8 @@ def extract_images(version):
                                 f'ERROR:\t Failed "kustomize build" command for directory: {root}. See error above'
                             )
                             continue
+
+                        subdirectories.clear()
 
                         # Use regex to find lines with 'image: <image-name>:<version>' or 'image: <image-name>'
                         # and '- image: <image-name>:<version>' but avoid environment variables
@@ -331,6 +334,9 @@ for file in files:
 
         except Exception as scan_error:
             log(f"Error scanning {image_name}:{image_tag}: {scan_error}")
+        finally:
+            if os.environ.get("GITHUB_ACTIONS") == "true":
+                subprocess.run(["docker", "image", "rm", line], check=False)
 
     # Combine all the JSON files into a single file with severity counts for all images
     json_files = glob.glob(os.path.join(severity_count, "*.json"))

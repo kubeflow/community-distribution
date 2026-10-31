@@ -1,9 +1,9 @@
 #!/bin/bash
 set -euxo pipefail
 
-OSV_SCANNER_VERSION="v2.3.8"
+OSV_SCANNER_VERSION="v2.7.0"
 OSV_SCANNER_ASSET="osv-scanner_linux_amd64"
-OSV_SCANNER_SHA256="bc98e15319ed0d515e3f9235287ba53cdc5535d576d24fd573978ecfe9ab92dc"
+OSV_SCANNER_SHA256="160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b"
 USER_BINARY_DIRECTORY="$HOME/.local/bin"
 
 if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
