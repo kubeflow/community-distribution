@@ -331,6 +331,9 @@ for file in files:
 
         except Exception as scan_error:
             log(f"Error scanning {image_name}:{image_tag}: {scan_error}")
+        finally:
+            if os.environ.get("GITHUB_ACTIONS") == "true":
+                subprocess.run(["docker", "image", "rm", line], check=False)
 
     # Combine all the JSON files into a single file with severity counts for all images
     json_files = glob.glob(os.path.join(severity_count, "*.json"))
