@@ -221,6 +221,19 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - scheduling.k8s.io
+  resources:
+  - podgroups
+  - workloads
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -300,6 +313,18 @@ rules:
   - watch
 - apiGroups:
   - ''
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ''
   - events.k8s.io
   resources:
   - events
@@ -318,6 +343,30 @@ rules:
   - list
   - update
   - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
 - apiGroups:
   - coordination.k8s.io
   resources:
@@ -348,7 +397,38 @@ rules:
   - list
   - watch
 - apiGroups:
+  - scheduling.k8s.io
+  resources:
+  - podgroups
+  - workloads
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - watch
+- apiGroups:
+  - scheduling.k8s.io
+  resources:
+  - priorityclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - scheduling.volcano.sh
+  resources:
+  - podgroups
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - scheduling.x-k8s.io
   resources:
   - podgroups
@@ -363,8 +443,8 @@ rules:
   - trainer.kubeflow.org
   resources:
   - clustertrainingruntimes
+  - optimizationjobs
   - trainingruntimes
-  - trainjobs
   verbs:
   - get
   - list
@@ -375,6 +455,8 @@ rules:
   - trainer.kubeflow.org
   resources:
   - clustertrainingruntimes/finalizers
+  - optimizationjobs/finalizers
+  - optimizationjobs/status
   - trainingruntimes/finalizers
   - trainjobs/finalizers
   - trainjobs/status
@@ -382,6 +464,17 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - trainer.kubeflow.org
+  resources:
+  - trainjobs
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -663,8 +756,8 @@ data:
     # Certificate management configuration
     certManagement:
       enable: true
-      webhookServiceName: kubeflow-trainer-controller-manager
-      webhookSecretName: kubeflow-trainer-webhook-cert
+      serviceName: kubeflow-trainer-controller-manager
+      secretName: kubeflow-trainer-webhook-cert
 
     # Client connection configuration
     clientConnection:
@@ -682,7 +775,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  kubeflow_trainer_version: v2.3.0
+  kubeflow_trainer_version: v2.4.0-rc.0
 kind: ConfigMap
 metadata:
   name: kubeflow-trainer-public
@@ -754,6 +847,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/name: trainer
+    app.kubernetes.io/part-of: kubeflow
   name: kubeflow-trainer-controller-manager
   namespace: kubeflow-system
 spec:
@@ -810,12 +907,12 @@ spec:
         - --zap-log-level=2
         command:
         - /manager
-        image: registry.k8s.io/jobset/jobset:v0.12.0
+        image: registry.k8s.io/jobset/jobset:v0.13.0
         livenessProbe:
           httpGet:
             path: /healthz
             port: 8081
-          initialDelaySeconds: 15
+          initialDelaySeconds: 30
           periodSeconds: 20
         name: manager
         ports:
@@ -893,7 +990,7 @@ spec:
       - args:
         - --config=/controller_manager_config.yaml
         - --zap-log-level=2
-        image: ghcr.io/kubeflow/trainer/trainer-controller-manager:v2.3.0
+        image: ghcr.io/kubeflow/trainer/trainer-controller-manager:v2.4.0-rc.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -1110,6 +1207,25 @@ webhooks:
     - UPDATE
     resources:
     - clustertrainingruntimes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: kubeflow-trainer-controller-manager
+      namespace: kubeflow-system
+      path: /validate-trainer-kubeflow-org-v1alpha1-optimizationjob
+  failurePolicy: Fail
+  name: validator.optimizationjob.trainer.kubeflow.org
+  rules:
+  - apiGroups:
+    - trainer.kubeflow.org
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    resources:
+    - optimizationjobs
   sideEffects: None
 - admissionReviewVersions:
   - v1
