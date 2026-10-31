@@ -5,11 +5,11 @@ The default Kubeflow platform installation uses three releases, all recorded in
 
 | Chart | Release | Owned resources |
 | --- | --- | --- |
-| `../helm-crds` | `trainer-apis` | Four Trainer and JobSet definitions, retained on uninstall |
+| `../helm-crds` | `trainer-apis` | Five Trainer and JobSet definitions, retained on uninstall |
 | `.` | `trainer` | 35 control-plane resources, including Trainer and JobSet controllers, webhooks and permissions |
 | `../helm-runtimes` | `trainer-runtimes` | Eight default ClusterTrainingRuntime objects |
 
-The source is `applications/trainer/overlays`, synchronized from Trainer v2.3.0.
+The source is `applications/trainer/overlays`, synchronized from Trainer v2.4.0-rc.0.
 The upstream chart changes controller names/selectors and installs runtimes with
 imperative hooks. These charts instead preserve the distribution baseline using
 shared generated payloads and ordinary resources. This first implementation
@@ -32,7 +32,7 @@ From the repository root:
 ./tests/trainer_test.sh kubeflow-user-example-com
 ```
 
-The installer installs the API release, waits for all four definitions to become
+The installer installs the API release, waits for all five definitions to become
 Established, installs both controllers, waits for webhook certificate authority
 bundles and service endpoints, and installs the runtime catalog last. It preserves
 the existing JobSet restart workaround. Endpoint and certificate readiness do not
