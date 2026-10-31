@@ -33,7 +33,7 @@ when a client calls the API to list the KF Pipeline runs:
    6. `ResourceManager.IsAuthorized` first tries to authenticate over every available authenticator, which are the `TokenReviewAuthenticator` and `HTTPHeaderAuthenticator`
       * here the user identity is either the user email provided directly in the `kubeflow-userid` header or the user identity obtained from provided token
       * https://github.com/kubeflow/pipelines/blob/master/backend/src/apiserver/resource/resource_manager.go#L1667
-  7. `TokenReviewAuthenticator.GetUserIdentity` gets the token from the `Authorization` header and calls the Kubernetes authentication API, `authv1.TokenReview`, with that token. The result provides `userInfo := review.Status.User`. `GetUserIdentity` returns `userInfo.Username`, which at this point is `system:serviceaccount:default:default`.
+   7. `TokenReviewAuthenticator.GetUserIdentity` gets the token from the `Authorization` header and calls the Kubernetes authentication API, `authv1.TokenReview`, with that token. The result provides `userInfo := review.Status.User`. `GetUserIdentity` returns `userInfo.Username`, which at this point is `system:serviceaccount:default:default`.
       * https://github.com/kubeflow/pipelines/blob/2.0.5/backend/src/apiserver/auth/authenticator_token_review.go#L53
    8. Next in `ResourceManager.IsAuthorized` a SubjectAccessReview is created with `r.subjectAccessReviewClient.Create` with arguments specifying RBAC verbs provided in code definition of `RunServer.listRuns`. If the user (sa) is not authorized, an error is thrown
       * https://github.com/kubeflow/pipelines/blob/master/backend/src/apiserver/resource/resource_manager.go#L1703
