@@ -61,6 +61,7 @@ install_api_release() {
     --namespace kubeflow-system --wait --timeout 5m
   for definition in \
     clustertrainingruntimes.trainer.kubeflow.org \
+    optimizationjobs.trainer.kubeflow.org \
     trainingruntimes.trainer.kubeflow.org \
     trainjobs.trainer.kubeflow.org \
     jobsets.jobset.x-k8s.io; do

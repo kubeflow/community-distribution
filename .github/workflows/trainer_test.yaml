@@ -66,6 +66,7 @@ jobs:
         kubectl get crd trainjobs.trainer.kubeflow.org
         kubectl get crd clustertrainingruntimes.trainer.kubeflow.org
         kubectl get crd trainingruntimes.trainer.kubeflow.org
+        kubectl get crd optimizationjobs.trainer.kubeflow.org
 
 
     - name: Port-forward the istio-ingress gateway
