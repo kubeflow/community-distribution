@@ -9,12 +9,14 @@ namespace: notebook-controller-system
 namePrefix: notebook-controller-
 
 # Labels to add to all resources and selectors.
-commonLabels:
-  app: notebook-controller
-  kustomize.component: notebook-controller
+labels:
+- includeSelectors: true
+  pairs:
+    app: notebook-controller
+    kustomize.component: notebook-controller
 
 
-bases:
+resources:
 - ../rbac
 - ../manager
 - ../crd
