@@ -45,9 +45,6 @@ spec:
         pauseWorkspace: true
 
   podTemplate:
-    podMetadata:
-      labels: {}
-      annotations: {}
     activityProbe:
       minProbeIntervalSeconds: 300
       probeIntervalSeconds: 3600
@@ -95,19 +92,19 @@ spec:
     options:
       imageConfig:
         spawner:
-          default: "rstudio-tidyverse:v1.10.0"
+          default: "rstudio-tidyverse:v1.11.0"
         values:
-          - id: "rstudio-tidyverse:v1.10.0"
+          - id: "rstudio-tidyverse:v1.11.0"
             spawner:
-              displayName: "rstudio-tidyverse:v1.10.0"
+              displayName: "rstudio-tidyverse:v1.11.0"
               description: "RStudio, with Tidyverse and Conda Python"
               labels:
                 - key: "python_version"
-                  value: "3.11.11"
+                  value: "3.12.13"
                 - key: "r_version"
-                  value: "4.4.2"
+                  value: "4.5.3"
             spec:
-              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.10.0"
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.11.0"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "rstudio"

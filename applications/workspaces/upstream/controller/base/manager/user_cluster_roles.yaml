@@ -53,7 +53,6 @@ rules:
   - kubeflow.org
   resources:
   - workspacekinds
-  - workspacekinds/status
   verbs:
   - create
   - delete
@@ -75,7 +74,6 @@ rules:
   - kubeflow.org
   resources:
   - workspaces
-  - workspaces/status
   verbs:
   - create
   - delete
@@ -94,7 +92,6 @@ rules:
   - kubeflow.org
   resources:
   - workspaces
-  - workspaces/status
   verbs:
   - get
   - list

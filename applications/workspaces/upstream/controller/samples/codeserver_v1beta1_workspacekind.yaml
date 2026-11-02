@@ -45,9 +45,6 @@ spec:
         pauseWorkspace: true
 
   podTemplate:
-    podMetadata:
-      labels: {}
-      annotations: {}
     activityProbe:
       minProbeIntervalSeconds: 300
       probeIntervalSeconds: 3600
@@ -92,17 +89,17 @@ spec:
     options:
       imageConfig:
         spawner:
-          default: "codeserver-python:v1.10.0"
+          default: "codeserver-python:v1.11.0"
         values:
-          - id: "codeserver-python:v1.10.0"
+          - id: "codeserver-python:v1.11.0"
             spawner:
-              displayName: "codeserver-python:v1.10.0"
+              displayName: "codeserver-python:v1.11.0"
               description: "code-server, with Conda Python"
               labels:
                 - key: "python_version"
-                  value: "3.11.11"
+                  value: "3.12.13"
             spec:
-              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.10.0"
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.11.0"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "codeserver"
