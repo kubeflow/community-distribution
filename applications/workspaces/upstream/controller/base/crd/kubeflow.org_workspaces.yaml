@@ -450,9 +450,20 @@ spec:
                          and Istio AuthorizationPolicies which need to reference the ServiceAccount
                     example: ws-my-workspace-abcde
                     type: string
-                required:
-                - name
-                - nodeName
+                  uid:
+                    description: the UID of the Pod resource
+                    type: string
+                type: object
+              podTemplateStatefulSet:
+                description: information about the StatefulSet managed by this Workspace
+                  (only set for WorkspaceKind of podTemplate kind)
+                properties:
+                  name:
+                    description: the name of the StatefulSet resource
+                    type: string
+                  uid:
+                    description: the UID of the StatefulSet resource
+                    type: string
                 type: object
               state:
                 default: Unknown
@@ -478,6 +489,7 @@ spec:
             - pendingRestart
             - podTemplateOptions
             - podTemplatePod
+            - podTemplateStatefulSet
             - state
             - stateMessage
             type: object

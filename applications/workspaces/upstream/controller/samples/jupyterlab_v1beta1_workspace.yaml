@@ -82,7 +82,7 @@ spec:
       ##  - options are defined in WorkspaceKind under
       ##    `spec.podTemplate.options.imageConfig.values[]`
       ##
-      imageConfig: "jupyter-scipy:v1.10.0"
+      imageConfig: "jupyter-scipy:v1.11.0"
 
       ## the id of a podConfig option
       ##  - options are defined in WorkspaceKind under

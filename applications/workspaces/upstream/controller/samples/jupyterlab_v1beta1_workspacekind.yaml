@@ -126,9 +126,11 @@ spec:
 
     ## catch-all activityRule to pause workspaces which (AND)
     ##  - have been inactive for at least 1 day
+    ##  - have been running for at least 10 minutes (600 seconds)
     ##  - are not matched to any of the above pauseWorkspace rules
     - config:
         secondsSinceActive: 86400
+        minRunningSeconds: 600
       ## empty match (`match: []` or omitted `match`) matches all Workspaces.
       ## At most one catch-all rule is allowed per effect type, and it must be the last rule.
       match: []
@@ -143,27 +145,6 @@ spec:
   ## ================================================================
   podTemplate:
 
-    ## metadata for Workspace Pods (MUTABLE)
-    ##
-    podMetadata:
-      labels:
-        my-workspace-kind-label: "my-value"
-      annotations:
-        my-workspace-kind-annotation: "my-value"
-
-    ## metadata for the Workspace StatefulSet (MUTABLE)
-    ##  - labels and annotations applied to the StatefulSet object itself,
-    ##    unlike `podMetadata` which applies to the Workspace Pods
-    ##  - this is an admin-only default for all Workspaces of this WorkspaceKind
-    ##  - the controller-managed `workspaces.kubeflow.org/workspace-name` label
-    ##    always takes precedence and cannot be overridden here
-    ##
-    statefulSetMetadata:
-      labels:
-        my-workspace-kind-sts-label: "my-value"
-      annotations:
-        my-workspace-kind-sts-annotation: "my-value"
-
     ## service account configs for Workspace Pods
     ##  - each Workspace runs as its own ServiceAccount named
     ##    "ws-{WORKSPACE_NAME}-{RANDOM_SUFFIX}", which the controller creates, owns,
@@ -174,32 +155,32 @@ spec:
     serviceAccount:
 
       ## ClusterRoles to grant to the ServiceAccount of each Workspace (MUTABLE)
-      ##  - each entry becomes a RoleBinding in the Namespace of the Workspace, so the
-      ##    permissions are scoped to that Namespace and are NOT cluster-wide
-      ##  - these are ClusterRole names, NOT ServiceAccount names
+      ##  - each entry becomes a namespaced RoleBinding, NOT a ClusterRoleBinding,
+      ##    so the permissions only apply inside the Namespace of the Workspace
+      ##  - the referenced ClusterRoles do not have to exist, a RoleBinding to a missing
+      ##    ClusterRole simply grants nothing until that ClusterRole is created
+      ##  - changes take effect immediately, Workspaces do NOT need to be restarted,
+      #     and removing an entry deletes the corresponding RoleBinding
+      ##  - each element of the array is a map with the following keys:
+      ##     - name: the name of a ClusterRole
       ##
-      ## NOTE: commented out because these ClusterRoles are provided by the Kubeflow
-      ##       platform, they do NOT exist in a standalone install of this controller
-      ##
-      #clusterRoles:
-      #  - name: "kubeflow-view"
+      clusterRoles: []
 
       ## metadata for the ServiceAccount of each Workspace (MUTABLE)
-      ##  - labels and annotations applied to the ServiceAccount object itself,
-      ##    for example to configure cloud Workload Identity
-      ##  - this is an admin-only default for all Workspaces of this WorkspaceKind
-      ##  - the controller-managed `workspaces.kubeflow.org/workspace-name` label
-      ##    always takes precedence and cannot be overridden here
-      ##  - removing a key here also removes it from existing ServiceAccounts, but only
-      ##    if the controller was the last to change its value, regardless of who added it
-      ##  - Workload Identity examples:
-      ##     - EKS IRSA:  "eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/my-role"
-      ##     - GKE:       "iam.gke.io/gcp-service-account: my-gsa@my-project.iam.gserviceaccount.com"
-      ##     - Azure:     "azure.workload.identity/client-id: 00000000-0000-0000-0000-000000000000"
-      ##                  (Azure also requires the `azure.workload.identity/use: "true"` label
-      ##                   on the Pod, set that in `podMetadata.labels` above, NOT here)
-      ##  - EKS IRSA and Azure inject credentials when the Pod is created, so running
-      ##    Workspaces must be restarted to pick up changes to these annotations
+      ##  - labels and annotations applied to the ServiceAccount object itself
+      ##  - for example to configure cloud Workload Identity:
+      ##    - EKS IRSA:  "eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/my-role"
+      ##    - GKE:       "iam.gke.io/gcp-service-account: my-gsa@my-project.iam.gserviceaccount.com"
+      ##    - Azure:     "azure.workload.identity/client-id: 00000000-0000-0000-0000-000000000000"
+      ##                 (NOTE: azure also requires the `azure.workload.identity/use: "true"` label
+      ##                  on the Pod, set that in `podMetadata.labels` above)
+      ##  - changes are applied to the ServiceAccounts of existing Workspaces without a restart,
+      ##    but note that some Workload Identity webhooks (EKS IRSA, Azure) only read the
+      ##    ServiceAccount when a Pod is created, so running Workspaces must be restarted
+      ##    for changes to take effect
+      ##  - removing a key here removes it from the ServiceAccounts of existing Workspaces,
+      ##    if the controller was the last to change its value (ownership is tracked
+      ##    with `metadata.managedFields`), regardless of who originally added the key
       ##
       metadata:
         labels:
@@ -225,10 +206,12 @@ spec:
       podExec:
         timeoutSeconds: 60
         script: |-
-          #!/usr/bin/env bash
-          # A mock probe that always reports activity (replace with real detection logic)
-          echo '{"has_activity": true}' > "$OUTPUT_JSON_PATH"
-          exit 0
+          #!/usr/bin/env python3
+          import os, shutil, urllib.request
+          prefix = os.environ.get("NB_PREFIX", "").rstrip("/")
+          url = f"http://127.0.0.1:8888{prefix}/api/status"
+          with urllib.request.urlopen(url, timeout=10) as resp, open(os.environ["OUTPUT_JSON_PATH"], "wb") as out:
+              shutil.copyfileobj(resp, out)
 
     ## volume mount paths used by the controller when assembling the Workspace Pod
     ##
@@ -270,6 +253,27 @@ spec:
           ##      - `.PathPrefix`: the path prefix of the Workspace (e.g. '/workspace/connect/{profile_name}/{workspace_name}/')
           ##
           requestHeaders: {}
+
+    ## metadata for the Workspace StatefulSet (MUTABLE)
+    ##  - labels and annotations applied to the StatefulSet object itself,
+    ##    unlike `podMetadata` which applies to the Workspace Pods
+    ##  - this is an admin-only default for all Workspaces of this WorkspaceKind
+    ##  - the controller-managed `workspaces.kubeflow.org/workspace-name` label
+    ##    always takes precedence and cannot be overridden here
+    ##
+    statefulSetMetadata:
+      labels:
+        my-workspace-kind-sts-label: "my-value"
+      annotations:
+        my-workspace-kind-sts-annotation: "my-value"
+
+    ## metadata for Workspace Pods (MUTABLE)
+    ##
+    podMetadata:
+      labels:
+        my-workspace-kind-label: "my-value"
+      annotations:
+        my-workspace-kind-annotation: "my-value"
 
     ## Pod-level fields that apply to the Workspace Pod, mirroring `corev1.PodSpec`
     ##
@@ -337,8 +341,12 @@ spec:
         ##  - spec for Probe:
         ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#probe-v1-core
         ##
-        #readinessProbe:
-        #  ...
+        readinessProbe:
+          periodSeconds: 5
+          tcpSocket:
+            ## WARNING: ensure that the `id` here is defined for ALL imageConfig values in this WorkspaceKind,
+            ##          otherwise the readiness probe will fail and the Workspace will never become ready
+            port: "jupyterlab"
 
         ## environment variables for the main container (MUTABLE)
         ##  - spec for EnvVar:
@@ -377,9 +385,8 @@ spec:
       ##
       ## About the `values` fields:
       ##  - the `values` field is a list of options that the user can select
-      ##  - elements of `values` can NOT be removed, only HIDDEN or REDIRECTED
-      ##     - this prevents options being removed that are still in use by existing Workspaces
-      ##     - this limitation may be removed in the future
+      ##  - elements of `values` that are used by a Workspace can NOT be removed or updated,
+      ##    they may only be HIDDEN or REDIRECTED
       ##  - options may be "hidden" by setting `spawner.hidden` to `true`
       ##     - hidden options are NOT visible by default in the Spawner UI
       ##     - hidden options are still available to the controller and manually created Workspace resources
@@ -403,7 +410,7 @@ spec:
           ## the id of the default option
           ##  - this will be selected by default in the spawner ui
           ##
-          default: "jupyter-scipy:v1.10.0"
+          default: "jupyter-scipy:v1.11.0"
 
         ## the list of image configs that are available
         ##
@@ -481,8 +488,32 @@ spec:
               labels:
                 - key: "python_version"
                   value: "3.11.11"
+            redirect:
+              to: "jupyter-scipy:v1.11.0"
+              message:
+                level: "Warning"
+                text: >
+                  This update changes the version of Python from 3.11 to 3.12, so packages installed in your home directory may need to be reinstalled.
+                  It also includes breaking changes in common Python packages: numpy (1.26.4 to 2.4.6), pandas (2.2.3 to 3.0.3), and xgboost (2.1.4 to 3.2.0).
             spec:
               image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.10.0"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+
+          ## ================================================================
+          ## jupyter-scipy:v1.11.0
+          ## ================================================================
+          - id: "jupyter-scipy:v1.11.0"
+            spawner:
+              displayName: "jupyter-scipy:v1.11.0"
+              description: "JupyterLab, with SciPy Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.12.13"
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.0"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "jupyterlab"
@@ -534,8 +565,38 @@ spec:
                   value: "12.4"
                 - key: "nccl_version"
                   value: "2.21.5"
+            redirect:
+              to: "jupyter-pytorch-cuda-full:v1.11.0"
+              message:
+                level: "Warning"
+                text: >
+                  This update changes the version of PyTorch from 2.5.1 to 2.12.0, and CUDA from 12.4 to 13.0 (requires a newer NVIDIA driver on the node).
+                  It also changes the version of Python from 3.11 to 3.12, and includes breaking changes in common Python packages: numpy (1.26.4 to 2.4.6), pandas (2.2.3 to 3.0.3), and xgboost (2.1.4 to 3.2.0).
             spec:
               image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.10.0"
+              imagePullPolicy: "IfNotPresent"
+              ports:
+                - id: "jupyterlab"
+                  port: 8888
+
+          ## ================================================================
+          ## jupyter-pytorch-cuda-full:v1.11.0
+          ## ================================================================
+          - id: "jupyter-pytorch-cuda-full:v1.11.0"
+            spawner:
+              displayName: "jupyter-pytorch-cuda-full:v1.11.0"
+              description: "JupyterLab, with PyTorch (CUDA), and Common Python Packages"
+              labels:
+                - key: "python_version"
+                  value: "3.12.13"
+                - key: "pytorch_version"
+                  value: "2.12.0"
+                - key: "cuda_version"
+                  value: "13.0"
+                - key: "nccl_version"
+                  value: "2.29.7"
+            spec:
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.11.0"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "jupyterlab"

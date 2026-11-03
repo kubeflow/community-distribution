@@ -10,8 +10,16 @@ rules:
   - configmaps
   - events
   - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - pods
   verbs:
+  - delete
   - get
   - list
   - watch

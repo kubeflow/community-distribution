@@ -96,7 +96,6 @@ rules:
   - kubeflow.org
   resources:
   - workspacekinds
-  - workspacekinds/status
   verbs:
   - create
   - delete
@@ -123,7 +122,6 @@ rules:
   - kubeflow.org
   resources:
   - workspaces
-  - workspaces/status
   verbs:
   - create
   - delete
@@ -147,7 +145,6 @@ rules:
   - kubeflow.org
   resources:
   - workspaces
-  - workspaces/status
   verbs:
   - get
   - list
@@ -318,8 +315,16 @@ rules:
   - configmaps
   - events
   - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
   - pods
   verbs:
+  - delete
   - get
   - list
   - watch
@@ -593,7 +598,7 @@ spec:
           value: /workspaces
         - name: PORT
           value: '4000'
-        image: ghcr.io/kubeflow/notebooks/workspaces-backend:v2.0.0-rc.0
+        image: ghcr.io/kubeflow/notebooks/workspaces-backend:v2.0.0-rc.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -697,7 +702,7 @@ spec:
             configMapKeyRef:
               key: CLUSTER_DOMAIN
               name: kubeflow-workspaces-istio-config-696kdcdck5
-        image: ghcr.io/kubeflow/notebooks/workspaces-controller:v2.0.0-rc.0
+        image: ghcr.io/kubeflow/notebooks/workspaces-controller:v2.0.0-rc.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -783,7 +788,7 @@ spec:
       - env:
         - name: PORT
           value: '8080'
-        image: ghcr.io/kubeflow/notebooks/workspaces-frontend:v2.0.0-rc.0
+        image: ghcr.io/kubeflow/notebooks/workspaces-frontend:v2.0.0-rc.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
