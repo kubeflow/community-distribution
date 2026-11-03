@@ -7,6 +7,7 @@ on:
     - applications/dashboard/**
     - applications/workspaces/**
     - applications/pipeline/upstream/**
+    - applications/pipeline/restricted-pss/**
     - tests/istio*
     - common/cert-manager/**
     - common/oauth2-proxy/**
@@ -16,6 +17,8 @@ on:
     - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
     - tests/pipelines_install.sh
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
     - tests/workspaces_install.sh
     - tests/workspaces_pipeline_run_test.sh
     - tests/workspacekind.test.yaml
