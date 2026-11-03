@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Continuous-integration only overlay.
+#
+# It layers the restricted Pod Security Standards identity defaults on top of the regular
+# Pipelines installation, so that the GitHub Actions user namespace can enforce
+# `pod-security.kubernetes.io/enforce=restricted`.
+#
+# The regular installation in `../overlays` deliberately leaves
+# `defaultSecurityContextRunAsUser`, `defaultSecurityContextRunAsGroup` and
+# `defaultSecurityContextRunAsNonRoot` unset, so that operators keep the upstream
+# Kubeflow Pipelines defaults and are not silently given a fixed identity.
+resources:
+- ../overlays
+
+patches:
+- path: pipeline-install-config-restricted-pss.yaml
