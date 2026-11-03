@@ -1209,15 +1209,15 @@ data:
       ################################################################
       image:
         # the default container image
-        value: ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.0
+        value: ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.1
 
         # the list of available container images in the dropdown
         options:
-        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.0
-        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-full:v1.11.0
-        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.11.0
-        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-tensorflow-full:v1.11.0
-        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-tensorflow-cuda-full:v1.11.0
+        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.1
+        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-full:v1.11.1
+        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.11.1
+        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-tensorflow-full:v1.11.1
+        - ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-tensorflow-cuda-full:v1.11.1
 
       ################################################################
       # VSCode-like Container Images (Group 1)
@@ -1232,11 +1232,11 @@ data:
       ################################################################
       imageGroupOne:
         # the default container image
-        value: ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.11.0
+        value: ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.11.1
 
         # the list of available container images in the dropdown
         options:
-        - ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.11.0
+        - ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.11.1
 
       ################################################################
       # RStudio-like Container Images (Group 2)
@@ -1253,11 +1253,11 @@ data:
       ################################################################
       imageGroupTwo:
         # the default container image
-        value: ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.11.0
+        value: ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.11.1
 
         # the list of available container images in the dropdown
         options:
-        - ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.11.0
+        - ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.11.1
 
       ################################################################
       # CPU Resources
@@ -1483,7 +1483,7 @@ metadata:
   labels:
     app: jupyter-web-app
     kustomize.component: jupyter-web-app
-  name: jupyter-web-app-config-f5cb4gtmbc
+  name: jupyter-web-app-config-f5b597gh6k
   namespace: kubeflow
 ---
 apiVersion: v1
@@ -1991,7 +1991,7 @@ spec:
           value: 'true'
         - name: METRICS
           value: '1'
-        image: ghcr.io/kubeflow/notebooks/jupyter-web-app:v1.11.0
+        image: ghcr.io/kubeflow/notebooks/jupyter-web-app:v1.11.1
         name: jupyter-web-app
         ports:
         - containerPort: 5000
@@ -2013,7 +2013,7 @@ spec:
       serviceAccountName: jupyter-web-app-service-account
       volumes:
       - configMap:
-          name: jupyter-web-app-config-f5cb4gtmbc
+          name: jupyter-web-app-config-f5b597gh6k
         name: config-volume
       - configMap:
           name: jupyter-web-app-logos
@@ -2077,7 +2077,7 @@ spec:
             configMapKeyRef:
               key: IDLENESS_CHECK_PERIOD
               name: notebook-controller-config-fhm9f7tdt5
-        image: ghcr.io/kubeflow/notebooks/notebook-controller:v1.11.0
+        image: ghcr.io/kubeflow/notebooks/notebook-controller:v1.11.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -2156,7 +2156,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: ghcr.io/kubeflow/notebooks/pvcviewer-controller:v1.11.0
+        image: ghcr.io/kubeflow/notebooks/pvcviewer-controller:v1.11.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -2260,7 +2260,7 @@ spec:
         envFrom:
         - configMapRef:
             name: tensorboard-controller-config-7hd244gf2d
-        image: ghcr.io/kubeflow/notebooks/tensorboard-controller:v1.11.0
+        image: ghcr.io/kubeflow/notebooks/tensorboard-controller:v1.11.1
         livenessProbe:
           httpGet:
             path: /healthz
@@ -2349,7 +2349,7 @@ spec:
           value: 'true'
         - name: METRICS
           value: '1'
-        image: ghcr.io/kubeflow/notebooks/tensorboards-web-app:v1.11.0
+        image: ghcr.io/kubeflow/notebooks/tensorboards-web-app:v1.11.1
         name: tensorboards-web-app
         ports:
         - containerPort: 5000
@@ -2399,7 +2399,7 @@ spec:
           value: filebrowser/filebrowser:v2.32.0
         - name: METRICS
           value: '1'
-        image: ghcr.io/kubeflow/notebooks/volumes-web-app:v1.11.0
+        image: ghcr.io/kubeflow/notebooks/volumes-web-app:v1.11.1
         name: volumes-web-app
         ports:
         - containerPort: 5000

@@ -62,7 +62,7 @@ This repository periodically synchronizes all official Kubeflow components from 
 | Component | Local Manifests Path | Upstream Revision | CPU (millicores) | Memory (Mi) | PVC Storage (GB) |
 | - | - | - | - | - | - |
 | Trainer | applications/trainer/upstream | [v2.3.0](https://github.com/kubeflow/trainer/tree/v2.3.0/manifests) | 8m | 143Mi | 0GB |
-| Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.0](https://github.com/kubeflow/notebooks/tree/v1.11.0/) | 43m | 806Mi | 0GB |
+| Kubeflow Notebooks | applications/notebooks-v1/upstream/ | [v1.11.1](https://github.com/kubeflow/notebooks/tree/v1.11.1/) | 43m | 806Mi | 0GB |
 | Kubeflow Dashboard | applications/dashboard/upstream/ | [v2.0.1](https://github.com/kubeflow/dashboard/tree/v2.0.1/) | 10m | 302Mi | 0GB |
 | Katib | applications/katib/upstream | [v0.19.0](https://github.com/kubeflow/katib/tree/v0.19.0/manifests/v1beta1) | 13m | 476Mi | 10GB |
 | KServe UI | applications/kserve/kserve-ui | [v1.1.0](https://github.com/kserve/models-web-app/tree/v1.1.0/manifests/kustomize) | 6m | 259Mi | 0GB |

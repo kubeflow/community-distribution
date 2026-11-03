@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="notebooks-v1"
 REPOSITORY_NAME="kubeflow/notebooks"
 REPOSITORY_URL="https://github.com/kubeflow/notebooks.git"
-COMMIT="v1.11.0"
+COMMIT="v1.11.1"
 REPOSITORY_DIRECTORY="$COMPONENT_NAME"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/${COMPONENT_NAME}-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-${COMPONENT_NAME}-manifests-${COMMIT?}}
