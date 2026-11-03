@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="kubeflow-dashboard"
 REPOSITORY_NAME="kubeflow/dashboard"
 REPOSITORY_URL="https://github.com/kubeflow/dashboard.git"
-COMMIT="v2.0.0"
+COMMIT="v2.0.1"
 REPOSITORY_DIRECTORY="$COMPONENT_NAME"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/${COMPONENT_NAME}-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-${COMPONENT_NAME}-manifests-${COMMIT?}}
@@ -58,7 +58,7 @@ validate_dashboard_helm_chart
 # commit exactly. An upstream change to a hand-written resource additionally
 # needs a template correction, which the comparison job reports on the pull
 # request.
-commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests from ${COMMIT}" \
+commit_changes "$MANIFESTS_DIRECTORY" "Update ${REPOSITORY_NAME} manifests to ${COMMIT}" \
   "${TARGET_DIRECTORY}" \
   "${HELM_CHART_PATH}/Chart.yaml" \
   "${HELM_CHART_PATH}/kustomize/kustomization.yaml" \

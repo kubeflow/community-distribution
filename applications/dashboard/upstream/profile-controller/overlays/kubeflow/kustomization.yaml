@@ -43,7 +43,7 @@ replacements:
           group: networking.istio.io
           kind: VirtualService
           name: profiles-kfam
-          version: v1alpha3
+          version: v1
   - source:
       fieldPath: spec.ports.0.port
       kind: Service
@@ -71,7 +71,7 @@ replacements:
           group: networking.istio.io
           kind: VirtualService
           name: profiles-kfam
-          version: v1alpha3
+          version: v1
   - source:
       fieldPath: metadata.namespace
       kind: ServiceAccount
