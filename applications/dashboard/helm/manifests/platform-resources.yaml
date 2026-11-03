@@ -471,7 +471,7 @@ metadata:
 spec:
   selfSigned: {}
 ---
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   labels:
@@ -498,7 +498,7 @@ spec:
         port:
           number: 80
 ---
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   labels:

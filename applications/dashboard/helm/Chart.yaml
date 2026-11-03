@@ -2,7 +2,7 @@ apiVersion: v2
 name: kubeflow-dashboard
 description: A Helm wrapper chart for Kubeflow Dashboard platform resources
 version: 0.1.0
-appVersion: "v2.0.0"
+appVersion: "v2.0.1"
 keywords:
 - kubeflow
 - dashboard

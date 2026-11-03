@@ -28,7 +28,7 @@ replacements:
           group: networking.istio.io
           kind: VirtualService
           name: dashboard
-          version: v1alpha3
+          version: v1
   - source:
       fieldPath: metadata.namespace
       kind: Service
@@ -44,7 +44,7 @@ replacements:
           group: networking.istio.io
           kind: VirtualService
           name: dashboard
-          version: v1alpha3
+          version: v1
   - source:
       fieldPath: metadata.namespace
       kind: ServiceAccount
