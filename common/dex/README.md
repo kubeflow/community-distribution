@@ -105,7 +105,7 @@ set_xauthrequest = true
 
 cookie_name = "oauth2_proxy_kubeflow"
 # Keycloak issues ID tokens that expire after 5 minutes by default (realm setting
-# "Access Token Lifespan"), while Dex issues them for 24 hours. Istio rejects an
+# "Access Token Lifespan"), while Dex issues them for one hour. Istio rejects an
 # expired token, so OAuth2 Proxy must refresh the session before the token expires.
 cookie_refresh = "4m"
 # Keep this at or below the realm setting "SSO Session Max" (10 hours by default),
@@ -126,31 +126,9 @@ Apply the overlay:
 kustomize build overlays/keycloak | kubectl apply -f -
 ```
 
-### Let Istio return the refreshed session cookie
+### The refreshed session cookie
 
-When OAuth2 Proxy refreshes the session, it sends the new session cookie in its answer to the Istio external authorization check. The default Istio configuration in `common/oauth2-proxy/components/istio-external-auth-patches/patches/cm.enable-oauth2-proxy.yaml` only forwards `set-cookie` to the browser on denied requests (`headersToDownstreamOnDeny`). With Dex this does not matter, because the Dex tokens are valid for 24 hours and `cookie_refresh = 0` disables the refresh. With Keycloak, the browser keeps the original session cookie, so the refreshed tokens are never stored and every later request depends on the original refresh token. Add `set-cookie` to `headersToDownstreamOnAllow` of the `oauth2-proxy` extension provider in the `istio` ConfigMap of the `istio-system` namespace:
-
-```yaml
-extensionProviders:
-- name: oauth2-proxy
-  envoyExtAuthzHttp:
-    service: oauth2-proxy.oauth2-proxy.svc.cluster.local
-    port: 80
-    headersToDownstreamOnAllow:
-    - set-cookie
-    headersToDownstreamOnDeny:
-    - content-type
-    - set-cookie
-    headersToUpstreamOnAllow:
-    - authorization
-    - path
-    - x-auth-request-email
-    - x-auth-request-groups
-    - x-auth-request-user
-    includeRequestHeadersInCheck:
-    - authorization
-    - cookie
-```
+When OAuth2 Proxy refreshes the session, it sends the new session cookie in its answer to the Istio external authorization check, and Istio returns it to the browser because `set-cookie` is listed in `headersToDownstreamOnAllow` of the `oauth2-proxy` extension provider in `common/oauth2-proxy/components/istio-external-auth-patches/patches/cm.enable-oauth2-proxy.yaml`. The default session refresh with Dex depends on the same setting, so an Istio installation that replaces that ConfigMap must keep it. Without it the browser keeps the original session cookie, the refreshed tokens are never stored, and every later request depends on the original refresh token.
 
 ### Known issues without Dex
 
@@ -211,6 +189,11 @@ data:
       format: text
     oauth2:
       skipApprovalScreen: true
+    expiry:
+      idTokens: "1h"
+      refreshTokens:
+        absoluteLifetime: "168h"
+        reuseInterval: "60s"
     enablePasswordDB: false
     # staticPasswords:
     # - email: user@example.com
@@ -301,8 +284,8 @@ set_authorization_header = true
 set_xauthrequest = true
 
 cookie_name = "oauth2_proxy_kubeflow"
-cookie_expire = "24h"
-cookie_refresh = 0
+cookie_expire = "168h"
+cookie_refresh = "59m"
 
 code_challenge_method = "S256"
 

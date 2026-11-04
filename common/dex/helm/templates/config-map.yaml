@@ -14,6 +14,11 @@ data:
       format: text
     oauth2:
       skipApprovalScreen: {{ .Values.config.skipApprovalScreen }}
+    expiry:
+      idTokens: {{ .Values.config.idTokenLifetime | quote }}
+      refreshTokens:
+        absoluteLifetime: {{ .Values.config.refreshTokenAbsoluteLifetime | quote }}
+        reuseInterval: {{ .Values.config.refreshTokenReuseInterval | quote }}
     enablePasswordDB: {{ .Values.config.enablePasswordDB }}
 {{- if .Values.config.enablePasswordDB }}
     staticPasswords:

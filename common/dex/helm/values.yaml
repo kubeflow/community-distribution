@@ -22,6 +22,19 @@ config:
   logLevel: info
   # -- Skip Dex approval screen.
   skipApprovalScreen: true
+  # -- Lifetime of the ID tokens Dex issues. Istio rejects an expired token, so
+  # oauth2-proxy refreshes the session before this lifetime ends (cookie_refresh
+  # in the oauth2-proxy chart must stay below it).
+  idTokenLifetime: 1h
+  # -- Time after login at which the refresh token, and with it the session,
+  # ends however active the user is. cookie_expire in the oauth2-proxy chart
+  # must not exceed it.
+  refreshTokenAbsoluteLifetime: 168h
+  # -- Time for which a rotated refresh token may still be used. Concurrent
+  # browser requests refresh with the previous session cookie until the first
+  # refreshed response arrives; without this window every refresh after the
+  # first one ends the session with invalid_grant.
+  refreshTokenReuseInterval: 60s
   # -- Enable Dex password database. Set this to false once a connector
   # authenticates real users, so the built-in static account is removed. The
   # chart refuses to render if this is false and no connector is configured.
