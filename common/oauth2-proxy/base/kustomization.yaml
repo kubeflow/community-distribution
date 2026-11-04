@@ -12,6 +12,11 @@ resources:
 - service.yaml
 - virtualservice.yaml
 
+# Fixed names, as in the Helm chart. A changed configuration therefore needs
+# a restart of the deployment, see README.md.
+generatorOptions:
+  disableNameSuffixHash: true
+
 secretGenerator:
 - name: oauth2-proxy
   type: Opaque
