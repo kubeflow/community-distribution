@@ -56,7 +56,7 @@ jobs:
       run: ./tests/multi_tenancy_install.sh
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Install Katib
       run: ./tests/katib_install.sh

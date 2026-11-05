@@ -70,7 +70,7 @@ jobs:
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Setup python 3.12
       uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0

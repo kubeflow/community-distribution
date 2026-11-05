@@ -62,7 +62,6 @@ jobs:
     timeout-minutes: 45
     env:
       KF_PROFILE: kubeflow-user-example-com
-      KF_PROFILE_PSS: baseline
     strategy:
       fail-fast: false
       matrix:

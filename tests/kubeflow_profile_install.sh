@@ -7,10 +7,7 @@ kubectl logs -n kubeflow "$PROFILE_CONTROLLER_POD"
 KF_PROFILE=kubeflow-user-example-com
 kubectl -n "$KF_PROFILE" get pods,configmaps,secrets
 
-PSS_ENFORCE=baseline
-if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
-  PSS_ENFORCE="${KF_PROFILE_PSS:-restricted}"
-fi
+PSS_ENFORCE="${1:-baseline}"
 
 kubectl label namespace "$KF_PROFILE" \
   "pod-security.kubernetes.io/enforce=${PSS_ENFORCE}" \
