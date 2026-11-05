@@ -15,4 +15,12 @@ resources:
 - ../overlays
 
 patches:
-- path: pipeline-install-config-restricted-pss.yaml
+- patch: |-
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: pipeline-install-config
+    data:
+      defaultSecurityContextRunAsUser: "1000"
+      defaultSecurityContextRunAsGroup: "0"
+      defaultSecurityContextRunAsNonRoot: "true"

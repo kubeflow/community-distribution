@@ -141,7 +141,7 @@ jobs:
       run: ./tests/multi_tenancy_install.sh
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Enable ambient mode for user namespace
       if: matrix.istio-mode == 'ambient'
