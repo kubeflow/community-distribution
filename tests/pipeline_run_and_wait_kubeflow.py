@@ -5,6 +5,7 @@ import kfp
 from time import monotonic, sleep
 import subprocess
 import logging
+import signal
 import sys
 
 logger = logging.getLogger("run_and_wait_for_pipeline")
@@ -41,6 +42,14 @@ def add_pipeline(
 ):
     first_add_task = add(a=a, b=4.0)
     add(a=first_add_task.output, b=b)
+
+
+class StatusRequestDeadlineExceeded(Exception):
+    """Not an OSError, so that urllib3 cannot retry the request."""
+
+
+def stop_status_request(signal_number, frame):
+    raise StatusRequestDeadlineExceeded("The status request exceeded the deadline.")
 
 
 def normalize_state(state):
@@ -166,11 +175,14 @@ except Exception as e:
     )
     raise SystemExit(1)
 
+signal.signal(signal.SIGALRM, stop_status_request)
 deadline = monotonic() + RUN_TIMEOUT_SECONDS
 last_live_run = None
 while monotonic() < deadline:
     try:
+        signal.setitimer(signal.ITIMER_REAL, deadline - monotonic())
         live_run = client.get_run(run_id=run.run_id)
+        signal.setitimer(signal.ITIMER_REAL, 0)
     except Exception as e:
         fail_pipeline_run(
             "Failed to get Pipeline Run. "
