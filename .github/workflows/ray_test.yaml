@@ -48,7 +48,7 @@ jobs:
       run: ./tests/multi_tenancy_install.sh
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Install the KubeRay operator and test a RayCluster with network isolation
       run: |

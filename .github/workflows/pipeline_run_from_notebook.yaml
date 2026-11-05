@@ -62,7 +62,7 @@ jobs:
       run: ./tests/notebooks_install.sh
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Apply PodDefaults to access ml-pipeline with projected token
       run: kubectl apply -f tests/poddefaults.access-ml-pipeline.kubeflow-user-example-com.yaml

@@ -60,7 +60,7 @@ jobs:
       run: ./tests/pipelines_install.sh
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Verify Pipeline Integration
       run: |
