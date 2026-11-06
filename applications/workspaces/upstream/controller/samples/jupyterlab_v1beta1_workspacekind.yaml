@@ -410,7 +410,7 @@ spec:
           ## the id of the default option
           ##  - this will be selected by default in the spawner ui
           ##
-          default: "jupyter-scipy:v1.11.0"
+          default: "jupyter-scipy:v1.11.1"
 
         ## the list of image configs that are available
         ##
@@ -489,7 +489,7 @@ spec:
                 - key: "python_version"
                   value: "3.11.11"
             redirect:
-              to: "jupyter-scipy:v1.11.0"
+              to: "jupyter-scipy:v1.11.1"
               message:
                 level: "Warning"
                 text: >
@@ -503,17 +503,17 @@ spec:
                   port: 8888
 
           ## ================================================================
-          ## jupyter-scipy:v1.11.0
+          ## jupyter-scipy:v1.11.1
           ## ================================================================
-          - id: "jupyter-scipy:v1.11.0"
+          - id: "jupyter-scipy:v1.11.1"
             spawner:
-              displayName: "jupyter-scipy:v1.11.0"
+              displayName: "jupyter-scipy:v1.11.1"
               description: "JupyterLab, with SciPy Packages"
               labels:
                 - key: "python_version"
                   value: "3.12.13"
             spec:
-              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.0"
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-scipy:v1.11.1"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "jupyterlab"
@@ -566,7 +566,7 @@ spec:
                 - key: "nccl_version"
                   value: "2.21.5"
             redirect:
-              to: "jupyter-pytorch-cuda-full:v1.11.0"
+              to: "jupyter-pytorch-cuda-full:v1.11.1"
               message:
                 level: "Warning"
                 text: >
@@ -580,11 +580,11 @@ spec:
                   port: 8888
 
           ## ================================================================
-          ## jupyter-pytorch-cuda-full:v1.11.0
+          ## jupyter-pytorch-cuda-full:v1.11.1
           ## ================================================================
-          - id: "jupyter-pytorch-cuda-full:v1.11.0"
+          - id: "jupyter-pytorch-cuda-full:v1.11.1"
             spawner:
-              displayName: "jupyter-pytorch-cuda-full:v1.11.0"
+              displayName: "jupyter-pytorch-cuda-full:v1.11.1"
               description: "JupyterLab, with PyTorch (CUDA), and Common Python Packages"
               labels:
                 - key: "python_version"
@@ -596,7 +596,7 @@ spec:
                 - key: "nccl_version"
                   value: "2.29.7"
             spec:
-              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.11.0"
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/jupyter-pytorch-cuda-full:v1.11.1"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "jupyterlab"

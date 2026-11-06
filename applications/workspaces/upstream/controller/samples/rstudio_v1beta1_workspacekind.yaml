@@ -92,11 +92,11 @@ spec:
     options:
       imageConfig:
         spawner:
-          default: "rstudio-tidyverse:v1.11.0"
+          default: "rstudio-tidyverse:v1.11.1"
         values:
-          - id: "rstudio-tidyverse:v1.11.0"
+          - id: "rstudio-tidyverse:v1.11.1"
             spawner:
-              displayName: "rstudio-tidyverse:v1.11.0"
+              displayName: "rstudio-tidyverse:v1.11.1"
               description: "RStudio, with Tidyverse and Conda Python"
               labels:
                 - key: "python_version"
@@ -104,7 +104,7 @@ spec:
                 - key: "r_version"
                   value: "4.5.3"
             spec:
-              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.11.0"
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/rstudio-tidyverse:v1.11.1"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "rstudio"
