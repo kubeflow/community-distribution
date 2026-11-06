@@ -9,7 +9,7 @@
         {
             "icon": "settings",
             "link": "/workspaces/workspacekinds/",
-            "text": "Workspaces Administrator",
+            "text": "WorkspaceKinds",
             "type": "item"
         },
         {
