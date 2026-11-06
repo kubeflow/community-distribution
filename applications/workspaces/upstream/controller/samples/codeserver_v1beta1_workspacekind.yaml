@@ -89,17 +89,17 @@ spec:
     options:
       imageConfig:
         spawner:
-          default: "codeserver-python:v1.11.0"
+          default: "codeserver-python:v1.11.1"
         values:
-          - id: "codeserver-python:v1.11.0"
+          - id: "codeserver-python:v1.11.1"
             spawner:
-              displayName: "codeserver-python:v1.11.0"
+              displayName: "codeserver-python:v1.11.1"
               description: "code-server, with Conda Python"
               labels:
                 - key: "python_version"
                   value: "3.12.13"
             spec:
-              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.11.0"
+              image: "ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver-python:v1.11.1"
               imagePullPolicy: "IfNotPresent"
               ports:
                 - id: "codeserver"
