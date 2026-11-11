@@ -11,7 +11,7 @@ require_helm_version "$HELM_VERSION"
 COMPONENT_NAME="spark-operator"
 REPOSITORY_NAME="kubeflow/spark-operator"
 REPOSITORY_URL="https://github.com/kubeflow/spark-operator.git"
-COMMIT="v2.5.2"
+COMMIT="v2.6.0"
 REPOSITORY_DIRECTORY="${COMPONENT_NAME}"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}

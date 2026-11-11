@@ -2,7 +2,7 @@ apiVersion: v2
 name: spark-operator
 description: A Helm wrapper chart for the Kubeflow Spark Operator
 version: 0.1.0
-appVersion: "2.5.2"
+appVersion: "2.6.0"
 keywords:
 - kubeflow
 - spark
@@ -12,7 +12,7 @@ sources:
 - https://github.com/kubeflow/spark-operator
 dependencies:
 - name: spark-operator
-  version: "2.5.2"
+  version: "2.6.0"
   repository: https://kubeflow.github.io/spark-operator
   condition: spark-operator.enabled
 annotations:

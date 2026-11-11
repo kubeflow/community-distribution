@@ -19,4 +19,4 @@ metadata:
 spec:
   descriptor:
     type: kubeflow
-    version: "26.03.1"
+    version: "26.10.0"

@@ -247,10 +247,13 @@ class IstioHelmChartTest(unittest.TestCase):
         manifests = "\n".join(
             manifest.read_text() for manifest in istio_directory.rglob("*.yaml")
         )
+        version = yaml.safe_load((CHART_DIRECTORY / "Chart.yaml").read_text())[
+            "appVersion"
+        ]
 
         self.assertNotIn("registry.istio.io/release", manifests)
         for image in ["install-cni", "pilot", "proxyv2", "ztunnel"]:
-            self.assertIn(f"docker.io/istio/{image}:1.31.3", manifests)
+            self.assertIn(f"docker.io/istio/{image}:{version}", manifests)
 
 
 if __name__ == "__main__":

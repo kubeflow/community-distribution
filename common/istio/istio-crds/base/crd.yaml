@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: authorizationpolicies.security.istio.io
 spec:
   group: security.istio.io
@@ -817,8 +817,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: destinationrules.networking.istio.io
 spec:
   group: networking.istio.io
@@ -1031,11 +1031,50 @@ spec:
                                 - simple
                               - required:
                                 - consistentHash
+                              - required:
+                                - backendUtilization
                           - required:
                             - simple
                           - required:
                             - consistentHash
+                          - required:
+                            - backendUtilization
                           properties:
+                            backendUtilization:
+                              description: Utilization-based load balancing that
+                                uses backend-reported ORCA metrics to weight
+                                endpoints by their current load.
+                              properties:
+                                errorUtilizationPenaltyPercent:
+                                  description: Additional penalty applied to
+                                    endpoints that return errors, expressed as a
+                                    percentage of the utilization.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                metricNamesForComputingUtilization:
+                                  description: Custom ORCA metric names used to
+                                    compute utilization.
+                                  items:
+                                    type: string
+                                  type: array
+                                weightExpirationPeriod:
+                                  description: If an endpoint stops reporting
+                                    utilization metrics for this long, its
+                                    reported weight is discarded and it reverts
+                                    to the default (equal) weight.
+                                  type: string
+                                weightStabilizationPeriod:
+                                  description: Duration after an endpoint first
+                                    reports metrics before its weight is
+                                    trusted.
+                                  type: string
+                                weightUpdatePeriod:
+                                  description: How often the load balancer
+                                    recomputes endpoint weights from the latest
+                                    reported utilization data.
+                                  type: string
+                              type: object
                             consistentHash:
                               allOf:
                               - oneOf:
@@ -1313,6 +1352,14 @@ spec:
                               minimum: 0
                               nullable: true
                               type: integer
+                            failurePercentageThreshold:
+                              description: The failure percentage to use when
+                                determining failure percentage-based outlier
+                                detection.
+                              maximum: 100
+                              minimum: 0
+                              nullable: true
+                              type: integer
                             interval:
                               description: Time interval between ejection sweep
                                 analysis.
@@ -1512,11 +1559,53 @@ spec:
                                       - simple
                                     - required:
                                       - consistentHash
+                                    - required:
+                                      - backendUtilization
                                 - required:
                                   - simple
                                 - required:
                                   - consistentHash
+                                - required:
+                                  - backendUtilization
                                 properties:
+                                  backendUtilization:
+                                    description: Utilization-based load
+                                      balancing that uses backend-reported ORCA
+                                      metrics to weight endpoints by their
+                                      current load.
+                                    properties:
+                                      errorUtilizationPenaltyPercent:
+                                        description: Additional penalty applied
+                                          to endpoints that return errors,
+                                          expressed as a percentage of the
+                                          utilization.
+                                        maximum: 4294967295
+                                        minimum: 0
+                                        type: integer
+                                      metricNamesForComputingUtilization:
+                                        description: Custom ORCA metric names
+                                          used to compute utilization.
+                                        items:
+                                          type: string
+                                        type: array
+                                      weightExpirationPeriod:
+                                        description: If an endpoint stops
+                                          reporting utilization metrics for this
+                                          long, its reported weight is discarded
+                                          and it reverts to the default (equal)
+                                          weight.
+                                        type: string
+                                      weightStabilizationPeriod:
+                                        description: Duration after an endpoint
+                                          first reports metrics before its
+                                          weight is trusted.
+                                        type: string
+                                      weightUpdatePeriod:
+                                        description: How often the load balancer
+                                          recomputes endpoint weights from the
+                                          latest reported utilization data.
+                                        type: string
+                                    type: object
                                   consistentHash:
                                     allOf:
                                     - oneOf:
@@ -1808,6 +1897,14 @@ spec:
                                     minimum: 0
                                     nullable: true
                                     type: integer
+                                  failurePercentageThreshold:
+                                    description: The failure percentage to use
+                                      when determining failure percentage-based
+                                      outlier detection.
+                                    maximum: 100
+                                    minimum: 0
+                                    nullable: true
+                                    type: integer
                                   interval:
                                     description: Time interval between ejection
                                       sweep analysis.
@@ -1858,6 +1955,11 @@ spec:
                                 description: TLS related settings for
                                   connections to the upstream service.
                                 properties:
+                                  caCertCredentialName:
+                                    description: The name of the secret or the
+                                      configmap that holds CA certificates used
+                                      to verify the server's certificate.
+                                    type: string
                                   caCertificates:
                                     description: 'OPTIONAL: The path to the file containing
                                       certificate authority certificates to use in
@@ -1954,6 +2056,11 @@ spec:
                           description: TLS related settings for connections to
                             the upstream service.
                           properties:
+                            caCertCredentialName:
+                              description: The name of the secret or the
+                                configmap that holds CA certificates used to
+                                verify the server's certificate.
+                              type: string
                             caCertificates:
                               description: 'OPTIONAL: The path to the file containing
                                 certificate authority certificates to use in verifying
@@ -2178,11 +2285,49 @@ spec:
                           - simple
                         - required:
                           - consistentHash
+                        - required:
+                          - backendUtilization
                     - required:
                       - simple
                     - required:
                       - consistentHash
+                    - required:
+                      - backendUtilization
                     properties:
+                      backendUtilization:
+                        description: Utilization-based load balancing that uses
+                          backend-reported ORCA metrics to weight endpoints by
+                          their current load.
+                        properties:
+                          errorUtilizationPenaltyPercent:
+                            description: Additional penalty applied to endpoints
+                              that return errors, expressed as a percentage of
+                              the utilization.
+                            maximum: 4294967295
+                            minimum: 0
+                            type: integer
+                          metricNamesForComputingUtilization:
+                            description: Custom ORCA metric names used to
+                              compute utilization.
+                            items:
+                              type: string
+                            type: array
+                          weightExpirationPeriod:
+                            description: If an endpoint stops reporting
+                              utilization metrics for this long, its reported
+                              weight is discarded and it reverts to the default
+                              (equal) weight.
+                            type: string
+                          weightStabilizationPeriod:
+                            description: Duration after an endpoint first
+                              reports metrics before its weight is trusted.
+                            type: string
+                          weightUpdatePeriod:
+                            description: How often the load balancer recomputes
+                              endpoint weights from the latest reported
+                              utilization data.
+                            type: string
+                        type: object
                       consistentHash:
                         allOf:
                         - oneOf:
@@ -2448,6 +2593,14 @@ spec:
                         minimum: 0
                         nullable: true
                         type: integer
+                      failurePercentageThreshold:
+                        description: The failure percentage to use when
+                          determining failure percentage-based outlier
+                          detection.
+                        maximum: 100
+                        minimum: 0
+                        nullable: true
+                        type: integer
                       interval:
                         description: Time interval between ejection sweep
                           analysis.
@@ -2631,11 +2784,50 @@ spec:
                                 - simple
                               - required:
                                 - consistentHash
+                              - required:
+                                - backendUtilization
                           - required:
                             - simple
                           - required:
                             - consistentHash
+                          - required:
+                            - backendUtilization
                           properties:
+                            backendUtilization:
+                              description: Utilization-based load balancing that
+                                uses backend-reported ORCA metrics to weight
+                                endpoints by their current load.
+                              properties:
+                                errorUtilizationPenaltyPercent:
+                                  description: Additional penalty applied to
+                                    endpoints that return errors, expressed as a
+                                    percentage of the utilization.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                metricNamesForComputingUtilization:
+                                  description: Custom ORCA metric names used to
+                                    compute utilization.
+                                  items:
+                                    type: string
+                                  type: array
+                                weightExpirationPeriod:
+                                  description: If an endpoint stops reporting
+                                    utilization metrics for this long, its
+                                    reported weight is discarded and it reverts
+                                    to the default (equal) weight.
+                                  type: string
+                                weightStabilizationPeriod:
+                                  description: Duration after an endpoint first
+                                    reports metrics before its weight is
+                                    trusted.
+                                  type: string
+                                weightUpdatePeriod:
+                                  description: How often the load balancer
+                                    recomputes endpoint weights from the latest
+                                    reported utilization data.
+                                  type: string
+                              type: object
                             consistentHash:
                               allOf:
                               - oneOf:
@@ -2913,6 +3105,14 @@ spec:
                               minimum: 0
                               nullable: true
                               type: integer
+                            failurePercentageThreshold:
+                              description: The failure percentage to use when
+                                determining failure percentage-based outlier
+                                detection.
+                              maximum: 100
+                              minimum: 0
+                              nullable: true
+                              type: integer
                             interval:
                               description: Time interval between ejection sweep
                                 analysis.
@@ -2962,6 +3162,11 @@ spec:
                           description: TLS related settings for connections to
                             the upstream service.
                           properties:
+                            caCertCredentialName:
+                              description: The name of the secret or the
+                                configmap that holds CA certificates used to
+                                verify the server's certificate.
+                              type: string
                             caCertificates:
                               description: 'OPTIONAL: The path to the file containing
                                 certificate authority certificates to use in verifying
@@ -3057,6 +3262,11 @@ spec:
                     description: TLS related settings for connections to the
                       upstream service.
                     properties:
+                      caCertCredentialName:
+                        description: The name of the secret or the configmap
+                          that holds CA certificates used to verify the server's
+                          certificate.
+                        type: string
                       caCertificates:
                         description: 'OPTIONAL: The path to the file containing certificate
                           authority certificates to use in verifying a presented server
@@ -3435,11 +3645,50 @@ spec:
                                 - simple
                               - required:
                                 - consistentHash
+                              - required:
+                                - backendUtilization
                           - required:
                             - simple
                           - required:
                             - consistentHash
+                          - required:
+                            - backendUtilization
                           properties:
+                            backendUtilization:
+                              description: Utilization-based load balancing that
+                                uses backend-reported ORCA metrics to weight
+                                endpoints by their current load.
+                              properties:
+                                errorUtilizationPenaltyPercent:
+                                  description: Additional penalty applied to
+                                    endpoints that return errors, expressed as a
+                                    percentage of the utilization.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                metricNamesForComputingUtilization:
+                                  description: Custom ORCA metric names used to
+                                    compute utilization.
+                                  items:
+                                    type: string
+                                  type: array
+                                weightExpirationPeriod:
+                                  description: If an endpoint stops reporting
+                                    utilization metrics for this long, its
+                                    reported weight is discarded and it reverts
+                                    to the default (equal) weight.
+                                  type: string
+                                weightStabilizationPeriod:
+                                  description: Duration after an endpoint first
+                                    reports metrics before its weight is
+                                    trusted.
+                                  type: string
+                                weightUpdatePeriod:
+                                  description: How often the load balancer
+                                    recomputes endpoint weights from the latest
+                                    reported utilization data.
+                                  type: string
+                              type: object
                             consistentHash:
                               allOf:
                               - oneOf:
@@ -3717,6 +3966,14 @@ spec:
                               minimum: 0
                               nullable: true
                               type: integer
+                            failurePercentageThreshold:
+                              description: The failure percentage to use when
+                                determining failure percentage-based outlier
+                                detection.
+                              maximum: 100
+                              minimum: 0
+                              nullable: true
+                              type: integer
                             interval:
                               description: Time interval between ejection sweep
                                 analysis.
@@ -3916,11 +4173,53 @@ spec:
                                       - simple
                                     - required:
                                       - consistentHash
+                                    - required:
+                                      - backendUtilization
                                 - required:
                                   - simple
                                 - required:
                                   - consistentHash
+                                - required:
+                                  - backendUtilization
                                 properties:
+                                  backendUtilization:
+                                    description: Utilization-based load
+                                      balancing that uses backend-reported ORCA
+                                      metrics to weight endpoints by their
+                                      current load.
+                                    properties:
+                                      errorUtilizationPenaltyPercent:
+                                        description: Additional penalty applied
+                                          to endpoints that return errors,
+                                          expressed as a percentage of the
+                                          utilization.
+                                        maximum: 4294967295
+                                        minimum: 0
+                                        type: integer
+                                      metricNamesForComputingUtilization:
+                                        description: Custom ORCA metric names
+                                          used to compute utilization.
+                                        items:
+                                          type: string
+                                        type: array
+                                      weightExpirationPeriod:
+                                        description: If an endpoint stops
+                                          reporting utilization metrics for this
+                                          long, its reported weight is discarded
+                                          and it reverts to the default (equal)
+                                          weight.
+                                        type: string
+                                      weightStabilizationPeriod:
+                                        description: Duration after an endpoint
+                                          first reports metrics before its
+                                          weight is trusted.
+                                        type: string
+                                      weightUpdatePeriod:
+                                        description: How often the load balancer
+                                          recomputes endpoint weights from the
+                                          latest reported utilization data.
+                                        type: string
+                                    type: object
                                   consistentHash:
                                     allOf:
                                     - oneOf:
@@ -4212,6 +4511,14 @@ spec:
                                     minimum: 0
                                     nullable: true
                                     type: integer
+                                  failurePercentageThreshold:
+                                    description: The failure percentage to use
+                                      when determining failure percentage-based
+                                      outlier detection.
+                                    maximum: 100
+                                    minimum: 0
+                                    nullable: true
+                                    type: integer
                                   interval:
                                     description: Time interval between ejection
                                       sweep analysis.
@@ -4262,6 +4569,11 @@ spec:
                                 description: TLS related settings for
                                   connections to the upstream service.
                                 properties:
+                                  caCertCredentialName:
+                                    description: The name of the secret or the
+                                      configmap that holds CA certificates used
+                                      to verify the server's certificate.
+                                    type: string
                                   caCertificates:
                                     description: 'OPTIONAL: The path to the file containing
                                       certificate authority certificates to use in
@@ -4358,6 +4670,11 @@ spec:
                           description: TLS related settings for connections to
                             the upstream service.
                           properties:
+                            caCertCredentialName:
+                              description: The name of the secret or the
+                                configmap that holds CA certificates used to
+                                verify the server's certificate.
+                              type: string
                             caCertificates:
                               description: 'OPTIONAL: The path to the file containing
                                 certificate authority certificates to use in verifying
@@ -4582,11 +4899,49 @@ spec:
                           - simple
                         - required:
                           - consistentHash
+                        - required:
+                          - backendUtilization
                     - required:
                       - simple
                     - required:
                       - consistentHash
+                    - required:
+                      - backendUtilization
                     properties:
+                      backendUtilization:
+                        description: Utilization-based load balancing that uses
+                          backend-reported ORCA metrics to weight endpoints by
+                          their current load.
+                        properties:
+                          errorUtilizationPenaltyPercent:
+                            description: Additional penalty applied to endpoints
+                              that return errors, expressed as a percentage of
+                              the utilization.
+                            maximum: 4294967295
+                            minimum: 0
+                            type: integer
+                          metricNamesForComputingUtilization:
+                            description: Custom ORCA metric names used to
+                              compute utilization.
+                            items:
+                              type: string
+                            type: array
+                          weightExpirationPeriod:
+                            description: If an endpoint stops reporting
+                              utilization metrics for this long, its reported
+                              weight is discarded and it reverts to the default
+                              (equal) weight.
+                            type: string
+                          weightStabilizationPeriod:
+                            description: Duration after an endpoint first
+                              reports metrics before its weight is trusted.
+                            type: string
+                          weightUpdatePeriod:
+                            description: How often the load balancer recomputes
+                              endpoint weights from the latest reported
+                              utilization data.
+                            type: string
+                        type: object
                       consistentHash:
                         allOf:
                         - oneOf:
@@ -4852,6 +5207,14 @@ spec:
                         minimum: 0
                         nullable: true
                         type: integer
+                      failurePercentageThreshold:
+                        description: The failure percentage to use when
+                          determining failure percentage-based outlier
+                          detection.
+                        maximum: 100
+                        minimum: 0
+                        nullable: true
+                        type: integer
                       interval:
                         description: Time interval between ejection sweep
                           analysis.
@@ -5035,11 +5398,50 @@ spec:
                                 - simple
                               - required:
                                 - consistentHash
+                              - required:
+                                - backendUtilization
                           - required:
                             - simple
                           - required:
                             - consistentHash
+                          - required:
+                            - backendUtilization
                           properties:
+                            backendUtilization:
+                              description: Utilization-based load balancing that
+                                uses backend-reported ORCA metrics to weight
+                                endpoints by their current load.
+                              properties:
+                                errorUtilizationPenaltyPercent:
+                                  description: Additional penalty applied to
+                                    endpoints that return errors, expressed as a
+                                    percentage of the utilization.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                metricNamesForComputingUtilization:
+                                  description: Custom ORCA metric names used to
+                                    compute utilization.
+                                  items:
+                                    type: string
+                                  type: array
+                                weightExpirationPeriod:
+                                  description: If an endpoint stops reporting
+                                    utilization metrics for this long, its
+                                    reported weight is discarded and it reverts
+                                    to the default (equal) weight.
+                                  type: string
+                                weightStabilizationPeriod:
+                                  description: Duration after an endpoint first
+                                    reports metrics before its weight is
+                                    trusted.
+                                  type: string
+                                weightUpdatePeriod:
+                                  description: How often the load balancer
+                                    recomputes endpoint weights from the latest
+                                    reported utilization data.
+                                  type: string
+                              type: object
                             consistentHash:
                               allOf:
                               - oneOf:
@@ -5317,6 +5719,14 @@ spec:
                               minimum: 0
                               nullable: true
                               type: integer
+                            failurePercentageThreshold:
+                              description: The failure percentage to use when
+                                determining failure percentage-based outlier
+                                detection.
+                              maximum: 100
+                              minimum: 0
+                              nullable: true
+                              type: integer
                             interval:
                               description: Time interval between ejection sweep
                                 analysis.
@@ -5366,6 +5776,11 @@ spec:
                           description: TLS related settings for connections to
                             the upstream service.
                           properties:
+                            caCertCredentialName:
+                              description: The name of the secret or the
+                                configmap that holds CA certificates used to
+                                verify the server's certificate.
+                              type: string
                             caCertificates:
                               description: 'OPTIONAL: The path to the file containing
                                 certificate authority certificates to use in verifying
@@ -5461,6 +5876,11 @@ spec:
                     description: TLS related settings for connections to the
                       upstream service.
                     properties:
+                      caCertCredentialName:
+                        description: The name of the secret or the configmap
+                          that holds CA certificates used to verify the server's
+                          certificate.
+                        type: string
                       caCertificates:
                         description: 'OPTIONAL: The path to the file containing certificate
                           authority certificates to use in verifying a presented server
@@ -5839,11 +6259,50 @@ spec:
                                 - simple
                               - required:
                                 - consistentHash
+                              - required:
+                                - backendUtilization
                           - required:
                             - simple
                           - required:
                             - consistentHash
+                          - required:
+                            - backendUtilization
                           properties:
+                            backendUtilization:
+                              description: Utilization-based load balancing that
+                                uses backend-reported ORCA metrics to weight
+                                endpoints by their current load.
+                              properties:
+                                errorUtilizationPenaltyPercent:
+                                  description: Additional penalty applied to
+                                    endpoints that return errors, expressed as a
+                                    percentage of the utilization.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                metricNamesForComputingUtilization:
+                                  description: Custom ORCA metric names used to
+                                    compute utilization.
+                                  items:
+                                    type: string
+                                  type: array
+                                weightExpirationPeriod:
+                                  description: If an endpoint stops reporting
+                                    utilization metrics for this long, its
+                                    reported weight is discarded and it reverts
+                                    to the default (equal) weight.
+                                  type: string
+                                weightStabilizationPeriod:
+                                  description: Duration after an endpoint first
+                                    reports metrics before its weight is
+                                    trusted.
+                                  type: string
+                                weightUpdatePeriod:
+                                  description: How often the load balancer
+                                    recomputes endpoint weights from the latest
+                                    reported utilization data.
+                                  type: string
+                              type: object
                             consistentHash:
                               allOf:
                               - oneOf:
@@ -6121,6 +6580,14 @@ spec:
                               minimum: 0
                               nullable: true
                               type: integer
+                            failurePercentageThreshold:
+                              description: The failure percentage to use when
+                                determining failure percentage-based outlier
+                                detection.
+                              maximum: 100
+                              minimum: 0
+                              nullable: true
+                              type: integer
                             interval:
                               description: Time interval between ejection sweep
                                 analysis.
@@ -6320,11 +6787,53 @@ spec:
                                       - simple
                                     - required:
                                       - consistentHash
+                                    - required:
+                                      - backendUtilization
                                 - required:
                                   - simple
                                 - required:
                                   - consistentHash
+                                - required:
+                                  - backendUtilization
                                 properties:
+                                  backendUtilization:
+                                    description: Utilization-based load
+                                      balancing that uses backend-reported ORCA
+                                      metrics to weight endpoints by their
+                                      current load.
+                                    properties:
+                                      errorUtilizationPenaltyPercent:
+                                        description: Additional penalty applied
+                                          to endpoints that return errors,
+                                          expressed as a percentage of the
+                                          utilization.
+                                        maximum: 4294967295
+                                        minimum: 0
+                                        type: integer
+                                      metricNamesForComputingUtilization:
+                                        description: Custom ORCA metric names
+                                          used to compute utilization.
+                                        items:
+                                          type: string
+                                        type: array
+                                      weightExpirationPeriod:
+                                        description: If an endpoint stops
+                                          reporting utilization metrics for this
+                                          long, its reported weight is discarded
+                                          and it reverts to the default (equal)
+                                          weight.
+                                        type: string
+                                      weightStabilizationPeriod:
+                                        description: Duration after an endpoint
+                                          first reports metrics before its
+                                          weight is trusted.
+                                        type: string
+                                      weightUpdatePeriod:
+                                        description: How often the load balancer
+                                          recomputes endpoint weights from the
+                                          latest reported utilization data.
+                                        type: string
+                                    type: object
                                   consistentHash:
                                     allOf:
                                     - oneOf:
@@ -6616,6 +7125,14 @@ spec:
                                     minimum: 0
                                     nullable: true
                                     type: integer
+                                  failurePercentageThreshold:
+                                    description: The failure percentage to use
+                                      when determining failure percentage-based
+                                      outlier detection.
+                                    maximum: 100
+                                    minimum: 0
+                                    nullable: true
+                                    type: integer
                                   interval:
                                     description: Time interval between ejection
                                       sweep analysis.
@@ -6666,6 +7183,11 @@ spec:
                                 description: TLS related settings for
                                   connections to the upstream service.
                                 properties:
+                                  caCertCredentialName:
+                                    description: The name of the secret or the
+                                      configmap that holds CA certificates used
+                                      to verify the server's certificate.
+                                    type: string
                                   caCertificates:
                                     description: 'OPTIONAL: The path to the file containing
                                       certificate authority certificates to use in
@@ -6762,6 +7284,11 @@ spec:
                           description: TLS related settings for connections to
                             the upstream service.
                           properties:
+                            caCertCredentialName:
+                              description: The name of the secret or the
+                                configmap that holds CA certificates used to
+                                verify the server's certificate.
+                              type: string
                             caCertificates:
                               description: 'OPTIONAL: The path to the file containing
                                 certificate authority certificates to use in verifying
@@ -6986,11 +7513,49 @@ spec:
                           - simple
                         - required:
                           - consistentHash
+                        - required:
+                          - backendUtilization
                     - required:
                       - simple
                     - required:
                       - consistentHash
+                    - required:
+                      - backendUtilization
                     properties:
+                      backendUtilization:
+                        description: Utilization-based load balancing that uses
+                          backend-reported ORCA metrics to weight endpoints by
+                          their current load.
+                        properties:
+                          errorUtilizationPenaltyPercent:
+                            description: Additional penalty applied to endpoints
+                              that return errors, expressed as a percentage of
+                              the utilization.
+                            maximum: 4294967295
+                            minimum: 0
+                            type: integer
+                          metricNamesForComputingUtilization:
+                            description: Custom ORCA metric names used to
+                              compute utilization.
+                            items:
+                              type: string
+                            type: array
+                          weightExpirationPeriod:
+                            description: If an endpoint stops reporting
+                              utilization metrics for this long, its reported
+                              weight is discarded and it reverts to the default
+                              (equal) weight.
+                            type: string
+                          weightStabilizationPeriod:
+                            description: Duration after an endpoint first
+                              reports metrics before its weight is trusted.
+                            type: string
+                          weightUpdatePeriod:
+                            description: How often the load balancer recomputes
+                              endpoint weights from the latest reported
+                              utilization data.
+                            type: string
+                        type: object
                       consistentHash:
                         allOf:
                         - oneOf:
@@ -7256,6 +7821,14 @@ spec:
                         minimum: 0
                         nullable: true
                         type: integer
+                      failurePercentageThreshold:
+                        description: The failure percentage to use when
+                          determining failure percentage-based outlier
+                          detection.
+                        maximum: 100
+                        minimum: 0
+                        nullable: true
+                        type: integer
                       interval:
                         description: Time interval between ejection sweep
                           analysis.
@@ -7439,11 +8012,50 @@ spec:
                                 - simple
                               - required:
                                 - consistentHash
+                              - required:
+                                - backendUtilization
                           - required:
                             - simple
                           - required:
                             - consistentHash
+                          - required:
+                            - backendUtilization
                           properties:
+                            backendUtilization:
+                              description: Utilization-based load balancing that
+                                uses backend-reported ORCA metrics to weight
+                                endpoints by their current load.
+                              properties:
+                                errorUtilizationPenaltyPercent:
+                                  description: Additional penalty applied to
+                                    endpoints that return errors, expressed as a
+                                    percentage of the utilization.
+                                  maximum: 4294967295
+                                  minimum: 0
+                                  type: integer
+                                metricNamesForComputingUtilization:
+                                  description: Custom ORCA metric names used to
+                                    compute utilization.
+                                  items:
+                                    type: string
+                                  type: array
+                                weightExpirationPeriod:
+                                  description: If an endpoint stops reporting
+                                    utilization metrics for this long, its
+                                    reported weight is discarded and it reverts
+                                    to the default (equal) weight.
+                                  type: string
+                                weightStabilizationPeriod:
+                                  description: Duration after an endpoint first
+                                    reports metrics before its weight is
+                                    trusted.
+                                  type: string
+                                weightUpdatePeriod:
+                                  description: How often the load balancer
+                                    recomputes endpoint weights from the latest
+                                    reported utilization data.
+                                  type: string
+                              type: object
                             consistentHash:
                               allOf:
                               - oneOf:
@@ -7721,6 +8333,14 @@ spec:
                               minimum: 0
                               nullable: true
                               type: integer
+                            failurePercentageThreshold:
+                              description: The failure percentage to use when
+                                determining failure percentage-based outlier
+                                detection.
+                              maximum: 100
+                              minimum: 0
+                              nullable: true
+                              type: integer
                             interval:
                               description: Time interval between ejection sweep
                                 analysis.
@@ -7770,6 +8390,11 @@ spec:
                           description: TLS related settings for connections to
                             the upstream service.
                           properties:
+                            caCertCredentialName:
+                              description: The name of the secret or the
+                                configmap that holds CA certificates used to
+                                verify the server's certificate.
+                              type: string
                             caCertificates:
                               description: 'OPTIONAL: The path to the file containing
                                 certificate authority certificates to use in verifying
@@ -7865,6 +8490,11 @@ spec:
                     description: TLS related settings for connections to the
                       upstream service.
                     properties:
+                      caCertCredentialName:
+                        description: The name of the secret or the configmap
+                          that holds CA certificates used to verify the server's
+                          certificate.
+                        type: string
                       caCertificates:
                         description: 'OPTIONAL: The path to the file containing certificate
                           authority certificates to use in verifying a presented server
@@ -8057,8 +8687,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: envoyfilters.networking.istio.io
 spec:
   group: networking.istio.io
@@ -8204,6 +8834,11 @@ spec:
                                 transportProtocol:
                                   description: Applies only to `SIDECAR_INBOUND`
                                     context.
+                                  type: string
+                                transportSocket:
+                                  description: If non-empty, the name of the
+                                    transport socket the filter chain is
+                                    configured with.
                                   type: string
                               type: object
                             listenerFilter:
@@ -8532,8 +9167,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: gateways.networking.istio.io
 spec:
   group: networking.istio.io
@@ -8611,6 +9246,13 @@ spec:
                       description: Set of TLS related options that govern the
                         server's behavior.
                       properties:
+                        alpnProtocols:
+                          description: 'Optional: If specified, the ALPN protocols
+                            advertised by the proxy during the TLS handshake are overridden
+                            with this list.'
+                          items:
+                            type: string
+                          type: array
                         caCertCredentialName:
                           description: For mutual TLS, the name of the secret or
                             the configmap that holds CA certificates.
@@ -8642,6 +9284,12 @@ spec:
                             type: string
                           maxItems: 2
                           minItems: 1
+                          type: array
+                        ecdhCurves:
+                          description: 'Optional: If specified, only support the specified
+                            ecdh curves.'
+                          items:
+                            type: string
                           type: array
                         httpsRedirect:
                           description: If set to true, the load balancer will
@@ -8904,6 +9552,13 @@ spec:
                       description: Set of TLS related options that govern the
                         server's behavior.
                       properties:
+                        alpnProtocols:
+                          description: 'Optional: If specified, the ALPN protocols
+                            advertised by the proxy during the TLS handshake are overridden
+                            with this list.'
+                          items:
+                            type: string
+                          type: array
                         caCertCredentialName:
                           description: For mutual TLS, the name of the secret or
                             the configmap that holds CA certificates.
@@ -8935,6 +9590,12 @@ spec:
                             type: string
                           maxItems: 2
                           minItems: 1
+                          type: array
+                        ecdhCurves:
+                          description: 'Optional: If specified, only support the specified
+                            ecdh curves.'
+                          items:
+                            type: string
                           type: array
                         httpsRedirect:
                           description: If set to true, the load balancer will
@@ -9197,6 +9858,13 @@ spec:
                       description: Set of TLS related options that govern the
                         server's behavior.
                       properties:
+                        alpnProtocols:
+                          description: 'Optional: If specified, the ALPN protocols
+                            advertised by the proxy during the TLS handshake are overridden
+                            with this list.'
+                          items:
+                            type: string
+                          type: array
                         caCertCredentialName:
                           description: For mutual TLS, the name of the secret or
                             the configmap that holds CA certificates.
@@ -9228,6 +9896,12 @@ spec:
                             type: string
                           maxItems: 2
                           minItems: 1
+                          type: array
+                        ecdhCurves:
+                          description: 'Optional: If specified, only support the specified
+                            ecdh curves.'
+                          items:
+                            type: string
                           type: array
                         httpsRedirect:
                           description: If set to true, the load balancer will
@@ -9439,8 +10113,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: peerauthentications.security.istio.io
 spec:
   group: security.istio.io
@@ -9801,8 +10475,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: proxyconfigs.networking.istio.io
 spec:
   group: networking.istio.io
@@ -9959,8 +10633,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: requestauthentications.security.istio.io
 spec:
   group: security.istio.io
@@ -10083,6 +10757,15 @@ spec:
                       description: This field specifies the header name to
                         output a successfully verified JWT payload to the
                         backend.
+                      type: string
+                    presence:
+                      description: |-
+                        Configures whether the JWT token must be present in the request.
+
+                        Valid Options: OPTIONAL, REQUIRED
+                      enum:
+                      - OPTIONAL
+                      - REQUIRED
                       type: string
                     spaceDelimitedClaims:
                       description: List of JWT claim names that should be
@@ -10388,6 +11071,15 @@ spec:
                       description: This field specifies the header name to
                         output a successfully verified JWT payload to the
                         backend.
+                      type: string
+                    presence:
+                      description: |-
+                        Configures whether the JWT token must be present in the request.
+
+                        Valid Options: OPTIONAL, REQUIRED
+                      enum:
+                      - OPTIONAL
+                      - REQUIRED
                       type: string
                     spaceDelimitedClaims:
                       description: List of JWT claim names that should be
@@ -10597,8 +11289,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: serviceentries.networking.istio.io
 spec:
   group: networking.istio.io
@@ -11555,8 +12247,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: sidecars.networking.istio.io
 spec:
   group: networking.istio.io
@@ -11939,6 +12631,13 @@ spec:
                         TLS termination on the sidecar for requests originating
                         from outside the mesh.
                       properties:
+                        alpnProtocols:
+                          description: 'Optional: If specified, the ALPN protocols
+                            advertised by the proxy during the TLS handshake are overridden
+                            with this list.'
+                          items:
+                            type: string
+                          type: array
                         caCertCredentialName:
                           description: For mutual TLS, the name of the secret or
                             the configmap that holds CA certificates.
@@ -11970,6 +12669,12 @@ spec:
                             type: string
                           maxItems: 2
                           minItems: 1
+                          type: array
+                        ecdhCurves:
+                          description: 'Optional: If specified, only support the specified
+                            ecdh curves.'
+                          items:
+                            type: string
                           type: array
                         httpsRedirect:
                           description: If set to true, the load balancer will
@@ -12590,6 +13295,13 @@ spec:
                         TLS termination on the sidecar for requests originating
                         from outside the mesh.
                       properties:
+                        alpnProtocols:
+                          description: 'Optional: If specified, the ALPN protocols
+                            advertised by the proxy during the TLS handshake are overridden
+                            with this list.'
+                          items:
+                            type: string
+                          type: array
                         caCertCredentialName:
                           description: For mutual TLS, the name of the secret or
                             the configmap that holds CA certificates.
@@ -12621,6 +13333,12 @@ spec:
                             type: string
                           maxItems: 2
                           minItems: 1
+                          type: array
+                        ecdhCurves:
+                          description: 'Optional: If specified, only support the specified
+                            ecdh curves.'
+                          items:
+                            type: string
                           type: array
                         httpsRedirect:
                           description: If set to true, the load balancer will
@@ -13241,6 +13959,13 @@ spec:
                         TLS termination on the sidecar for requests originating
                         from outside the mesh.
                       properties:
+                        alpnProtocols:
+                          description: 'Optional: If specified, the ALPN protocols
+                            advertised by the proxy during the TLS handshake are overridden
+                            with this list.'
+                          items:
+                            type: string
+                          type: array
                         caCertCredentialName:
                           description: For mutual TLS, the name of the secret or
                             the configmap that holds CA certificates.
@@ -13272,6 +13997,12 @@ spec:
                             type: string
                           maxItems: 2
                           minItems: 1
+                          type: array
+                        ecdhCurves:
+                          description: 'Optional: If specified, only support the specified
+                            ecdh curves.'
+                          items:
+                            type: string
                           type: array
                         httpsRedirect:
                           description: If set to true, the load balancer will
@@ -13534,8 +14265,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: telemetries.telemetry.istio.io
 spec:
   group: telemetry.istio.io
@@ -14530,8 +15261,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: trafficextensions.extensions.istio.io
 spec:
   group: extensions.istio.io
@@ -14902,8 +15633,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: virtualservices.networking.istio.io
 spec:
   group: networking.istio.io
@@ -18200,8 +18931,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: wasmplugins.extensions.istio.io
 spec:
   group: extensions.istio.io
@@ -18573,8 +19304,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: workloadentries.networking.istio.io
 spec:
   group: networking.istio.io
@@ -19099,8 +19830,8 @@ metadata:
     app.kubernetes.io/instance: istio
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: istio
-    app.kubernetes.io/version: 1.31.3
-    helm.sh/chart: base-1.31.3
+    app.kubernetes.io/version: 1.32.0
+    helm.sh/chart: base-1.32.0
   name: workloadgroups.networking.istio.io
 spec:
   group: networking.istio.io
