@@ -163,7 +163,9 @@ def main():
     # session is gone at most that long after the deadline.
     deadline = login_time + ABSOLUTE_LIFETIME_SECONDS + ID_TOKEN_LIFETIME_SECONDS + 15
     remaining = max(0, deadline - time.monotonic())
-    print(f"Waiting {remaining:.0f}s for the absolute lifetime of the refresh token ...")
+    print(
+        f"Waiting {remaining:.0f}s for the absolute lifetime of the refresh token ..."
+    )
     time.sleep(remaining)
     status, user, _ = dashboard_user(latest_cookie)
     if status != 401:
