@@ -6,6 +6,22 @@ This is Istio's recommended approach for External Authorization[^2]. It is not l
 of `oauth2-proxy`[^3] alone. This method is an industry standard, meeting all of Kubeflow's
 current and foreseeable authentication needs.
 
+## Session lifetime
+
+Dex issues ID tokens for one hour. OAuth2 Proxy requests `offline_access` and refreshes the session after 59 minutes (`cookie_refresh` in `common/oauth2-proxy/base/oauth2_proxy.cfg`). Connectors without refresh support, such as SAML and authproxy, require a longer `expiry.idTokens` setting if sessions must last longer than one hour.
+
+Dex refuses refreshes 168 hours after the original login (`expiry.refreshTokens.absoluteLifetime` in `common/dex/base/config-map.yaml`). The last ID token issued before that deadline can remain valid for up to one more hour. The browser cookie has a sliding 168-hour idle limit (`cookie_expire`), renewed on refresh; OAuth2 Proxy clears it when Dex refuses a refresh.
+
+Dex keeps one refresh token per user, connector and client. A second browser login replaces the first browser's refresh token, so the first browser must log in again at its next refresh, within the hour. For copies of the same session cookie, a refresh by either holder invalidates the other holder's refresh token after the 60-second reuse interval.
+
+Clients that discard refreshed cookies, including `kfp.Client(cookies=...)`, are affected even without another holder: after the first refresh, the fixed cookie stops working when its old refresh token leaves the 60-second reuse interval. Long-running clients should use the Kubernetes service account token flow described in the next section.
+
+Dex rotates refresh tokens and accepts the previous token for 60 seconds (`reuseInterval`) so concurrent requests using the old cookie can succeed. OAuth2 Proxy does not serialize refreshes with the cookie session store. Istio forwards refreshed cookies through `set-cookie` in `headersToDownstreamOnAllow` of the `oauth2-proxy` extension provider.
+
+The [Dex and OAuth2 Proxy workflow](../../.github/workflows/dex_oauth2-proxy_test.yaml) verifies refresh and reuse-window behavior with `tests/dex_session_refresh_test.py`, using an ID token lifetime of one minute.
+
+Both Dex and OAuth2 Proxy read their configuration once at start, and their ConfigMaps keep their names with Kustomize and with Helm, so an installation upgraded in place keeps the previous lifetimes until the deployments are restarted: `kubectl -n auth rollout restart deployment/dex` and `kubectl -n oauth2-proxy rollout restart deployment/oauth2-proxy`. Existing sessions survive the restart, because OAuth2 Proxy keeps them in the cookie and Dex keeps refresh tokens and signing keys in Kubernetes storage.
+
 ## Kubeflow Pipelines User and M2M Authentication and Authorization
 
 The Kubeflow Pipelines component relies on the built-in kubernetes functionalities to authenticate and authorize
@@ -127,7 +143,7 @@ data:
     set_authorization_header = true
     set_xauthrequest = true
     cookie_name = "oauth2_proxy_kubeflow"
-    cookie_expire = "24h"
+    cookie_expire = "168h"
     cookie_refresh = "59m" # This improves the user experience a lot
     redirect_url = "https://$MY_PUBLIC_KUBEFLOW_DOMAIN/oauth2/callback"
     relative_redirect_url = false

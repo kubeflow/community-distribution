@@ -18,7 +18,10 @@ from typing import Any, Dict, List
 
 import yaml
 
-KUSTOMIZE_HASH_SUFFIX = re.compile(r"-(?=[a-z0-9]{10}$)[a-z0-9]{10}$")
+# Kustomize takes the first ten hexadecimal characters of the SHA-256 and
+# replaces 0, 1, 3, a and e with g, h, k, m and t, so a hash never contains a
+# vowel and a word such as "-parameters" is never mistaken for one.
+KUSTOMIZE_HASH_SUFFIX = re.compile(r"-[2456789bcdfghkmt]{10}$")
 HELM_LABEL_PREFIX = "helm.sh/"
 HELM_ANNOTATION_PREFIXES = ("helm.sh/", "meta.helm.sh/")
 
@@ -192,8 +195,7 @@ class ChartComparisonRules:
 
         # Kustomize appends a ten-character content hash to generated ConfigMap
         # and Secret names and to every reference to them. The Helm side is only
-        # normalized when the chart reproduces those hashed names; stripping a
-        # hash the chart never adds would truncate a legitimate name segment.
+        # normalized when the chart reproduces those hashed names.
         if not is_helm_manifest or self.helm_uses_kustomize_name_hashes:
             normalized = normalize_kustomize_refs(normalized)
             if normalized.get("kind") in ("Secret", "ConfigMap"):
