@@ -125,13 +125,17 @@ def check_concurrent_refresh(previous_cookie):
     return refreshed_cookies[0]
 
 
-def latest_session(session_cookie_parts):
-    """Opens the dashboard and returns the session cookie to use from now on:
-    the refreshed one when the answer carried it, otherwise the same one."""
+def refreshed_session(session_cookie_parts):
+    """Opens the dashboard with an expired ID token and returns the refreshed
+    session cookie the answer carried. A missing or unchanged cookie means the
+    session was not refreshed, and the old cookie would be refused after the
+    reuse interval whatever the absolute lifetime is, so it is an error here."""
     status, user, refreshed = dashboard_user(session_cookie_parts)
     if status != 200 or user != DEX_USERNAME:
         raise RuntimeError(f"dashboard: {status} {user}")
-    return refreshed or session_cookie_parts
+    if not refreshed or refreshed == session_cookie_parts:
+        raise RuntimeError("the answer carried no refreshed session cookie")
+    return refreshed
 
 
 def main():
@@ -155,7 +159,7 @@ def main():
     print("The previous refresh token is refused after the reuse interval")
     # The ID token from the first refresh has expired by now, so this request
     # refreshes the session a second time, still inside the absolute lifetime.
-    latest_cookie = latest_session(refreshed_cookie)
+    latest_cookie = refreshed_session(refreshed_cookie)
     print("The session refreshes again before the absolute lifetime ends")
 
     # After the absolute lifetime Dex refuses every refresh of this login. The
