@@ -98,7 +98,7 @@ jobs:
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
         kubectl get sparkapplication spark-pi-pipeline -n "${KF_PROFILE}" -o yaml > logs/sparkapplication.yaml 2>&1 || true
         kubectl get workflows -n "${KF_PROFILE}" -o yaml > logs/workflows.yaml 2>&1 || true
-        for namespace in kubeflow "${KF_PROFILE}" istio-system cert-manager auth; do
+        for namespace in kubeflow "${KF_PROFILE}" istio-system cert-manager auth oauth2-proxy; do
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
                 kubectl logs -n $namespace $pod --all-containers --tail=200 > logs/$namespace-$pod.txt 2>&1 || true

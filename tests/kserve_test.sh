@@ -62,9 +62,11 @@ spec:
       serving.knative.dev/service: isvc-sklearn-predictor
 EOF
 
-# Wait for AuthorizationPolicy to propagate through Envoy by polling
-# the host-based route (path-based may return 404 before the route is
-# configured, which would false-positive exit the loop).
+# Wait for the AuthorizationPolicy to propagate through Envoy and for the route
+# to answer, by polling the host-based route until a request with the token is
+# answered by the model. A 404 or 503 means the route is not configured yet and
+# a 403 means the policy has not reached the gateway; neither ends the wait,
+# because the policy can still be missing when the route becomes ready.
 echo "Waiting for AuthorizationPolicy to propagate..."
 for attempt in $(seq 1 24); do
   POLL_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -73,13 +75,16 @@ for attempt in $(seq 1 24); do
     -H "Content-Type: application/json" \
     "http://${KSERVE_INGRESS_HOST_PORT}/v1/models/isvc-sklearn:predict" \
     -d '{"instances": [[6.8, 2.8, 4.8, 1.4]]}')
-  if [ "$POLL_CODE" != "403" ]; then
+  if [ "$POLL_CODE" = "200" ]; then
     echo "AuthorizationPolicy propagated after $((attempt * 5)) seconds (HTTP ${POLL_CODE})"
     break
   fi
   if [ "$attempt" -eq 24 ]; then
-    echo "FAIL: AuthorizationPolicy did not propagate within 120 seconds"
-    exit 1
+    if [ "$POLL_CODE" = "403" ]; then
+      echo "FAIL: AuthorizationPolicy did not propagate within 120 seconds"
+      exit 1
+    fi
+    echo "Route still answers HTTP ${POLL_CODE} after 120 seconds; continuing with the tests"
   fi
   sleep 5
 done

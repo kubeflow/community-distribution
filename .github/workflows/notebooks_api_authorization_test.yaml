@@ -103,7 +103,7 @@ jobs:
         mkdir -p logs
         kubectl get all --all-namespaces > logs/resources.txt
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
-        for namespace in kubeflow istio-system cert-manager auth kubeflow-user-example-com; do
+        for namespace in kubeflow istio-system cert-manager auth oauth2-proxy kubeflow-user-example-com; do
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
                 kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true

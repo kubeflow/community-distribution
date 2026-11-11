@@ -85,7 +85,7 @@ jobs:
         kubectl get workspace spark-test -n kubeflow-user-example-com -o yaml > logs/workspace-spark-test.yaml 2>&1 || true
         kubectl get workspacekind jupyterlab-spark -o yaml > logs/workspacekind-jupyterlab-spark.yaml 2>&1 || true
         kubectl get sparkconnect -n kubeflow-user-example-com -o yaml > logs/sparkconnect.yaml 2>&1 || true
-        for namespace in kubeflow kubeflow-workspaces kubeflow-user-example-com istio-system cert-manager auth; do
+        for namespace in kubeflow kubeflow-workspaces kubeflow-user-example-com istio-system cert-manager auth oauth2-proxy; do
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
                 kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true

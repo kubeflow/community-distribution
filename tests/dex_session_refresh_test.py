@@ -2,8 +2,9 @@
 # Logs in to Kubeflow through OAuth2 Proxy and Dex, waits for the ID token to
 # expire and verifies that the session is refreshed: concurrent requests with
 # the previous session cookie all succeed, the browser receives the refreshed
-# cookie through Istio, and the previous refresh token is refused once the
-# reuse interval has passed.
+# cookie through Istio, the previous refresh token is refused once the reuse
+# interval has passed, and the login ends at the absolute lifetime of the
+# refresh token even though the session was refreshed shortly before.
 # Setup: the step "Shorten the token lifetimes for the session refresh test" in
 # .github/workflows/dex_oauth2-proxy_test.yaml
 
@@ -25,6 +26,10 @@ DEX_PASSWORD = "12341234"
 ID_TOKEN_LIFETIME_SECONDS = 60
 # expiry.refreshTokens.reuseInterval in common/dex/base/config-map.yaml
 REFRESH_TOKEN_REUSE_SECONDS = 60
+# expiry.refreshTokens.absoluteLifetime, shortened from 168 hours by the
+# workflow step. Dex refuses to refresh the login after this, counted from the
+# login, however active the session is.
+ABSOLUTE_LIFETIME_SECONDS = 240
 # A dashboard page load fans out into several requests at once; every one of
 # them carries the previous session cookie until the first refreshed answer
 # arrives, and each OAuth2 Proxy replica refreshes on its own.
@@ -120,7 +125,17 @@ def check_concurrent_refresh(previous_cookie):
     return refreshed_cookies[0]
 
 
+def latest_session(session_cookie_parts):
+    """Opens the dashboard and returns the session cookie to use from now on:
+    the refreshed one when the answer carried it, otherwise the same one."""
+    status, user, refreshed = dashboard_user(session_cookie_parts)
+    if status != 200 or user != DEX_USERNAME:
+        raise RuntimeError(f"dashboard: {status} {user}")
+    return refreshed or session_cookie_parts
+
+
 def main():
+    login_time = time.monotonic()
     previous_cookie = login()
     check_dashboard_user(previous_cookie)
 
@@ -138,8 +153,24 @@ def main():
             f"the previous refresh token was still accepted: {status} {user}"
         )
     print("The previous refresh token is refused after the reuse interval")
-    check_dashboard_user(refreshed_cookie)
-    print("The refreshed session is still open")
+    # The ID token from the first refresh has expired by now, so this request
+    # refreshes the session a second time, still inside the absolute lifetime.
+    latest_cookie = latest_session(refreshed_cookie)
+    print("The session refreshes again before the absolute lifetime ends")
+
+    # After the absolute lifetime Dex refuses every refresh of this login. The
+    # last ID token it issued expires within ID_TOKEN_LIFETIME_SECONDS, so the
+    # session is gone at most that long after the deadline.
+    deadline = login_time + ABSOLUTE_LIFETIME_SECONDS + ID_TOKEN_LIFETIME_SECONDS + 15
+    remaining = max(0, deadline - time.monotonic())
+    print(f"Waiting {remaining:.0f}s for the absolute lifetime of the refresh token ...")
+    time.sleep(remaining)
+    status, user, _ = dashboard_user(latest_cookie)
+    if status != 401:
+        raise RuntimeError(
+            f"the login was still refreshed after the absolute lifetime: {status} {user}"
+        )
+    print("The login ends at the absolute lifetime, however recently it was refreshed")
 
 
 if __name__ == "__main__":
