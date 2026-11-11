@@ -44,6 +44,9 @@ config:
       clientSecret: $KEYCLOAK_CLIENT_SECRET
       redirectURI: https://kubeflow.example.com/dex/callback
       userNameKey: email
+      # Dex sends prompt=consent once OAuth2 Proxy asks it for offline_access. Keycloak
+      # ignores it unless the client has "Consent Required" on; leave promptType unset
+      # there, or set it to "" for a provider that shows a consent dialog every time.
       scopes:
       - openid
       - profile

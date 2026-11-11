@@ -319,6 +319,12 @@ data:
         clientID: $AZURE_CLIENT_ID
         clientSecret: $AZURE_CLIENT_SECRET
         insecureSkipEmailVerified: true
+        # Dex adds prompt=consent to every authorization request once OAuth2 Proxy asks it
+        # for offline_access, and Entra ID then shows the consent dialog on every login.
+        # An empty promptType makes Dex send no prompt type, so Entra ID asks for consent
+        # once and signs in silently afterwards. Use select_account if your tenant rejects
+        # the empty value.
+        promptType: ""
         scopes:
         - openid
         - profile
