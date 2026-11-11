@@ -288,6 +288,11 @@ data:
       format: text
     oauth2:
       skipApprovalScreen: true
+    expiry:
+      idTokens: "1h"
+      refreshTokens:
+        absoluteLifetime: "168h"
+        reuseInterval: "60s"
     enablePasswordDB: true
     #### WARNING: YOU SHOULD NOT USE THE DEFAULT STATIC PASSWORDS
     #### and patch /common/dex/base/dex-passwords.yaml in a Kustomize overlay or remove it
@@ -318,8 +323,13 @@ data:
         - openid
         - profile
         - email
+        # Microsoft Entra ID issues a refresh token only when offline_access is requested
+        # from it directly; requesting the scope from Dex does not forward it.
+        - offline_access
         #- groups # groups might be used in the future
 ```
+
+The `expiry` block above is the one shipped in `common/dex/overlays/oauth2-proxy/config-map.yaml`. An overlay that replaces the whole `config.yaml`, as this example does, has to carry it, or the session bounds and the concurrent-refresh window are lost: refresh tokens then never expire and a page load that refreshes twice ends the session. The identity provider must issue a refresh token for the login, because OAuth2 Proxy refreshes the session every 59 minutes; see [common/oauth2-proxy/README.md](common/oauth2-proxy/README.md#session-lifetime).
 
 For Keycloak, we have rough guidelines in <https://github.com/kubeflow/community-distribution/blob/master/common/dex/README.md>.
 

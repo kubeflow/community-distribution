@@ -81,9 +81,12 @@ jobs:
         # tokens and a 30 second cookie refresh let the test observe a refresh
         # within its run time. The environment variable takes precedence over
         # cookie_refresh in oauth2_proxy.cfg.
+        # absoluteLifetime is shortened as well, so the test reaches the deadline
+        # after which Dex refuses to refresh the login.
         dex_configuration=$(kubectl -n auth get configmap dex -o jsonpath='{.data.config\.yaml}' \
-          | sed 's/idTokens: "1h"/idTokens: "1m"/')
+          | sed 's/idTokens: "1h"/idTokens: "1m"/; s/absoluteLifetime: "168h"/absoluteLifetime: "4m"/')
         grep -q 'idTokens: "1m"' <<< "$dex_configuration"
+        grep -q 'absoluteLifetime: "4m"' <<< "$dex_configuration"
         kubectl -n auth patch configmap dex --type merge \
           --patch "$(jq -n --arg configuration "$dex_configuration" '{data: {"config.yaml": $configuration}}')"
         kubectl -n auth rollout restart deployment/dex
