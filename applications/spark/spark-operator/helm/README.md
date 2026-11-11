@@ -13,7 +13,7 @@ maintained chart with a copy of its output.
 
 It installs:
 
-- upstream Spark Operator `v2.5.2`, as a chart dependency
+- upstream Spark Operator `v2.6.0`, as a chart dependency
 - three Kubeflow aggregated `ClusterRoles` granting Spark application access to
   the `kubeflow-admin`, `kubeflow-edit` and `kubeflow-view` roles
 
@@ -130,7 +130,7 @@ for every later update.
 
    ```bash
    helm show crds spark-operator \
-     --repo https://kubeflow.github.io/spark-operator --version 2.5.2 \
+     --repo https://kubeflow.github.io/spark-operator --version 2.6.0 \
      > target-crds.yaml
    ```
 

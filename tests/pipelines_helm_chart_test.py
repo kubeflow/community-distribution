@@ -97,6 +97,15 @@ class PipelinesHelmChartLifecycleTest(unittest.TestCase):
             ("Application", "kubeflow", "kubeflow"),
             resource_identifiers,
         )
+        application = next(
+            resource
+            for resource in resources
+            if resource["kind"] == "Application"
+            and resource["metadata"]["name"] == "kubeflow"
+            and resource["metadata"].get("namespace") == "kubeflow"
+        )
+        self.assertEqual(application["spec"]["descriptor"]["type"], "kubeflow")
+        self.assertEqual(application["spec"]["descriptor"]["version"], "26.10.0")
         self.assertIn(
             (
                 "DecoratorController",
