@@ -477,6 +477,10 @@ spec:
     - key: request.headers[kubeflow-userid]
       notValues:
       - '*'
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/kubeflow/sa/model-registry-ui
   selector:
     matchLabels:
       component: model-registry-server

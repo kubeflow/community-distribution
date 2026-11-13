@@ -1,0 +1,9 @@
+# The shared UI uses internal authentication and authorizes each user through
+# Kubernetes SubjectAccessReview before calling the Registry without a token.
+- op: add
+  path: /spec/rules/-
+  value:
+    from:
+    - source:
+        principals:
+        - cluster.local/ns/kubeflow/sa/model-registry-ui
