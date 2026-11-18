@@ -648,91 +648,6 @@ kubectl delete clusterrolebinding meta-controller-cluster-role-binding
      virtualservice.networking.istio.io/kserve-models-web-app
    ```
 
-5. **KServe namespace relocation**: KServe control-plane resources and the Models Web Application moved from the `kubeflow` namespace to the `kserve` namespace. This migration requires a short planned control-plane interruption. Do not delete KServe CRDs, user `InferenceService` objects, or profile namespaces.
-
-   The standard upstream bundle also uses the current upstream workload labels. Update custom monitoring and policies that select the legacy `app: kserve` pod label to select the `control-plane` label instead.
-
-   First remove the unused cluster-scoped authorization for the disabled local model node agent:
-   ```sh
-   kubectl delete --ignore-not-found \
-     clusterrolebinding/kserve-localmodelnode-agent-rolebinding \
-     clusterrole/kserve-localmodelnode-agent-role
-   ```
-
-   Before applying the new manifests, scale the old controllers to zero. Controllers in different namespaces use different leader-election Leases and must not run concurrently:
-   ```sh
-   kubectl scale -n kubeflow --replicas=0 \
-     deployment/kserve-controller-manager \
-     deployment/kserve-localmodel-controller-manager \
-     deployment/llmisvc-controller-manager
-   ```
-
-   Remove the old Models Web Application route before applying the new manifests so the old and new VirtualServices do not claim `/kserve-endpoints/` concurrently. Then remove the remaining old namespaced resources:
-   ```sh
-   kubectl delete -n kubeflow --ignore-not-found \
-     virtualservice.networking.istio.io/kserve-models-web-application
-   kubectl delete -n kubeflow --ignore-not-found \
-     serviceaccount/kserve-models-web-application \
-     configmap/kserve-models-web-application-config \
-     service/kserve-models-web-application \
-     deployment/kserve-models-web-application \
-     authorizationpolicy.security.istio.io/kserve-models-web-application \
-     networkpolicy.networking.k8s.io/kserve-models-web-application
-   ```
-
-   Apply the new release manifests using the normal upgrade procedure. Then verify the new KServe controllers, Models Web Application, certificates, and webhook endpoints in the `kserve` namespace:
-   ```sh
-   kubectl rollout status -n kserve --timeout=120s \
-     deployment/kserve-controller-manager \
-     deployment/kserve-localmodel-controller-manager \
-     deployment/llmisvc-controller-manager \
-     deployment/kserve-models-web-application
-   kubectl wait -n kserve --for=condition=Ready --timeout=120s \
-     certificate.cert-manager.io/serving-cert \
-     certificate.cert-manager.io/llmisvc-serving-cert \
-     certificate.cert-manager.io/localmodel-serving-cert
-   kubectl get endpoints -n kserve \
-     kserve-webhook-server-service \
-     llmisvc-webhook-server-service \
-     localmodel-webhook-server-service
-   ```
-
-   After the new control plane is ready, delete the old `kubeflow`-scoped resources:
-   ```sh
-   kubectl delete -n kubeflow --ignore-not-found \
-     serviceaccount/kserve-controller-manager \
-     serviceaccount/kserve-localmodel-controller-manager \
-     serviceaccount/kserve-localmodelnode-agent \
-     serviceaccount/llmisvc-controller-manager \
-     networkpolicy.networking.k8s.io/kserve \
-     role.rbac.authorization.k8s.io/kserve-leader-election-role \
-     role.rbac.authorization.k8s.io/llmisvc-leader-election-role \
-     rolebinding.rbac.authorization.k8s.io/kserve-leader-election-rolebinding \
-     rolebinding.rbac.authorization.k8s.io/llmisvc-leader-election-rolebinding \
-     configmap/inferenceservice-config \
-     secret/kserve-webhook-server-secret \
-     secret/kserve-webhook-server-cert \
-     secret/llmisvc-webhook-server-cert \
-     secret/localmodel-webhook-server-cert \
-     service/kserve-controller-manager-metrics-service \
-     service/kserve-controller-manager-service \
-     service/kserve-webhook-server-service \
-     service/llmisvc-controller-manager-service \
-     service/llmisvc-webhook-server-service \
-     service/localmodel-webhook-server-service \
-     deployment.apps/kserve-controller-manager \
-     deployment.apps/kserve-localmodel-controller-manager \
-     deployment.apps/llmisvc-controller-manager \
-     daemonset.apps/kserve-localmodelnode-agent \
-     lease.coordination.k8s.io/kserve-controller-manager-leader-lock \
-     lease.coordination.k8s.io/llminferenceservice-kserve-controller-manager \
-     certificate.cert-manager.io/serving-cert \
-     certificate.cert-manager.io/llmisvc-serving-cert \
-     certificate.cert-manager.io/localmodel-serving-cert \
-     issuer.cert-manager.io/selfsigned-issuer
-   ```
-
-
 #### 26.03.1 -> 26.10.0
 
 1. **Optional Notebooks v1 cleanup**: After retiring all Notebooks v1 and TensorBoard workloads, delete the following legacy resources, including the three legacy custom resource definitions. Preserve namespaces, persistent volumes and persistent volume claims:
@@ -827,6 +742,90 @@ kubectl delete clusterrolebinding meta-controller-cluster-role-binding
 2. **Kubeflow Pipelines user interface** ([#3661](https://github.com/kubeflow/community-distribution/issues/3661)): The `ml-pipeline-ui` Deployment now uses the `Recreate` update strategy. Kubernetes stored the default rolling update parameters in the existing Deployment, and `kubectl apply --server-side` does not remove them, so applying the new manifests fails with `spec.strategy.rollingUpdate: Forbidden`. Switch the update strategy before applying the new manifests. The command changes nothing when the Deployment already uses `Recreate`:
    ```sh
    kubectl patch deployment ml-pipeline-ui -n kubeflow --type=merge --patch '{"spec":{"strategy":{"type":"Recreate","rollingUpdate":null}}}'
+   ```
+
+3. **KServe namespace relocation**: KServe control-plane resources and the Models Web Application moved from the `kubeflow` namespace to the `kserve` namespace. This migration requires a short planned control-plane interruption. Do not delete KServe CRDs, user `InferenceService` objects, or profile namespaces.
+
+   The standard upstream bundle also uses the current upstream workload labels. Update custom monitoring and policies that select the legacy `app: kserve` pod label to select the `control-plane` label instead.
+
+   First remove the unused cluster-scoped authorization for the disabled local model node agent:
+   ```sh
+   kubectl delete --ignore-not-found \
+     clusterrolebinding/kserve-localmodelnode-agent-rolebinding \
+     clusterrole/kserve-localmodelnode-agent-role
+   ```
+
+   Before applying the new manifests, scale the old controllers to zero. Controllers in different namespaces use different leader-election Leases and must not run concurrently:
+   ```sh
+   kubectl scale -n kubeflow --replicas=0 \
+     deployment/kserve-controller-manager \
+     deployment/kserve-localmodel-controller-manager \
+     deployment/llmisvc-controller-manager
+   ```
+
+   Remove the old Models Web Application route before applying the new manifests so the old and new VirtualServices do not claim `/kserve-endpoints/` concurrently. Then remove the remaining old namespaced resources:
+   ```sh
+   kubectl delete -n kubeflow --ignore-not-found \
+     virtualservice.networking.istio.io/kserve-models-web-application
+   kubectl delete -n kubeflow --ignore-not-found \
+     serviceaccount/kserve-models-web-application \
+     configmap/kserve-models-web-application-config \
+     service/kserve-models-web-application \
+     deployment/kserve-models-web-application \
+     authorizationpolicy.security.istio.io/kserve-models-web-application \
+     networkpolicy.networking.k8s.io/kserve-models-web-application
+   ```
+
+   Apply the new release manifests using the normal upgrade procedure. Then verify the new KServe controllers, Models Web Application, certificates, and webhook endpoints in the `kserve` namespace:
+   ```sh
+   kubectl rollout status -n kserve --timeout=120s \
+     deployment/kserve-controller-manager \
+     deployment/kserve-localmodel-controller-manager \
+     deployment/llmisvc-controller-manager \
+     deployment/kserve-models-web-application
+   kubectl wait -n kserve --for=condition=Ready --timeout=120s \
+     certificate.cert-manager.io/serving-cert \
+     certificate.cert-manager.io/llmisvc-serving-cert \
+     certificate.cert-manager.io/localmodel-serving-cert
+   kubectl get endpoints -n kserve \
+     kserve-webhook-server-service \
+     llmisvc-webhook-server-service \
+     localmodel-webhook-server-service
+   ```
+
+   After the new control plane is ready, delete the old `kubeflow`-scoped resources:
+   ```sh
+   kubectl delete -n kubeflow --ignore-not-found \
+     serviceaccount/kserve-controller-manager \
+     serviceaccount/kserve-localmodel-controller-manager \
+     serviceaccount/kserve-localmodelnode-agent \
+     serviceaccount/llmisvc-controller-manager \
+     networkpolicy.networking.k8s.io/kserve \
+     role.rbac.authorization.k8s.io/kserve-leader-election-role \
+     role.rbac.authorization.k8s.io/llmisvc-leader-election-role \
+     rolebinding.rbac.authorization.k8s.io/kserve-leader-election-rolebinding \
+     rolebinding.rbac.authorization.k8s.io/llmisvc-leader-election-rolebinding \
+     configmap/inferenceservice-config \
+     secret/kserve-webhook-server-secret \
+     secret/kserve-webhook-server-cert \
+     secret/llmisvc-webhook-server-cert \
+     secret/localmodel-webhook-server-cert \
+     service/kserve-controller-manager-metrics-service \
+     service/kserve-controller-manager-service \
+     service/kserve-webhook-server-service \
+     service/llmisvc-controller-manager-service \
+     service/llmisvc-webhook-server-service \
+     service/localmodel-webhook-server-service \
+     deployment.apps/kserve-controller-manager \
+     deployment.apps/kserve-localmodel-controller-manager \
+     deployment.apps/llmisvc-controller-manager \
+     daemonset.apps/kserve-localmodelnode-agent \
+     lease.coordination.k8s.io/kserve-controller-manager-leader-lock \
+     lease.coordination.k8s.io/llminferenceservice-kserve-controller-manager \
+     certificate.cert-manager.io/serving-cert \
+     certificate.cert-manager.io/llmisvc-serving-cert \
+     certificate.cert-manager.io/localmodel-serving-cert \
+     issuer.cert-manager.io/selfsigned-issuer
    ```
 
 ## Release Process
