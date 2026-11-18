@@ -53,6 +53,32 @@ DRIVER_SERVICE_ACCOUNT = "default-editor"
 NO_SIDECAR = {"sidecar.istio.io/inject": "false"}
 
 
+def restricted_pod_template(container_name: str) -> dict:
+    """Return the pod template fields that restricted Pod Security Standards require.
+
+    The user identifier matches applications/spark/sparkapplication_example.yaml.
+    """
+    return {
+        "spec": {
+            "securityContext": {
+                "runAsNonRoot": True,
+                "runAsUser": 185,
+                "runAsGroup": 0,
+                "seccompProfile": {"type": "RuntimeDefault"},
+            },
+            "containers": [
+                {
+                    "name": container_name,
+                    "securityContext": {
+                        "allowPrivilegeEscalation": False,
+                        "capabilities": {"drop": ["ALL"]},
+                    },
+                }
+            ],
+        }
+    }
+
+
 def main() -> None:
     client = SparkClient(backend_config=KubernetesBackendConfig(namespace=NAMESPACE))
 
@@ -64,7 +90,14 @@ def main() -> None:
             Labels(NO_SIDECAR),
             PodTemplateOverride(
                 role="driver",
-                template={"metadata": {"labels": NO_SIDECAR}},
+                template={
+                    "metadata": {"labels": NO_SIDECAR},
+                    **restricted_pod_template("spark-kubernetes-driver"),
+                },
+            ),
+            PodTemplateOverride(
+                role="executor",
+                template=restricted_pod_template("spark-kubernetes-executor"),
             ),
         ],
     )

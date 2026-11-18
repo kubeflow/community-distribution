@@ -7,7 +7,8 @@ on:
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**
-    - experimental/security/PSS/*
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
     - common/dex/base/**
     - tests/istio*
     - tests/dex_login_test.py
@@ -55,7 +56,7 @@ jobs:
       run: ./tests/dashboard_install.sh
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Apply Pod Security Standards restricted levels
       run: ./tests/PSS_enable.sh

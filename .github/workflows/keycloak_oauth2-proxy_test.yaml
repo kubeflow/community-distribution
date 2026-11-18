@@ -74,7 +74,7 @@ jobs:
       run: ./tests/pipelines_install.sh
 
     - name: Create the Kubeflow Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Install Workspaces
       run: ./tests/workspaces_install.sh
