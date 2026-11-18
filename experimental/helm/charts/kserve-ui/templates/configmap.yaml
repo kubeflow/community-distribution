@@ -23,7 +23,7 @@ data:
   USERID_PREFIX: {{ .Values.kubeflow.config.useridPrefix | quote }}
   APP_PREFIX: {{ .Values.kubeflow.config.appPrefix | quote }}
   {{- else }}
-  APP_DISABLE_AUTH: "True"
+  APP_DISABLE_AUTH: {{ ternary "True" "False" .Values.app.config.disableAuth | quote }}
   {{- end }}
   GRAFANA_PREFIX: {{ .Values.app.config.grafanaPrefix | quote }}
   GRAFANA_CPU_MEMORY_DB: {{ .Values.app.config.grafanaCpuMemoryDb | quote }}
@@ -31,4 +31,4 @@ data:
   {{- with .Values.configMap.data }}
   {{- toYaml . | nindent 2 }}
   {{- end }}
-{{- end }} 
+{{- end }}
