@@ -155,6 +155,8 @@ spec:
               key: USERID_PREFIX
               name: pipeline-install-config
               optional: true
+        - name: ENABLE_PYTHON_VISUALIZATIONS
+          value: 'false'
         - name: PUBLISH_LOGS
           value: 'true'
         - name: LOG_LEVEL
@@ -263,9 +265,9 @@ spec:
               key: secretkey
               name: mlpipeline-minio-artifact
         - name: V2_DRIVER_IMAGE
-          value: ghcr.io/kubeflow/kfp-driver:2.18.0
+          value: ghcr.io/kubeflow/kfp-driver:2.18.1
         - name: V2_LAUNCHER_IMAGE
-          value: ghcr.io/kubeflow/kfp-launcher:2.18.0
+          value: ghcr.io/kubeflow/kfp-launcher:2.18.1
         - name: COMPILED_PIPELINE_SPEC_PATCH
           value: '{}'
         - name: DEFAULT_SECURITY_CONTEXT_RUN_AS_USER
@@ -343,7 +345,7 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-api-server-config-dc9hkg52h6
-        image: ghcr.io/kubeflow/kfp-api-server:2.18.0
+        image: ghcr.io/kubeflow/kfp-api-server:2.18.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -412,7 +414,7 @@ spec:
             configMapKeyRef:
               key: mysqlPort
               name: pipeline-install-config
-        image: docker.io/alpine:3.23
+        image: docker.io/alpine:3.23.8@sha256:469c9ea410b9215eaee7976ba6c0639039b444be8e5d638f7abbada189971eb2
         name: wait-for-database
         resources:
           limits:
@@ -445,7 +447,7 @@ spec:
           value: metadata-grpc-service
         - name: WAIT_PORT
           value: '8080'
-        image: docker.io/alpine:3.23
+        image: docker.io/alpine:3.23.8@sha256:469c9ea410b9215eaee7976ba6c0639039b444be8e5d638f7abbada189971eb2
         name: wait-for-metadata-grpc
         resources:
           limits:

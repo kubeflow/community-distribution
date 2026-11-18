@@ -47,7 +47,7 @@ app:
   # -- Application configuration
   config:
     # -- Disable authentication for the web application
-    disableAuth: true
+    disableAuth: false
     # -- Header name for user ID (used in Kubeflow integration)
     useridHeader: "kubeflow-userid"
     # -- Application prefix for URL routing

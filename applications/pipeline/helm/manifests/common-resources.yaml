@@ -522,6 +522,21 @@ rules:
   verbs:
   - create
   - patch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - kfp-scheduledworkflow
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -777,6 +792,12 @@ rules:
 - apiGroups:
   - pipelines.kubeflow.org
   resources:
+  - visualizations
+  verbs:
+  - create
+- apiGroups:
+  - pipelines.kubeflow.org
+  resources:
   - jobs
   verbs:
   - create
@@ -844,12 +865,6 @@ rules:
   - viewers
   verbs:
   - get
-- apiGroups:
-  - pipelines.kubeflow.org
-  resources:
-  - visualizations
-  verbs:
-  - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -2143,7 +2158,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  kubeflow_pipelines_version: v2.18.0
+  kubeflow_pipelines_version: v2.18.1
 kind: ConfigMap
 metadata:
   labels:
@@ -2218,7 +2233,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  image: ghcr.io/kubeflow/kfp-frontend:2.18.0
+  image: ghcr.io/kubeflow/kfp-frontend:2.18.1
   job-template: "apiVersion: batch/v1\nkind: Job\nmetadata:\n  # The generated ConfigMap hash also names\
     \ the Job, allowing image/template upgrades.\n  name: ml-pipeline-ui-signing-key-init\nspec:\n  backoffLimit:\
     \ 3\n  activeDeadlineSeconds: 300\n  template:\n    metadata:\n      labels:\n        sidecar.istio.io/inject:\
@@ -2243,7 +2258,7 @@ metadata:
     app.kubernetes.io/component: ml-pipeline
     app.kubernetes.io/name: kubeflow-pipelines
     application-crd-id: kubeflow-pipelines
-  name: ml-pipeline-ui-signing-key-init-ckk2d4958b
+  name: ml-pipeline-ui-signing-key-init-9gcc547h6d
   namespace: kubeflow
 ---
 apiVersion: v1
@@ -2282,11 +2297,11 @@ data:
   USERID_PREFIX: ''
   V1_ALLOWED_NAMESPACES: ''
   appName: pipeline
-  appVersion: 2.18.0
+  appVersion: 2.18.1
   autoUpdatePipelineDefaultVersion: 'true'
   bucketName: mlpipeline
   cacheDb: cachedb
-  cacheImage: mirror.gcr.io/library/alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63
+  cacheImage: mirror.gcr.io/library/alpine:3.23.8@sha256:469c9ea410b9215eaee7976ba6c0639039b444be8e5d638f7abbada189971eb2
   cacheNodeRestrictions: 'false'
   cronScheduleTimezone: UTC
   dbType: mysql
@@ -2687,7 +2702,7 @@ spec:
               name: mysql-secret
         - name: WEBHOOK_PORT
           value: '8443'
-        image: ghcr.io/kubeflow/kfp-cache-server:2.18.0
+        image: ghcr.io/kubeflow/kfp-cache-server:2.18.1
         imagePullPolicy: Always
         name: server
         ports:
@@ -2804,7 +2819,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kubeflow-pipelines-profile-controller-env-5252m69c4c
-        image: docker.io/alpine/k8s:1.37.1
+        image: ghcr.io/kubeflow/kfp-profile-controller:2.18.1
         livenessProbe:
           httpGet:
             path: /healthz
@@ -2868,7 +2883,7 @@ spec:
       containers:
       - args:
         - /etc/envoy/envoy-config.yaml
-        image: ghcr.io/kubeflow/kfp-metadata-envoy:2.18.0
+        image: ghcr.io/kubeflow/kfp-metadata-envoy:2.18.1
         livenessProbe:
           httpGet:
             path: /server_info
@@ -3018,7 +3033,7 @@ spec:
             configMapKeyRef:
               key: mysqlPort
               name: pipeline-install-config
-        image: docker.io/alpine:3.23
+        image: docker.io/alpine:3.23.8@sha256:469c9ea410b9215eaee7976ba6c0639039b444be8e5d638f7abbada189971eb2
         name: wait-for-database
         resources:
           limits:
@@ -3072,7 +3087,7 @@ spec:
       - env:
         - name: NAMESPACE_TO_WATCH
           value: ''
-        image: ghcr.io/kubeflow/kfp-metadata-writer:2.18.0
+        image: ghcr.io/kubeflow/kfp-metadata-writer:2.18.1
         name: main
         securityContext:
           allowPrivilegeEscalation: false
@@ -3100,7 +3115,7 @@ spec:
           value: metadata-grpc-service
         - name: WAIT_PORT
           value: '8080'
-        image: docker.io/alpine:3.23
+        image: docker.io/alpine:3.23.8@sha256:469c9ea410b9215eaee7976ba6c0639039b444be8e5d638f7abbada189971eb2
         name: wait-for-metadata-grpc
         resources:
           limits:
@@ -3161,7 +3176,7 @@ spec:
           value: '2'
         - name: LOG_LEVEL
           value: info
-        image: ghcr.io/kubeflow/kfp-persistence-agent:2.18.0
+        image: ghcr.io/kubeflow/kfp-persistence-agent:2.18.1
         imagePullPolicy: IfNotPresent
         name: ml-pipeline-persistenceagent
         resources:
@@ -3197,7 +3212,7 @@ spec:
           value: ml-pipeline
         - name: WAIT_PORT
           value: '8888'
-        image: docker.io/alpine:3.23
+        image: docker.io/alpine:3.23.8@sha256:469c9ea410b9215eaee7976ba6c0639039b444be8e5d638f7abbada189971eb2
         name: wait-for-ml-pipeline
         resources:
           limits:
@@ -3296,12 +3311,14 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: LEADER_ELECT
+          value: 'true'
         - name: CRON_SCHEDULE_TIMEZONE
           valueFrom:
             configMapKeyRef:
               key: cronScheduleTimezone
               name: pipeline-install-config
-        image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.18.0
+        image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.18.1
         imagePullPolicy: IfNotPresent
         name: ml-pipeline-scheduledworkflow
         ports:
@@ -3336,7 +3353,7 @@ spec:
           value: ml-pipeline
         - name: WAIT_PORT
           value: '8888'
-        image: docker.io/alpine:3.23
+        image: docker.io/alpine:3.23.8@sha256:469c9ea410b9215eaee7976ba6c0639039b444be8e5d638f7abbada189971eb2
         name: wait-for-ml-pipeline
         resources:
           limits:
@@ -3447,7 +3464,7 @@ spec:
               key: secretkey
               name: mlpipeline-minio-artifact
         - name: ALLOW_CUSTOM_VISUALIZATIONS
-          value: 'true'
+          value: 'false'
         - name: FRONTEND_SERVER_NAMESPACE
           valueFrom:
             fieldRef:
@@ -3486,7 +3503,7 @@ spec:
               key: ALLOWED_ARTIFACT_ENDPOINTS
               name: pipeline-install-config
               optional: true
-        image: ghcr.io/kubeflow/kfp-frontend:2.18.0
+        image: ghcr.io/kubeflow/kfp-frontend:2.18.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -3566,7 +3583,7 @@ spec:
           value: ''
         - name: MAX_NUM_VIEWERS
           value: '50'
-        image: ghcr.io/kubeflow/kfp-viewer-crd-controller:2.18.0
+        image: ghcr.io/kubeflow/kfp-viewer-crd-controller:2.18.1
         imagePullPolicy: Always
         name: ml-pipeline-viewer-crd
         securityContext:
@@ -3613,7 +3630,10 @@ spec:
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
-      - image: ghcr.io/kubeflow/kfp-visualization-server:2.18.0
+      - env:
+        - name: ENABLE_PYTHON_VISUALIZATIONS
+          value: 'false'
+        image: ghcr.io/kubeflow/kfp-visualization-server:2.18.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -3684,7 +3704,7 @@ spec:
         env:
         - name: MYSQL_ALLOW_EMPTY_PASSWORD
           value: 'true'
-        image: mysql:8.4
+        image: mysql:8.4.13@sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902
         name: mysql
         ports:
         - containerPort: 3306
@@ -3751,7 +3771,7 @@ spec:
         envFrom:
         - secretRef:
             name: mlpipeline-minio-artifact
-        image: ghcr.io/chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8
+        image: ghcr.io/chrislusf/seaweedfs:4.54@sha256:4b42c212543a0acd4c0e675215ecdcaf62a186ef98def76c7e12701871222d15
         lifecycle:
           postStart:
             exec:
@@ -3942,7 +3962,7 @@ spec:
         - --discovery-interval=3600s
         command:
         - /usr/bin/metacontroller
-        image: ghcr.io/metacontroller/metacontroller:v4.17.6@sha256:1c083f7587130f611dc1330b898c49d78cc223674570c223b8081d7ca4b197dd
+        image: ghcr.io/metacontroller/metacontroller:v4.17.9@sha256:9c33122e55a130852b6c5f79755f9552eac2f7d42930fc3b228ba3be2e2545e6
         livenessProbe:
           httpGet:
             path: /healthz
@@ -3984,7 +4004,7 @@ metadata:
     app.kubernetes.io/component: ml-pipeline
     app.kubernetes.io/name: kubeflow-pipelines
     application-crd-id: kubeflow-pipelines
-  name: ml-pipeline-ui-signing-key-init-ckk2d4958b
+  name: ml-pipeline-ui-signing-key-init-9gcc547h6d
   namespace: kubeflow
 spec:
   activeDeadlineSeconds: 300
@@ -4010,13 +4030,13 @@ spec:
           valueFrom:
             configMapKeyRef:
               key: secretName
-              name: ml-pipeline-ui-signing-key-init-ckk2d4958b
+              name: ml-pipeline-ui-signing-key-init-9gcc547h6d
         - name: SIGNING_SECRET_KEY
           valueFrom:
             configMapKeyRef:
               key: secretKey
-              name: ml-pipeline-ui-signing-key-init-ckk2d4958b
-        image: ghcr.io/kubeflow/kfp-frontend:2.18.0
+              name: ml-pipeline-ui-signing-key-init-9gcc547h6d
+        image: ghcr.io/kubeflow/kfp-frontend:2.18.1
         imagePullPolicy: IfNotPresent
         name: initialize
         resources:
@@ -4213,16 +4233,11 @@ spec:
   hosts:
   - '*'
   http:
-  - match:
+  - directResponse:
+      status: 403
+    match:
     - uri:
         prefix: /ml_metadata
-    rewrite:
-      uri: /ml_metadata
-    route:
-    - destination:
-        host: metadata-envoy-service.kubeflow.svc.cluster.local
-        port:
-          number: 9090
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService

@@ -80,11 +80,11 @@ waits for every Deployment of the release. The scenario argument is required.
 
 ## Upgrade
 
-Pipelines 2.18.0 introduces a Job that initializes a shared TensorBoard signing
+Pipelines 2.18.1 includes a Job that initializes a shared TensorBoard signing
 key in `Secret/ml-pipeline-ui-tensorboard-proxy`. The user interface requires
 that key and uses the `Recreate` deployment strategy: first adoption briefly
 interrupts access and invalidates existing TensorBoard URLs. See the upstream
-[upgrade guide](https://github.com/kubeflow/pipelines/blob/2.18.0/docs/operator-guides/upgrade-2.18.md)
+[upgrade guide](https://github.com/kubeflow/pipelines/blob/2.18.1/docs/operator-guides/upgrade-2.18.md)
 before upgrading. An upgrade from an earlier application version has not been
 verified on a cluster with this chart.
 

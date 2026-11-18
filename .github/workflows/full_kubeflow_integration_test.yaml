@@ -159,7 +159,7 @@ jobs:
 
     - name: V2 Pipeline Test
       run: |
-        python3 -m pip install -U "kfp==2.18.0" "kfp-kubernetes==2.18.0"
+        python3 -m pip install -U "kfp==2.18.1" "kfp-kubernetes==2.18.1"
         TOKEN="$(kubectl -n $KF_PROFILE create token default-editor)"
         python3 tests/pipeline_v2_test.py run_pipeline "${TOKEN}" "${KF_PROFILE}"
 
