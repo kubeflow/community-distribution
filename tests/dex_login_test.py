@@ -36,16 +36,33 @@ PARALLEL_TEST_TIMEOUT_SECONDS = (
 # offline_access. Dex v2.46.1 retries a conflicting Kubernetes update four
 # times within about 2.5 ms (retryOnConflict in storage/kubernetes/storage.go),
 # less than one API round trip, so one of eight simultaneous exchanges can lose
-# every attempt and oauth2-proxy answers 500 at the callback. That session is
-# given a second attempt; the burst reports how many needed one.
+# every attempt and oauth2-proxy answers 500 at the callback. Only that
+# failure, a 500 whose final URL is /oauth2/callback, is given a second
+# attempt; any other error fails the session. The burst reports how many
+# sessions needed the second attempt.
 PARALLEL_SESSION_ATTEMPTS = 2
-PARALLEL_SESSION_RETRY_STATUS = "HTTP status code '500'"
+CALLBACK_PATH = "/oauth2/callback"
 KUBECTL_TIMEOUT_SECONDS = 120
 KUBECTL_REQUEST_TIMEOUT = "30s"
 
 AUTHENTICATION_SUCCESS_LOG_MARKER = "login successful"
 DEX_POD_SELECTOR = "app=dex"
 DEX_AUTHCODE_RESOURCE = "authcodes.dex.coreos.com"
+
+
+class CallbackStorageConflictError(RuntimeError):
+    """oauth2-proxy answered 500 at /oauth2/callback: the code exchange lost the
+    Dex OfflineSessions update to a concurrent login of the same user."""
+
+
+def _raise_for_callback_conflict(response: requests.Response, step: str) -> None:
+    if response.status_code == 500 and urlsplit(response.url).path.endswith(
+        CALLBACK_PATH
+    ):
+        raise CallbackStorageConflictError(
+            f"HTTP status code '500' at {CALLBACK_PATH} after {step}: "
+            "Dex OfflineSessions conflict"
+        )
 
 
 @dataclass
@@ -226,6 +243,7 @@ class DexSessionManager:
                     },
                 )
 
+            _raise_for_callback_conflict(response, "the login POST")
             if response.status_code != 200:
                 raise RuntimeError(
                     f"HTTP status code '{response.status_code}' for POST against: {dex_login_url}"
@@ -245,6 +263,7 @@ class DexSessionManager:
                 response = self._request_post(
                     session, dex_approval_url, form_data={"approval": "approve"}
                 )
+                _raise_for_callback_conflict(response, "the approval POST")
                 if response.status_code != 200:
                     raise RuntimeError(
                         "HTTP status code "
@@ -418,17 +437,22 @@ def run_parallel_authentication_session(
                 succeeded=True,
                 attempts=attempt,
             )
-        except Exception as authentication_exception:
-            error_message = str(authentication_exception)
-            if (
-                PARALLEL_SESSION_RETRY_STATUS in error_message
-                and attempt < PARALLEL_SESSION_ATTEMPTS
-            ):
+        except CallbackStorageConflictError as callback_conflict:
+            error_message = str(callback_conflict)
+            if attempt < PARALLEL_SESSION_ATTEMPTS:
                 print(
                     f"session={session_index} attempt={attempt} failed with "
-                    f"{error_message}; retrying once (Dex OfflineSessions conflict)"
+                    f"{error_message}; retrying once"
                 )
                 continue
+            return ParallelAuthenticationResult(
+                session_index=session_index,
+                succeeded=False,
+                error_message=error_message,
+                attempts=attempt,
+            )
+        except Exception as authentication_exception:
+            error_message = str(authentication_exception)
             return ParallelAuthenticationResult(
                 session_index=session_index,
                 succeeded=False,
