@@ -58,3 +58,10 @@ patches:
     - op: replace
       path: /spec/host
       value: model-registry-ui-service.kubeflow-user-example-com.svc.cluster.local
+
+# Trust only the shared UI identity; preserve gateway and controller access.
+- path: shared-ui-authorization-policy.yaml
+  target:
+    group: security.istio.io
+    kind: AuthorizationPolicy
+    name: model-registry-service

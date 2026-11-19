@@ -38,3 +38,16 @@ spec:
   egress:
   - hosts:
     - "*/*" # The ml-pipeline-ui pods need mtls access for all artifact-proxy pods in kubeflow-pipeline enabled namespaces
+---
+apiVersion: networking.istio.io/v1
+kind: Sidecar
+metadata:
+  name: model-registry-ui-exception
+  namespace: kubeflow
+spec:
+  workloadSelector:
+    labels:
+      app: model-registry-ui
+  egress:
+  - hosts:
+    - "*/*" # The shared Registry UI needs mTLS access to servers in profile namespaces

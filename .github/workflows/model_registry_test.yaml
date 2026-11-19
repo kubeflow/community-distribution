@@ -8,6 +8,7 @@ on:
     - .github/workflows/model_registry_test.yaml
     - applications/hub/**
     - tests/istio*
+    - tests/model_registry_egress_test.sh
     - tests/multi_tenancy_install.sh
     - tests/profile_controller_install.sh
     - applications/dashboard/upstream/profile-controller/**
@@ -60,3 +61,6 @@ jobs:
 
     - name: Run Model Registry Tests
       run: ./tests/model_registry_test.sh
+
+    - name: Test shared Registry UI cross-namespace egress
+      run: bash tests/model_registry_egress_test.sh
