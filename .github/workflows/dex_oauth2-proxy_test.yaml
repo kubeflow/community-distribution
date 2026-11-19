@@ -9,8 +9,10 @@ on:
     - common/istio*/**
     - experimental/security/PSS/*
     - common/dex/base/**
+    - common/dex/overlays/oauth2-proxy/**
     - tests/istio*
     - tests/dex_login_test.py
+    - tests/dex_session_refresh_test.py
     - tests/cert_manager_install.sh
     - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
@@ -22,7 +24,7 @@ permissions:
 jobs:
   dex_oauth2-proxy_test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -73,6 +75,28 @@ jobs:
 
         echo "Dex login test completed successfully."
 
+    - name: Shorten the token lifetimes for the session refresh test
+      run: |
+        # Dex and OAuth2 Proxy read their configuration at start. One minute ID
+        # tokens and a 30 second cookie refresh let the test observe a refresh
+        # within its run time. The environment variable takes precedence over
+        # cookie_refresh in oauth2_proxy.cfg.
+        # absoluteLifetime is shortened as well, so the test reaches the deadline
+        # after which Dex refuses to refresh the login.
+        dex_configuration=$(kubectl -n auth get configmap dex -o jsonpath='{.data.config\.yaml}' \
+          | sed 's/idTokens: "1h"/idTokens: "1m"/; s/absoluteLifetime: "168h"/absoluteLifetime: "4m"/')
+        grep -q 'idTokens: "1m"' <<< "$dex_configuration"
+        grep -q 'absoluteLifetime: "4m"' <<< "$dex_configuration"
+        kubectl -n auth patch configmap dex --type merge \
+          --patch "$(jq -n --arg configuration "$dex_configuration" '{data: {"config.yaml": $configuration}}')"
+        kubectl -n auth rollout restart deployment/dex
+        kubectl -n auth rollout status deployment/dex --timeout=180s
+        kubectl -n oauth2-proxy set env deployment/oauth2-proxy OAUTH2_PROXY_COOKIE_REFRESH=30s
+        kubectl -n oauth2-proxy rollout status deployment/oauth2-proxy --timeout=180s
+
+    - name: Test session refresh
+      run: python3 tests/dex_session_refresh_test.py
+
     - name: Collect Logs on Failure
       if: failure()
       # kubectl has no request timeout by default, so bound this step and
@@ -82,7 +106,7 @@ jobs:
         mkdir -p logs
         kubectl get all --all-namespaces > logs/resources.txt
         kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp > logs/events.txt
-        for namespace in kubeflow istio-system cert-manager auth kubeflow-user-example-com; do
+        for namespace in kubeflow istio-system cert-manager auth oauth2-proxy kubeflow-user-example-com; do
             kubectl describe pods -n $namespace > logs/$namespace-pods.txt
             for pod in $(kubectl get pods -n $namespace -o jsonpath='{.items[*].metadata.name}'); do
                 kubectl logs -n $namespace $pod --tail=100 > logs/$namespace-$pod.txt 2>&1 || true

@@ -44,14 +44,29 @@ config:
       clientSecret: $KEYCLOAK_CLIENT_SECRET
       redirectURI: https://kubeflow.example.com/dex/callback
       userNameKey: email
+      # Dex sends prompt=consent once OAuth2 Proxy asks it for offline_access. Keycloak
+      # ignores it unless the client has "Consent Required" on; leave promptType unset
+      # there, or set it to "" for a provider that shows a consent dialog every time.
       scopes:
       - openid
       - profile
       - email
+      - offline_access
 
 extraEnvironmentSecrets:
 - keycloak-oidc-credentials
 ```
+
+OAuth2 Proxy refreshes the Kubeflow session every 59 minutes, so the upstream
+provider must still accept a refresh at that point. Requesting `offline_access`
+from Dex does not forward it to Keycloak; the connector has to request it, as
+above, and the client in Keycloak needs the `offline_access` scope allowed.
+Keycloak then issues an offline token, bounded by the realm's "Offline Session
+Idle" (30 days by default) rather than "SSO Session Idle" (30 minutes by
+default), which would otherwise end an active session at the first refresh.
+Without offline tokens, raise "SSO Session Idle" above one hour instead. The
+`expiry` settings from `common/dex/base/config-map.yaml` stay in force, because
+this values change replaces only `config.connectors`.
 
 Each entry under `config.connectors` is passed to Dex exactly as written, so any
 connector the [Dex documentation](https://dexidp.io/docs/connectors/) describes
