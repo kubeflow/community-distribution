@@ -16,6 +16,7 @@ on:
     - tests/profile_controller_install.sh
     - applications/dashboard/upstream/profile-controller/**
     - tests/oauth2-proxy_install.sh
+    - tests/cert_manager_install.sh
     - common/cert-manager/**
     - common/oauth2-proxy/**
     - common/istio*/**
