@@ -36,10 +36,9 @@ mv $ISTIO_DIRECTORY/crd.yaml $ISTIO_DIRECTORY/istio-crds/base/
 mv $ISTIO_DIRECTORY/install.yaml $ISTIO_DIRECTORY/istio-install/base/
 mv $ISTIO_DIRECTORY/cluster-local-gateway.yaml $ISTIO_DIRECTORY/cluster-local-gateway/base/
 rm dump.yaml
-# Only the ambient ztunnel is kept from this second render. It uses its own standard image.
 $ISTIOCTL manifest generate -f profile.yaml -f profile-overlay.yaml \
   --set components.cni.enabled=true \
-  --set components.ztunnel.enabled=true --set values.global.variant= > dump-ztunnel.yaml
+  --set components.ztunnel.enabled=true > dump-ztunnel.yaml
 ./split-istio-packages -f dump-ztunnel.yaml
 sed -i -e 's/[[:space:]]\+$//' -e '${/^$/d;}' \
   crd.yaml install.yaml cluster-local-gateway.yaml ztunnel.yaml
