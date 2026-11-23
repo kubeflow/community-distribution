@@ -1,4 +1,4 @@
-KUBERAY_RELEASE_VERSION ?= 1.7.1
+KUBERAY_RELEASE_VERSION ?= 1.7.3
 KUBERAY_HELM_CHART_REPO ?= https://ray-project.github.io/kuberay-helm/
 
 .PHONY: kuberay-operator/base

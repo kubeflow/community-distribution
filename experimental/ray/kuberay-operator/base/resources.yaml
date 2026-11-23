@@ -74488,7 +74488,7 @@ metadata:
   namespace: default
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 ---
@@ -74499,7 +74499,7 @@ metadata:
   name: raycronjob-editor-role
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74530,7 +74530,7 @@ metadata:
   name: raycronjob-viewer-role
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74557,7 +74557,7 @@ metadata:
   name: rayjob-editor-role
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74588,7 +74588,7 @@ metadata:
   name: rayjob-viewer-role
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74615,7 +74615,7 @@ metadata:
   name: rayservice-editor-role
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74646,7 +74646,7 @@ metadata:
   name: rayservice-viewer-role
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74673,7 +74673,7 @@ metadata:
   name: kuberay-operator
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74931,7 +74931,7 @@ metadata:
   name: kuberay-operator
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 subjects:
@@ -74952,7 +74952,7 @@ metadata:
   namespace: default
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -74993,7 +74993,7 @@ metadata:
   namespace: default
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 roleRef:
@@ -75014,7 +75014,7 @@ metadata:
   namespace: default
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -75037,7 +75037,7 @@ metadata:
   namespace: default
   labels:
     app.kubernetes.io/name: kuberay-operator
-    helm.sh/chart: kuberay-operator-1.7.1
+    helm.sh/chart: kuberay-operator-1.7.3
     app.kubernetes.io/instance: kuberay-operator
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -75067,7 +75067,7 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-          image: "quay.io/kuberay/operator:v1.7.1"
+          image: "quay.io/kuberay/operator:v1.7.3"
           imagePullPolicy: IfNotPresent
           command:
             - /manager
