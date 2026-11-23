@@ -80,7 +80,7 @@ data:
       sts:
         servicePort: 0
       tag: "1.32.0"
-      variant: ""
+      variant: distroless
       waypoint:
         affinity: {}
         nodeSelector: {}

@@ -67,6 +67,31 @@ class IstioHelmChartTest(unittest.TestCase):
             if provider.get("name") == "oauth2-proxy"
         )
 
+    def test_istio_workloads_and_injected_sidecars_use_distroless_images(self):
+        result = self.render_chart(values=CHART_DIRECTORY / "ci/values-platform-full.yaml")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        resources = [document for document in yaml.safe_load_all(result.stdout) if document]
+        injector = next(resource for resource in resources
+                        if resource["kind"] == "ConfigMap"
+                        and resource["metadata"]["name"] == "istio-sidecar-injector")
+        settings = yaml.safe_load(injector["data"]["values"])["global"]
+        self.assertEqual(settings["variant"], "distroless")
+        for name, image in {
+            "istio-cni-node": "install-cni",
+            "istiod": "pilot",
+            "istio-ingressgateway": "proxyv2",
+            "cluster-local-gateway": "proxyv2",
+        }.items():
+            with self.subTest(workload=name):
+                workload = next(resource for resource in resources
+                                if resource["kind"] in ("DaemonSet", "Deployment")
+                                and resource["metadata"]["name"] == name)
+                self.assertIn(
+                    f"{settings['hub']}/{image}:{settings['tag']}-distroless",
+                    [container["image"] for container in
+                     workload["spec"]["template"]["spec"]["containers"]],
+                )
+
     def test_kubeflow_aggregated_role_leaves_rules_to_the_controller(self):
         for scenario in ["kubeflow-istio-resources", "platform-full"]:
             with self.subTest(scenario=scenario):
