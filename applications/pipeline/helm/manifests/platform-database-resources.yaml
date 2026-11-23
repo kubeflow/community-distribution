@@ -265,9 +265,9 @@ spec:
               key: secretkey
               name: mlpipeline-minio-artifact
         - name: V2_DRIVER_IMAGE
-          value: ghcr.io/kubeflow/kfp-driver:2.18.1
+          value: ghcr.io/kubeflow/kfp-driver:2.18.2
         - name: V2_LAUNCHER_IMAGE
-          value: ghcr.io/kubeflow/kfp-launcher:2.18.1
+          value: ghcr.io/kubeflow/kfp-launcher:2.18.2
         - name: COMPILED_PIPELINE_SPEC_PATCH
           value: '{}'
         - name: DEFAULT_SECURITY_CONTEXT_RUN_AS_USER
@@ -345,7 +345,7 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-api-server-config-dc9hkg52h6
-        image: ghcr.io/kubeflow/kfp-api-server:2.18.1
+        image: ghcr.io/kubeflow/kfp-api-server:2.18.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
