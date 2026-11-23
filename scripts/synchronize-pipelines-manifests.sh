@@ -6,7 +6,7 @@ setup_error_handling
 COMPONENT_NAME="pipelines"
 REPOSITORY_NAME="kubeflow/pipelines"
 REPOSITORY_URL="https://github.com/kubeflow/pipelines.git"
-COMPONENT_VERSION="2.18.1"
+COMPONENT_VERSION="2.18.2"
 REPOSITORY_DIRECTORY="pipelines"
 SOURCE_DIRECTORY="${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}"
 BRANCH_NAME="${BRANCH_NAME:=synchronize-kubeflow-${COMPONENT_NAME}-manifests-${COMPONENT_VERSION?}}"
@@ -47,7 +47,7 @@ update_pipelines_helm_chart
 validate_pipelines_helm_chart
 commit_changes \
     "$MANIFESTS_DIRECTORY" \
-    "Update ${REPOSITORY_NAME} manifests from ${COMPONENT_VERSION}" \
+    "Update ${REPOSITORY_NAME} manifests to ${COMPONENT_VERSION}" \
     "${DESTINATION_MANIFESTS_PATH}" \
     "${HELM_CHART_PATH}/Chart.yaml" \
     "${HELM_CHART_PATH}/manifests" \
