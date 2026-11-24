@@ -183,18 +183,19 @@ jobs:
 
         POD_NAME=$(kubectl get pods -n $KF_PROFILE -l app=test-application -o jsonpath='{.items[0].metadata.name}')
 
-        ISTIO_PROXY_EXISTS=$(kubectl get pod $POD_NAME -n $KF_PROFILE -o jsonpath='{.spec.containers[*].name}' | grep -c "istio-proxy" || echo "0")
-        ISTIO_INIT_EXISTS=$(kubectl get pod $POD_NAME -n $KF_PROFILE -o jsonpath='{.spec.initContainers[*].name}' | grep -c "istio-proxy" || echo "0")
-
-        if [ "$ISTIO_PROXY_EXISTS" -eq "0" ] && [ "$ISTIO_INIT_EXISTS" -eq "0" ]; then
-          echo "ERROR: Sidecar injection failed - istio-proxy container not found"
+        # Istio can inject a regular container or a restartable init container.
+        if ! kubectl get pod "$POD_NAME" -n "$KF_PROFILE" -o json | jq -e '
+          [.spec.containers[], .spec.initContainers[]?]
+          | any(.name == "istio-proxy" and (.image | endswith("-distroless")))
+        ' >/dev/null; then
+          echo "ERROR: Expected an injected distroless istio-proxy container"
           kubectl describe pod $POD_NAME -n $KF_PROFILE
           kubectl get namespace $KF_PROFILE --show-labels
           exit 1
         fi
 
         # Verify Envoy proxy is responding
-        kubectl exec -n $KF_PROFILE deployment/test-application -c istio-proxy -- curl -s localhost:15000/ready | grep -q "LIVE" || \
+        kubectl exec -n "$KF_PROFILE" deployment/test-application -c istio-proxy -- pilot-agent request GET ready | grep -q "LIVE" || \
           (echo "ERROR: Envoy proxy not responding" && exit 1)
 
     - name: Test ambient mode (no sidecar)

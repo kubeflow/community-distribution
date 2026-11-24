@@ -4,6 +4,8 @@ We use Istio with CNI as the default configuration as described here <https://is
 
 CNI eliminates privileged init containers and improves security compliance with Pod Security Standards. This configuration also enables native sidecars for Istio through the `ENABLE_NATIVE_SIDECARS=true` environment variable in istiod.
 
+The control plane, CNI, gateways, injected sidecars and ambient ztunnel use Istio’s distroless images. For interactive troubleshooting, use an ephemeral debug container.
+
 ## Installation Options
 
 ### Default (CNI-enabled - Recommended)

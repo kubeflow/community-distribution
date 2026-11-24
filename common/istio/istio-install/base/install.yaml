@@ -728,6 +728,8 @@ data:
   mesh: |-
     defaultConfig:
       discoveryAddress: istiod.istio-system.svc:15012
+      image:
+        imageType: distroless
     defaultProviders:
       metrics:
       - prometheus
@@ -3578,7 +3580,7 @@ data:
           "servicePort": 0
         },
         "tag": "1.32.0",
-        "variant": "",
+        "variant": "distroless",
         "waypoint": {
           "affinity": {},
           "nodeSelector": {},
@@ -3762,7 +3764,7 @@ data:
           "servicePort": 0
         },
         "tag": "1.32.0",
-        "variant": "",
+        "variant": "distroless",
         "waypoint": {
           "affinity": {},
           "nodeSelector": {},
@@ -3888,7 +3890,8 @@ data:
         "configValidation": true,
         "hub": "docker.io/istio",
         "istioNamespace": "istio-system",
-        "tag": "1.32.0"
+        "tag": "1.32.0",
+        "variant": "distroless"
       },
       "meshConfig": {
         "tcpKeepalive": {
@@ -4164,7 +4167,7 @@ spec:
         envFrom:
         - configMapRef:
             name: istio-cni-config
-        image: docker.io/istio/install-cni:1.32.0
+        image: docker.io/istio/install-cni:1.32.0-distroless
         name: install-cni
         ports:
         - containerPort: 15014
@@ -4362,7 +4365,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: docker.io/istio/proxyv2:1.32.0
+        image: docker.io/istio/proxyv2:1.32.0-distroless
         name: istio-proxy
         ports:
         - containerPort: 15021
@@ -4562,7 +4565,7 @@ spec:
           value: Kubernetes
         - name: PLATFORM
           value: ''
-        image: docker.io/istio/pilot:1.32.0
+        image: docker.io/istio/pilot:1.32.0-distroless
         name: discovery
         ports:
         - containerPort: 8080

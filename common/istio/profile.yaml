@@ -27,5 +27,6 @@ spec:
       seccompProfile:
         type: RuntimeDefault
     global:
+      variant: distroless
       configValidation: true
       istioNamespace: istio-system
