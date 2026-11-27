@@ -18,6 +18,7 @@ on:
     - tests/pipeline*
     - tests/kubeflow_profile_install.sh
     - tests/PSS_enable.sh
+    - tests/notebook.test.kubeflow-user-example.com.yaml
     - common/kubeflow-namespace/**
 
 permissions:

@@ -19,6 +19,7 @@ on:
     - tests/pipelines_install.sh
     - tests/kubeflow_profile_install.sh
     - tests/PSS_enable.sh
+    - tests/pipeline_run_and_wait_kubeflow.py
     - tests/workspaces_install.sh
     - tests/workspaces_pipeline_run_test.sh
     - tests/workspacekind.test.yaml

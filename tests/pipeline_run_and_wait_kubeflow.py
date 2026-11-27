@@ -181,8 +181,10 @@ last_live_run = None
 while monotonic() < deadline:
     try:
         signal.setitimer(signal.ITIMER_REAL, deadline - monotonic())
-        live_run = client.get_run(run_id=run.run_id)
-        signal.setitimer(signal.ITIMER_REAL, 0)
+        try:
+            live_run = client.get_run(run_id=run.run_id)
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
     except Exception as e:
         fail_pipeline_run(
             "Failed to get Pipeline Run. "
