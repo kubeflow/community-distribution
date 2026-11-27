@@ -4,9 +4,6 @@ component: oauth2-proxy
 releaseName: oauth2-proxy
 namespace: oauth2-proxy
 includeCustomResourceDefinitions: true
-# The chart names its ConfigMaps and Secrets without Kustomize's content-hash
-# suffix, so the hash must be stripped from the Kustomize side only.
-helmUsesKustomizeNameHashes: false
 knownDifferences:
 - skip: Namespace/oauth2-proxy
   reason: >

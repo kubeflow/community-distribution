@@ -25,6 +25,10 @@ data:
         headersToDownstreamOnDeny:
         - content-type
         - set-cookie
+        # OAuth2 Proxy refreshes the session on an allowed request and answers
+        # with the new session cookie, which the browser must receive.
+        headersToDownstreamOnAllow:
+        - set-cookie
         headersToUpstreamOnAllow:
         - authorization
         - path

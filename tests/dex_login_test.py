@@ -31,6 +31,17 @@ PARALLEL_TEST_TIMEOUT_SECONDS = (
     REQUEST_TIMEOUT_SECONDS * MAXIMUM_SEQUENTIAL_HTTP_REQUESTS_PER_SESSION
     + PARALLEL_TEST_TIMEOUT_BUFFER_SECONDS
 )
+# Every login in the burst ends in a code exchange that updates the one Dex
+# OfflineSessions object of the user, because oauth2-proxy requests
+# offline_access. Dex v2.46.1 retries a conflicting Kubernetes update four
+# times within about 2.5 ms (retryOnConflict in storage/kubernetes/storage.go),
+# less than one API round trip, so one of eight simultaneous exchanges can lose
+# every attempt and oauth2-proxy answers 500 at the callback. Only that
+# failure, a 500 whose final URL is /oauth2/callback, is given a second
+# attempt; any other error fails the session. The burst reports how many
+# sessions needed the second attempt.
+PARALLEL_SESSION_ATTEMPTS = 2
+CALLBACK_PATH = "/oauth2/callback"
 KUBECTL_TIMEOUT_SECONDS = 120
 KUBECTL_REQUEST_TIMEOUT = "30s"
 
@@ -39,11 +50,27 @@ DEX_POD_SELECTOR = "app=dex"
 DEX_AUTHCODE_RESOURCE = "authcodes.dex.coreos.com"
 
 
+class CallbackStorageConflictError(RuntimeError):
+    """oauth2-proxy answered 500 at /oauth2/callback: the code exchange lost the
+    Dex OfflineSessions update to a concurrent login of the same user."""
+
+
+def _raise_for_callback_conflict(response: requests.Response, step: str) -> None:
+    if response.status_code == 500 and urlsplit(response.url).path.endswith(
+        CALLBACK_PATH
+    ):
+        raise CallbackStorageConflictError(
+            f"HTTP status code '500' at {CALLBACK_PATH} after {step}: "
+            "Dex OfflineSessions conflict"
+        )
+
+
 @dataclass
 class ParallelAuthenticationResult:
     session_index: int
     succeeded: bool
     error_message: str = ""
+    attempts: int = 1
 
 
 class DexSessionManager:
@@ -216,6 +243,7 @@ class DexSessionManager:
                     },
                 )
 
+            _raise_for_callback_conflict(response, "the login POST")
             if response.status_code != 200:
                 raise RuntimeError(
                     f"HTTP status code '{response.status_code}' for POST against: {dex_login_url}"
@@ -235,6 +263,7 @@ class DexSessionManager:
                 response = self._request_post(
                     session, dex_approval_url, form_data={"approval": "approve"}
                 )
+                _raise_for_callback_conflict(response, "the approval POST")
                 if response.status_code != 200:
                     raise RuntimeError(
                         "HTTP status code "
@@ -400,25 +429,44 @@ def run_single_authentication() -> str:
 def run_parallel_authentication_session(
     session_index: int,
 ) -> ParallelAuthenticationResult:
-    try:
-        run_single_authentication()
-        return ParallelAuthenticationResult(
-            session_index=session_index,
-            succeeded=True,
-        )
-    except Exception as authentication_exception:
-        return ParallelAuthenticationResult(
-            session_index=session_index,
-            succeeded=False,
-            error_message=str(authentication_exception),
-        )
+    for attempt in range(1, PARALLEL_SESSION_ATTEMPTS + 1):
+        try:
+            run_single_authentication()
+            return ParallelAuthenticationResult(
+                session_index=session_index,
+                succeeded=True,
+                attempts=attempt,
+            )
+        except CallbackStorageConflictError as callback_conflict:
+            error_message = str(callback_conflict)
+            if attempt < PARALLEL_SESSION_ATTEMPTS:
+                print(
+                    f"session={session_index} attempt={attempt} failed with "
+                    f"{error_message}; retrying once"
+                )
+                continue
+            return ParallelAuthenticationResult(
+                session_index=session_index,
+                succeeded=False,
+                error_message=error_message,
+                attempts=attempt,
+            )
+        except Exception as authentication_exception:
+            error_message = str(authentication_exception)
+            return ParallelAuthenticationResult(
+                session_index=session_index,
+                succeeded=False,
+                error_message=error_message,
+                attempts=attempt,
+            )
 
 
 def run_parallel_validation() -> None:
     """
     Validates that:
     1. PARALLEL_SESSIONS concurrent authentication sessions all succeed against a
-       multi-replica Dex deployment.
+       multi-replica Dex deployment, allowing one retry per session for the Dex
+       OfflineSessions conflict described at PARALLEL_SESSION_ATTEMPTS.
     2. Authentication traffic is distributed across at least two Dex replicas (load balancer
        is working). With no sessionAffinity on the Dex Service, the Kubernetes load
        balancer distributes connections freely, so a single burst is sufficient to
@@ -453,6 +501,7 @@ def run_parallel_validation() -> None:
 
     # Run all parallel authentication sessions and collect results
     authentication_failures = []
+    retried_sessions = []
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=PARALLEL_SESSIONS
     ) as executor:
@@ -469,6 +518,8 @@ def run_parallel_validation() -> None:
                 authentication_result = future.result()
                 if not authentication_result.succeeded:
                     authentication_failures.append(authentication_result)
+                elif authentication_result.attempts > 1:
+                    retried_sessions.append(authentication_result.session_index)
         except concurrent.futures.TimeoutError as timeout_error:
             pending_futures = [
                 future for future in futures if future not in completed_futures
@@ -492,6 +543,10 @@ def run_parallel_validation() -> None:
             ]
         )
         raise RuntimeError(f"Parallel authentication session failures: {error_summary}")
+    print(
+        f"Parallel authentication burst: {PARALLEL_SESSIONS} sessions succeeded, "
+        f"{len(retried_sessions)} needed a second attempt {retried_sessions}"
+    )
 
     # Verify that at least two distinct replicas handled authentication requests.
     # This confirms the load balancer is distributing traffic across pods.

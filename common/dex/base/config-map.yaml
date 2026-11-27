@@ -16,6 +16,21 @@ data:
       format: text
     oauth2:
       skipApprovalScreen: true
+    expiry:
+      # Istio rejects an expired ID token, so OAuth2 Proxy refreshes the session
+      # before this lifetime ends; see cookie_refresh in
+      # common/oauth2-proxy/base/oauth2_proxy.cfg.
+      idTokens: "1h"
+      refreshTokens:
+        # The login ends this long after it was made, however active the user is.
+        absoluteLifetime: "168h"
+        # Dex rotates the refresh token on every use. The browser sends concurrent
+        # requests with the previous session cookie until the first refreshed
+        # response arrives, and OAuth2 Proxy holds no lock around the refresh with
+        # the cookie session store, so the previous token must stay valid for a
+        # short while, or every concurrent refresh after the first one ends the
+        # session with invalid_grant.
+        reuseInterval: "60s"
     enablePasswordDB: true
     staticPasswords:
     - email: user@example.com
