@@ -19,6 +19,11 @@ on:
     - tests/dashboard_install.sh
     - tests/multi_tenancy_install.sh
     - tests/katib_install.sh
+    - tests/pipelines_install.sh
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
+    - applications/katib/overlays/**
+    - applications/pipeline/restricted-pss/**
     - tests/workspaces_install.sh
     - tests/workspaces_test.sh
     - applications/workspaces/**
@@ -74,7 +79,7 @@ jobs:
       run: ./tests/pipelines_install.sh
 
     - name: Create the Kubeflow Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Install Workspaces
       run: ./tests/workspaces_install.sh

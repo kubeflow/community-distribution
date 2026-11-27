@@ -16,6 +16,8 @@ on:
     - tests/istio*
     - tests/multi_tenancy_install.sh
     - tests/profile_controller_install.sh
+    - tests/kubeflow_profile_install.sh
+    - tests/PSS_enable.sh
     - applications/dashboard/upstream/profile-controller/**
     - common/knative/**
     - tests/knative_serving_install.sh
@@ -68,7 +70,7 @@ jobs:
       run: kustomize build common/istio/kubeflow-istio-resources/base | kubectl apply -f -
 
     - name: Create KF Profile
-      run: ./tests/kubeflow_profile_install.sh
+      run: ./tests/kubeflow_profile_install.sh restricted
 
     - name: Setup python 3.12
       uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0

@@ -97,6 +97,13 @@ spec:
   autoscalerOptions:
     upscalingMode: Default 
     idleTimeoutSeconds: 60
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
   headGroupSpec:
     rayStartParams:
       num-cpus: '1'
